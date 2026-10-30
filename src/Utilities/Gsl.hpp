@@ -46,6 +46,7 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsDeviceCapable.hpp"
 
 #if defined(__clang__) || defined(__GNUC__)
 
@@ -81,18 +82,27 @@
  */
 namespace gsl {
 
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * \brief Cast `u` to a type `T` where the cast may result in narrowing
  */
 template <class T, class U>
+  requires tt::is_device_capable_v<T, U>
 KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) {
   return static_cast<T>(std::forward<U>(u));
 }
 
+template <class T, class U>
+  requires(not tt::is_device_capable_v<T, U>)
+SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) {
+  return static_cast<T>(std::forward<U>(u));
+}
+/// @}
+
 namespace gsl_detail {
 // Checks that `index` is a valid index into a container of size `size`, like
-// `Expects`. Can be called in Kokkos kernels, where a failed check aborts.
+// `Expects`
 template <typename Size>
 KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr void kokkos_check_bounds(
     const Size index, const std::size_t size) {
@@ -100,7 +110,9 @@ KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr void kokkos_check_bounds(
   KOKKOS_IF_ON_HOST((Expects(index >= 0 and index < narrow_cast<Size>(size));))
   KOKKOS_IF_ON_DEVICE(
       (if (not(index >= 0 and index < narrow_cast<Size>(size))) {
-        Kokkos::abort("gsl::at: index out of bounds");
+        SPECTRE_ABORT_ON_DEVICE(
+            "ASSERT FAILED", "gsl::at: index in bounds",
+            "Index " << index << " is out of bounds for size " << size);
       }))
 #else
   static_cast<void>(index);
@@ -139,10 +151,9 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
  * \ingroup UtilitiesGroup
  * \brief Retrieve a entry from a container, with checks in Debug mode that
  * the index being retrieved is valid.
- *
- * The overloads for `std::array` can be called in Kokkos kernels.
  */
 template <class T, std::size_t N, typename Size>
+  requires tt::is_device_capable_v<T>
 KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr,
                                                       Size index) {
   gsl_detail::kokkos_check_bounds(index, N);
@@ -150,9 +161,25 @@ KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr,
 }
 
 template <class T, std::size_t N, typename Size>
+  requires(not tt::is_device_capable_v<T>)
+SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr, Size index) {
+  Expects(index >= 0 and index < narrow_cast<Size>(N));
+  return arr[static_cast<std::size_t>(index)];
+}
+
+template <class T, std::size_t N, typename Size>
+  requires tt::is_device_capable_v<T>
 KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr const T& at(
     const std::array<T, N>& arr, Size index) {
   gsl_detail::kokkos_check_bounds(index, N);
+  return arr[static_cast<std::size_t>(index)];
+}
+
+template <class T, std::size_t N, typename Size>
+  requires(not tt::is_device_capable_v<T>)
+SPECTRE_ALWAYS_INLINE constexpr const T& at(const std::array<T, N>& arr,
+                                            Size index) {
+  Expects(index >= 0 and index < narrow_cast<Size>(N));
   return arr[static_cast<std::size_t>(index)];
 }
 

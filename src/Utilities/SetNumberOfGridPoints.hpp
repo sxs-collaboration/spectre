@@ -13,6 +13,7 @@
 #include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsDeviceCapable.hpp"
 
 /// Implementations of \link set_number_of_grid_points \endlink
 ///
@@ -36,22 +37,14 @@ template <typename T, typename = std::nullptr_t>
 struct SetNumberOfGridPointsImpl;
 }  // namespace SetNumberOfGridPointsImpls
 
-/// \ingroup DataStructuresGroup
-/// Change the number of grid points in an object.
-///
-/// Change the number of points stored in \p result to a given value
-/// or to match another object.  If \p pattern is a `size_t` it will
-/// be used as the number of points, otherwise it will be interpreted
-/// as data on a collection of grid points.
-///
-/// This can be called in Kokkos kernels for types that don't need resizing,
-/// such as `double`s and tensors of `double`s, for which it does nothing.
-///
-/// \see SetNumberOfGridPointsImpls, make_with_value
+namespace SetNumberOfGridPointsImpls::detail {
+// The body shared by the device-capable and host-only overloads, see the GPU
+// support documentation
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename T, typename U>
 KOKKOS_FUNCTION void set_number_of_grid_points(const gsl::not_null<T*> result,
                                                const U& pattern) {
+  ASSERT_DEVICE_CAPABLE(T, U);
   (void)result;
   (void)pattern;
   if constexpr (not SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<
@@ -63,6 +56,37 @@ KOKKOS_FUNCTION void set_number_of_grid_points(const gsl::not_null<T*> result,
     }
   }
 }
+}  // namespace SetNumberOfGridPointsImpls::detail
+
+/// \ingroup DataStructuresGroup
+/// Change the number of grid points in an object.
+///
+/// Change the number of points stored in \p result to a given value
+/// or to match another object.  If \p pattern is a `size_t` it will
+/// be used as the number of points, otherwise it will be interpreted
+/// as data on a collection of grid points.
+///
+/// For types that don't need resizing, such as `double`s and tensors of
+/// `double`s, it does nothing.
+///
+/// \see SetNumberOfGridPointsImpls, make_with_value
+/// @{
+template <typename T, typename U>
+  requires tt::is_device_capable_v<T, U>
+KOKKOS_FUNCTION void set_number_of_grid_points(const gsl::not_null<T*> result,
+                                               const U& pattern) {
+  SetNumberOfGridPointsImpls::detail::set_number_of_grid_points(result,
+                                                                pattern);
+}
+
+template <typename T, typename U>
+  requires(not tt::is_device_capable_v<T, U>)
+void set_number_of_grid_points(const gsl::not_null<T*> result,
+                               const U& pattern) {
+  SetNumberOfGridPointsImpls::detail::set_number_of_grid_points(result,
+                                                                pattern);
+}
+/// @}
 
 template <>
 struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<double> {
@@ -97,4 +121,3 @@ struct SetNumberOfGridPointsImpls::SetNumberOfGridPointsImpl<std::vector<T>> {
     }
   }
 };
-

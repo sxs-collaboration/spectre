@@ -23,8 +23,6 @@
  * corresponding tensor \f$ S_{abc} \f$ is calculated with respect to the metric
  * \f$g_{ab}\f$.  You may have to add a new instantiation of this template if
  * you need a new use case.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataType, typename Index0, typename Index1>
 KOKKOS_FUNCTION void raise_or_lower_first_index(
@@ -38,7 +36,6 @@ KOKKOS_FUNCTION void raise_or_lower_first_index(
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric);
 
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataType, typename Index0, typename Index1>
 KOKKOS_FUNCTION Tensor<DataType, Symmetry<2, 1, 1>,
                        index_list<change_index_up_lo<Index0>, Index1, Index1>>
@@ -47,13 +44,7 @@ raise_or_lower_first_index(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) {
-  Tensor<DataType, Symmetry<2, 1, 1>,
-         index_list<change_index_up_lo<Index0>, Index1, Index1>>
-      result{};
-  raise_or_lower_first_index(make_not_null(&result), tensor, metric);
-  return result;
-}
+                            change_index_up_lo<Index0>>>& metric);
 /// @}
 
 /// @{
@@ -68,8 +59,6 @@ raise_or_lower_first_index(
  * metric. If a tensor \f$ S^a \f$ is passed as an argument than the
  * corresponding tensor \f$ S_{a} \f$ is calculated with respect to the metric
  * \f$g_{ab}\f$.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
 KOKKOS_FUNCTION void raise_or_lower_index(
@@ -81,7 +70,6 @@ KOKKOS_FUNCTION void raise_or_lower_index(
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric);
 
-SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
 KOKKOS_FUNCTION
     Tensor<DataTypeTensor, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
@@ -89,10 +77,5 @@ KOKKOS_FUNCTION
         const Tensor<DataTypeTensor, Symmetry<1>, index_list<Index0>>& tensor,
         const Tensor<DataTypeMetric, Symmetry<1, 1>,
                      index_list<change_index_up_lo<Index0>,
-                                change_index_up_lo<Index0>>>& metric) {
-  Tensor<DataTypeTensor, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
-      result{};
-  raise_or_lower_index(make_not_null(&result), tensor, metric);
-  return result;
-}
+                                change_index_up_lo<Index0>>>& metric);
 /// @}
