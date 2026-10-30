@@ -64,13 +64,14 @@ struct RandomAmrMetavars {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<amr::Criterion,
-                   tmpl::list<amr::Criteria::DriveToTarget<
-                                  volume_dim, amr::Criteria::Type::h>,
-                              amr::Criteria::DriveToTarget<
-                                  volume_dim, amr::Criteria::Type::p>,
-                              amr::Criteria::Random<amr::Criteria::Type::h>,
-                              amr::Criteria::Random<amr::Criteria::Type::p>>>,
+        tmpl::pair<
+            ::amr::Criterion,
+            tmpl::list<::amr::Criteria::DriveToTarget<volume_dim,
+                                                      ::amr::Criteria::Type::h>,
+                       ::amr::Criteria::DriveToTarget<volume_dim,
+                                                      ::amr::Criteria::Type::p>,
+                       ::amr::Criteria::Random<::amr::Criteria::Type::h>,
+                       ::amr::Criteria::Random<::amr::Criteria::Type::p>>>,
         tmpl::pair<
             PhaseChange,
             tmpl::list<
@@ -112,7 +113,7 @@ struct RandomAmrMetavars {
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
     using element_registrars =
         tmpl::map<tmpl::pair<dg_element_array,
-                             tmpl::list<amr::Actions::RegisterElement>>>;
+                             tmpl::list<::amr::Actions::RegisterElement>>>;
   };
 
   using component_list =
