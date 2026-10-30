@@ -71,6 +71,38 @@ class SimpleSparseMatrix {
                                    size_t a_stride, const T& b, size_t b_offset,
                                    size_t b_stride) const;
 
+  /// \brief Does `a += m * b` for `stride` right-hand sides at once.
+  ///
+  /// The result is the same as calling
+  /// `increment_multiply_on_right(a, k, stride, b, k, stride)` once for every
+  /// `k` in `[0, stride)`.
+  ///
+  /// This is faster than calling `increment_multiply_on_right` once per
+  /// offset for two reasons:
+  ///
+  /// - The sparse matrix (its values and its index arrays) is read from
+  ///   memory once instead of `stride` times.
+  /// - For every matrix entry, the `stride` source values are read as one
+  ///   contiguous block and added to `stride` independent partial sums, so
+  ///   the compiler can use vector instructions. The per-offset loop instead
+  ///   picks one value out of each block and adds it to a single running
+  ///   sum, so every addition has to wait for the previous one.
+  ///
+  /// For each offset, the entries of a row are summed in the same order as
+  /// in `increment_multiply_on_right`. Source and destination must not
+  /// overlap. Does not allocate.
+  ///
+  /// Strides up to `max_fused_stride` use this fused kernel. Larger strides
+  /// fall back to one call of `increment_multiply_on_right` per offset.
+  void increment_multiply_on_right_all_offsets(
+      gsl::not_null<gsl::span<double>*> a, const gsl::span<double>& b,
+      size_t stride) const;
+
+  /// Largest `stride` for which `increment_multiply_on_right_all_offsets`
+  /// uses the fused kernel. One kernel is compiled per stride up to this
+  /// value, which bounds the amount of generated code.
+  static constexpr size_t max_fused_stride = 24;
+
   /// Number of nonzero elements.
   size_t size() const { return matrix_elements_.size(); }
 
