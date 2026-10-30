@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <string>
+#include <vector>
 
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -66,5 +67,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
       "AhObservationTime0");
   test_observation_time();
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
+  CHECK(ah::Tags::ObserveCenters::create_from_options(true));
+  CHECK_FALSE(ah::Tags::ObserveCenters::create_from_options(false));
+  CHECK(ah::Tags::ObserveCenters::create_from_options(
+      std::vector<std::string>{"Rotation"}));
+  CHECK_FALSE(ah::Tags::ObserveCenters::create_from_options(
+      std::vector<std::string>{}));
   TestHelpers::db::test_simple_tag<ah::Tags::LMax>("LMax");
 }

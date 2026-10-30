@@ -125,9 +125,9 @@ namespace ControlErrors {
  * in the smoothing `TimescaleTuner` is then updated using the difference
  * between the averaged and un-averaged coefficient (and its time derivative).
  *
- * In addition to calculating the control error, if the
- * `control_system::Tags::WriteDataToDisk` tag inside the
- * `Parallel::GlobalCache` is true, then a diagnostic file named
+ * In addition to calculating the control error, if the name of this control
+ * system is in the `control_system::Tags::WriteDataToDisk` tag inside the
+ * `Parallel::GlobalCache`, then a diagnostic file named
  * `Diagnostics.dat` is also written to the same group that
  * `control_system::write_components_to_disk` would write the standard control
  * system output (`/ControlSystems/Size/`). The columns of this diagnostic file
@@ -614,7 +614,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
 
     state_history_.store(time, info_, error_diagnostics.control_error_args);
 
-    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
+    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache).contains(
+            function_of_time_name)) {
       auto& observer_writer_proxy = Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache);
 

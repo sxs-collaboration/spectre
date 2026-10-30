@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "ControlSystem/ControlErrors/Expansion.hpp"
@@ -99,7 +100,8 @@ void test_translation_control_error() {
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true,
+       std::unordered_set<std::string>{}, ::Verbosity::Silent,
        std::move(is_active_map), std::move(grid_center_A),
        std::move(grid_center_B), std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),

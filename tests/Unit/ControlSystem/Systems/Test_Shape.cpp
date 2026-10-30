@@ -11,6 +11,7 @@
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "ControlSystem/Averager.hpp"
@@ -86,7 +87,8 @@ void test_shape_control(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   // Excision centers aren't used so their values can be anything
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true,
+       std::unordered_set<std::string>{}, ::Verbosity::Silent,
        std::move(is_active_map), std::move(grid_center_A),
        std::move(grid_center_B), std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),

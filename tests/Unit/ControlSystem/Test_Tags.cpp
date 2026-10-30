@@ -11,6 +11,9 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include "ControlSystem/Averager.hpp"
@@ -22,11 +25,14 @@
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Options/ParseOptions.hpp"
+#include "Parallel/CreateFromOptions.hpp"
 
 namespace {
 struct LabelA {};
@@ -131,7 +137,12 @@ void test_control_sys_inputs() {
   const auto write_data =
       TestHelpers::test_option_tag<control_system::OptionTags::WriteDataToDisk>(
           "true");
-  CHECK(write_data);
+  CHECK(std::get<bool>(write_data));
+  const auto write_data_for_systems =
+      TestHelpers::test_option_tag<control_system::OptionTags::WriteDataToDisk>(
+          "[LabelA, Rotation]");
+  CHECK(std::get<std::vector<std::string>>(write_data_for_systems) ==
+        std::vector<std::string>{"LabelA", "Rotation"});
   // We don't check the control error because the example one is empty and
   // doesn't have a comparison operator. Once a control error is added that
   // contains member data (and thus, options), then it can be tested
@@ -258,6 +269,41 @@ void test_system_to_combined_names_tag() {
   CHECK(system_to_combined_names.at("LabelB") == "LabelALabelB");
   CHECK(system_to_combined_names.at("Rotation") == "Rotation");
 }
+
+void test_write_data_to_disk_tag() {
+  using write_tag = control_system::Tags::WriteDataToDisk;
+  const std::unordered_set<std::string> all_names{"LabelA", "LabelB",
+                                                  "Rotation"};
+
+  CHECK(write_tag::create_from_options<NamesMetavars>(true) == all_names);
+  CHECK(write_tag::create_from_options<NamesMetavars>(false).empty());
+  CHECK(write_tag::create_from_options<NamesMetavars>(
+            std::vector<std::string>{"Rotation", "LabelA"}) ==
+        std::unordered_set<std::string>{"LabelA", "Rotation"});
+  CHECK(
+      write_tag::create_from_options<NamesMetavars>(std::vector<std::string>{})
+          .empty());
+  CHECK_THROWS_WITH(write_tag::create_from_options<NamesMetavars>(
+                        std::vector<std::string>{"LabelA", "Translation"}),
+                    Catch::Matchers::ContainsSubstring(
+                        "Unknown control system 'Translation' in option "
+                        "ControlSystems.WriteDataToDisk"));
+
+  // Create the tag from a parsed input file through the same machinery that
+  // the executables use
+  using option_list = tmpl::list<control_system::OptionTags::WriteDataToDisk>;
+  Options::Parser<option_list> parser{"Test options"};
+  parser.parse("ControlSystems:\n  WriteDataToDisk: [LabelB]\n");
+  const auto options =
+      parser.template apply<option_list, NamesMetavars>([](auto... args) {
+        return tuples::tagged_tuple_from_typelist<option_list>(
+            std::move(args)...);
+      });
+  const auto created_tags = Parallel::create_from_options<NamesMetavars>(
+      options, tmpl::list<write_tag>{});
+  CHECK(tuples::get<write_tag>(created_tags) ==
+        std::unordered_set<std::string>{"LabelB"});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
@@ -265,4 +311,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
   test_control_sys_inputs();
   test_individual_tags();
   test_system_to_combined_names_tag();
+  test_write_data_to_disk_tag();
 }

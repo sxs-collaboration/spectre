@@ -5,6 +5,8 @@
 
 #include <cstddef>
 #include <string>
+#include <variant>
+#include <vector>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
@@ -132,11 +134,18 @@ struct ControlSystemInputs {
 
 /// \ingroup OptionTagsGroup
 /// \ingroup ControlSystemGroup
-/// Option tag on whether to write data to disk.
+/// Option tag on which control systems write data to disk.
+///
+/// Either `true` or `false` to enable or disable the output of all control
+/// systems, or a list of the names of the control systems whose output is
+/// enabled. The names are the `name()` of the control systems.
 struct WriteDataToDisk {
-  using type = bool;
+  using type = std::variant<bool, std::vector<std::string>>;
   static constexpr Options::String help = {
-      "Whether control system data should be saved during an evolution."};
+      "Whether control system data should be saved during an evolution. "
+      "Either 'true' or 'false' for all control systems, or a list of the "
+      "names of the control systems that should save data, e.g. "
+      "[Rotation, Expansion]."};
   using group = ControlSystemGroup;
 };
 
