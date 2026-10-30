@@ -270,7 +270,7 @@ void contribute_to_reduction(ReductionData<Ts...> reduction_data,
                              const TargetProxy& target_component,
                              [[maybe_unused]] const gsl::not_null<SectionType*>
                                  section = &no_section()) {
-  (void)Parallel::charmxx::RegisterReducerFunction<
+  (void)&Parallel::charmxx::RegisterReducerFunction<
       &ReductionData<Ts...>::combine>::registrar;
   CkCallback callback(
       TargetProxy::index_t::template redn_wrapper_reduction_action<

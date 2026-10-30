@@ -740,15 +740,15 @@ struct ReceiveDataForReconstruction {
             const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           // Remove neighbor meshes for neighbors that don't exist anymore
-          domain::remove_nonexistent_neighbors(neighbor_mesh, element);
-          domain::remove_nonexistent_neighbors(mesh_for_ghost_data, element);
+          ::domain::remove_nonexistent_neighbors(neighbor_mesh, element);
+          ::domain::remove_nonexistent_neighbors(mesh_for_ghost_data, element);
 
           // Get the next time step id, and also the fluxes data if the neighbor
           // is doing DG.
           for (auto& received_mortar_data : received_data) {
             const auto& mortar_id = received_mortar_data.first;
             ASSERT(element.face_types().at(mortar_id.direction()) !=
-                       domain::FaceType::MultipleNonconforming,
+                       ::domain::FaceType::MultipleNonconforming,
                    "This code needs updating to handle nonconforming blocks");
             try {
               mortar_next_time_step_id->at(mortar_id) =
@@ -818,7 +818,7 @@ struct ReceiveDataForReconstruction {
               // tracked because those elements are forced to remain on DG.
               ASSERT(
                   element.face_types().at(directional_element_id.direction()) ==
-                      domain::FaceType::MultipleNonconforming,
+                      ::domain::FaceType::MultipleNonconforming,
                   "NeighborTciDecisions does not contain the neighbor ("
                       << directional_element_id.direction() << ", "
                       << directional_element_id.id()
