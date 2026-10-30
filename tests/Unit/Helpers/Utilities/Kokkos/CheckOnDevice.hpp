@@ -5,21 +5,43 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
 
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Kokkos/KokkosCore.hpp"
 
 #ifdef SPECTRE_KOKKOS
 namespace TestHelpers {
+/*!
+ * \brief Collects the components of the `tensors` in a `std::array`, so the
+ * results of several functions can be compared with `check_on_device`.
+ */
+template <typename... Tensors>
+KOKKOS_FUNCTION std::array<double, (Tensors::size() + ...)> flatten(
+    const Tensors&... tensors) {
+  std::array<double, (Tensors::size() + ...)> result{};
+  size_t i = 0;
+  const auto append = [&result, &i](const auto& tensor) {
+    for (size_t j = 0; j < tensor.size(); ++j) {
+      gsl::at(result, i) = tensor[j];
+      ++i;
+    }
+  };
+  (append(tensors), ...);
+  return result;
+}
+
 /*!
  * \brief Checks that `function` gives the same results in a Kokkos kernel as
  * on the host.
  *
  * `function` must be callable on the host and the device without arguments
  * (e.g. a `KOKKOS_LAMBDA` that captures its inputs) and return a `std::array`
- * of the values to compare. Floating-point values are compared with
+ * of the values to compare, e.g. from `flatten`. Floating-point values are
+ * compared with
  * `custom_approx` (`approx` by default) rather than exactly, because device
  * code may be compiled differently (e.g. with fused multiply-adds).
  *

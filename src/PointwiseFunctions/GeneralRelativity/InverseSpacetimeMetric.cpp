@@ -10,11 +10,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t Dim, typename Frame>
-tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
+KOKKOS_FUNCTION tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric) {
   tnsr::AA<DataType, Dim, Frame> inv_spacetime_metric{};
@@ -24,7 +25,7 @@ tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
 }
 
 template <typename DataType, size_t Dim, typename Frame>
-void inverse_spacetime_metric(
+KOKKOS_FUNCTION void inverse_spacetime_metric(
     const gsl::not_null<tnsr::AA<DataType, Dim, Frame>*>
         inverse_spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
@@ -67,7 +68,9 @@ void inverse_spacetime_metric(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                \
           inverse_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef DIM

@@ -10,11 +10,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_derivative_of_spacetime_metric(
+KOKKOS_FUNCTION void time_derivative_of_spacetime_metric(
     const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>
         dt_spacetime_metric,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
@@ -50,7 +51,8 @@ void time_derivative_of_spacetime_metric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame>
+time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
@@ -86,7 +88,9 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

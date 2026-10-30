@@ -26,6 +26,10 @@ set(LIBRARY_SOURCES
   Test_TransportVelocity.cpp
   )
 
+if(SPECTRE_KOKKOS)
+  list(APPEND LIBRARY_SOURCES Test_HydroKokkos.cpp)
+endif()
+
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(

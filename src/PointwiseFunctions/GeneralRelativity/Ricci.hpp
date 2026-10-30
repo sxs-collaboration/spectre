@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 /// \cond
 namespace gsl {
@@ -34,14 +35,14 @@ namespace gr {
  * where \f$\Gamma^{a}_{bc}\f$ is the Christoffel symbol of the second kind.
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void ricci_tensor(
+KOKKOS_FUNCTION void ricci_tensor(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame, Index>*> result,
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind);
@@ -57,13 +58,13 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
  * spacetime) and Ricci tensor \f$R = g^{ab}R_{ab}\f$
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void ricci_scalar(
+KOKKOS_FUNCTION void ricci_scalar(
     gsl::not_null<Scalar<DataType>*> ricci_scalar_result,
     const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-Scalar<DataType> ricci_scalar(
+KOKKOS_FUNCTION Scalar<DataType> ricci_scalar(
     const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 /// @}
