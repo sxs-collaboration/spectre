@@ -154,6 +154,9 @@ The easiest way of installing SpECTRE natively on a new machine is this:
   make -j12 BundledExporter
   ```
 
+  The `BundledExporter` library imports SpECTRE data into other programs (see
+  \ref tutorial_importing_data).
+
 ### Installation with Spack
 
 You can also install SpECTRE with the [Spack](https://github.com/spack/spack)
