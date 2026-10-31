@@ -24,6 +24,10 @@ set(LIBRARY_SOURCES
 if (SPECTRE_DEBUG AND (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP))
   list(APPEND LIBRARY_SOURCES Test_KokkosAssertOnDevice.cpp)
 endif()
+# Same for `alg::sort`, which aborts on the device also in release builds
+if (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP)
+  list(APPEND LIBRARY_SOURCES Test_SortAbortsOnDevice.cpp)
+endif()
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 

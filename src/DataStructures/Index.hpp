@@ -15,6 +15,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace PUP {
@@ -29,45 +30,55 @@ template <size_t Dim>
 class Index {
  public:
   /// Construct with each element set to the same value.
-  explicit Index(const size_t i0 = std::numeric_limits<size_t>::max())
+  KOKKOS_FUNCTION explicit Index(
+      const size_t i0 = std::numeric_limits<size_t>::max())
       : indices_(make_array<Dim>(i0)) {}
 
   /// Construct specifying value in each dimension
   template <std::integral... I>
     requires(sizeof...(I) == Dim and sizeof...(I) > 1)
-  explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {}
+  KOKKOS_FUNCTION explicit Index(I... i)
+      : indices_(make_array(static_cast<size_t>(i)...)) {}
 
-  explicit Index(std::array<size_t, Dim> i) : indices_(std::move(i)) {}
+  KOKKOS_FUNCTION explicit Index(std::array<size_t, Dim> i)
+      : indices_(std::move(i)) {}
 
-  size_t operator[](const size_t d) const { return gsl::at(indices_, d); }
-  size_t& operator[](const size_t d) { return gsl::at(indices_, d); }
+  KOKKOS_FUNCTION size_t operator[](const size_t d) const {
+    return gsl::at(indices_, d);
+  }
+  KOKKOS_FUNCTION size_t& operator[](const size_t d) {
+    return gsl::at(indices_, d);
+  }
 
-  typename std::array<size_t, Dim>::iterator begin() {
+  KOKKOS_FUNCTION typename std::array<size_t, Dim>::iterator begin() {
     return indices_.begin();
   }
-  typename std::array<size_t, Dim>::const_iterator begin() const {
+  KOKKOS_FUNCTION typename std::array<size_t, Dim>::const_iterator begin()
+      const {
     return indices_.begin();
   }
 
-  typename std::array<size_t, Dim>::iterator end() { return indices_.end(); }
-  typename std::array<size_t, Dim>::const_iterator end() const {
+  KOKKOS_FUNCTION typename std::array<size_t, Dim>::iterator end() {
+    return indices_.end();
+  }
+  KOKKOS_FUNCTION typename std::array<size_t, Dim>::const_iterator end() const {
     return indices_.end();
   }
 
-  size_t size() const { return Dim; }
+  KOKKOS_FUNCTION size_t size() const { return Dim; }
 
   /// The product of the indices.
   /// If Dim = 0, the product is defined as 1.
   template <size_t N = Dim>
     requires(N > 0)
-  constexpr size_t product() const {
+  KOKKOS_FUNCTION constexpr size_t product() const {
     return indices_[N - 1] * product<N - 1>();
   }
   /// \cond
   // Specialization for N = 0 to stop recursion
   template <size_t N = Dim>
     requires(N == 0)
-  constexpr size_t product() const {
+  KOKKOS_FUNCTION constexpr size_t product() const {
     return 1;
   }
   /// \endcond
@@ -77,7 +88,7 @@ class Index {
   /// \param d the element to remove.
   template <size_t N = Dim>
     requires(N > 0)
-  Index<Dim - 1> slice_away(const size_t d) const {
+  KOKKOS_FUNCTION Index<Dim - 1> slice_away(const size_t d) const {
     ASSERT(d < Dim,
            "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
@@ -99,10 +110,12 @@ class Index {
   friend std::ostream& operator<<(std::ostream& os,  // NOLINT
                                   const Index<N>& i);
 
-  const size_t* data() const { return indices_.data(); }
-  size_t* data() { return indices_.data(); }
+  KOKKOS_FUNCTION const size_t* data() const { return indices_.data(); }
+  KOKKOS_FUNCTION size_t* data() { return indices_.data(); }
 
-  const std::array<size_t, Dim>& indices() const { return indices_; }
+  KOKKOS_FUNCTION const std::array<size_t, Dim>& indices() const {
+    return indices_;
+  }
 
  private:
   std::array<size_t, Dim> indices_;
@@ -113,7 +126,8 @@ class Index {
 /// Index. Note that the first dimension of the Index varies fastest when
 /// computing the collapsed index.
 template <size_t N>
-size_t collapsed_index(const Index<N>& index, const Index<N>& extents);
+KOKKOS_FUNCTION size_t collapsed_index(const Index<N>& index,
+                                       const Index<N>& extents);
 
 /// \ingroup DataStructuresGroup
 /// This is the inverse function of collapsed_index. Given a collapsed (1D)
@@ -121,7 +135,8 @@ size_t collapsed_index(const Index<N>& index, const Index<N>& extents);
 /// collapsed index. Note that the first dimension of the Index varies fastest
 /// when computing the collapsed index.
 template <size_t Dim>
-Index<Dim> expanded_index(size_t index, const Index<Dim>& extents);
+KOKKOS_FUNCTION Index<Dim> expanded_index(size_t index,
+                                          const Index<Dim>& extents);
 
 template <size_t N>
 std::ostream& operator<<(std::ostream& os, const Index<N>& i);
@@ -130,7 +145,8 @@ std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 #ifdef SPECTRE_DEBUG
 namespace Index_detail {
 template <size_t Dim>
-void collapsed_index_check(const Index<Dim>& index, const Index<Dim>& extents) {
+KOKKOS_FUNCTION void collapsed_index_check(const Index<Dim>& index,
+                                           const Index<Dim>& extents) {
   for (size_t d = 0; d < Dim; ++d) {
     ASSERT(index[d] < extents[d], "The requested index in the dimension "
                                       << d << " with value " << index[d]
@@ -146,14 +162,14 @@ void collapsed_index_check(const Index<Dim>& index, const Index<Dim>& extents) {
 // specializations to avoid having loops since this computation is very
 // straightforward.
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<0>& /*index*/,
-                                             const Index<0>& /*extents*/) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE size_t
+collapsed_index(const Index<0>& /*index*/, const Index<0>& /*extents*/) {
   return 0;
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<1>& index,
-                                             const Index<1>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE size_t
+collapsed_index(const Index<1>& index, const Index<1>& extents) {
   (void)extents;
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
@@ -162,8 +178,8 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<1>& index,
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<2>& index,
-                                             const Index<2>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE size_t
+collapsed_index(const Index<2>& index, const Index<2>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -171,8 +187,8 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<2>& index,
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<3>& index,
-                                             const Index<3>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE size_t
+collapsed_index(const Index<3>& index, const Index<3>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -180,8 +196,8 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<3>& index,
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
-                                             const Index<4>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE size_t
+collapsed_index(const Index<4>& index, const Index<4>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -191,23 +207,23 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE Index<1> expanded_index(size_t index,
-                                              const Index<1>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE Index<1> expanded_index(
+    size_t index, const Index<1>& extents) {
   (void)extents;
   return Index<1>{index};
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE Index<2> expanded_index(size_t index,
-                                              const Index<2>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE Index<2> expanded_index(
+    size_t index, const Index<2>& extents) {
   const size_t ix = index % extents[0];
   const size_t iy = index / extents[0];
   return Index<2>{{ix, iy}};
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE Index<3> expanded_index(size_t index,
-                                              const Index<3>& extents) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE Index<3> expanded_index(
+    size_t index, const Index<3>& extents) {
   const size_t ix = index % extents[0];
   const size_t iy = (index / extents[0]) % extents[1];
   const size_t iz = (index / extents[0]) / extents[1];
@@ -215,8 +231,8 @@ SPECTRE_ALWAYS_INLINE Index<3> expanded_index(size_t index,
 }
 
 template <size_t N>
-bool operator==(const Index<N>& lhs, const Index<N>& rhs);
+KOKKOS_FUNCTION bool operator==(const Index<N>& lhs, const Index<N>& rhs);
 
 template <size_t N>
-bool operator!=(const Index<N>& lhs, const Index<N>& rhs);
+KOKKOS_FUNCTION bool operator!=(const Index<N>& lhs, const Index<N>& rhs);
 /// \endcond
