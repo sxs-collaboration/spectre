@@ -13,6 +13,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -65,6 +66,8 @@ class TciOnDgGrid {
   static constexpr double min_pressure_allowed = 1.0e-18;
 
  public:
+  using mutator_on_skipped_tci = NewtonianEuler::PrimitiveFromConservative<Dim>;
+
   using return_tags = tmpl::list<::Tags::Variables<
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>>;
   using argument_tags = tmpl::list<

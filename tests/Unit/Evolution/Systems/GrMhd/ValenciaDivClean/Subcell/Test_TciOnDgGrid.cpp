@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -19,7 +20,9 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnDgGrid.hpp"
@@ -51,11 +54,15 @@ enum class TestThis {
   RdmpMagnitudeTildeB
 };
 
+template <typename RecoveryScheme =
+              grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+          bool UseGh = false>
 void test(const TestThis test_this, const int expected_tci_status,
-          const bool element_stays_on_dg) {
+          const bool element_stays_on_dg, const bool skipped_tci = false) {
   CAPTURE(test_this);
   CAPTURE(expected_tci_status);
   CAPTURE(element_stays_on_dg);
+  CAPTURE(skipped_tci);
   const EquationsOfState::Barotropic3D eos{
       EquationsOfState::PolytropicFluid<true>{100.0, 2.0}};
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
@@ -255,6 +262,55 @@ void test(const TestThis test_this, const int expected_tci_status,
         make_not_null(&box));
   }
 
+  if (skipped_tci) {
+    using Tci = std::conditional_t<
+        UseGh, grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<RecoveryScheme>,
+        grmhd::ValenciaDivClean::subcell::TciOnDgGrid<RecoveryScheme>>;
+    if constexpr (requires { typename Tci::mutator_on_skipped_tci; }) {
+      using SkippedTci = typename Tci::mutator_on_skipped_tci;
+      // The recovery-only hook must not require a usable finite-difference
+      // mesh.
+      db::mutate<evolution::dg::subcell::Tags::Mesh<3>>(
+          [](const auto mesh_ptr) {
+            *mesh_ptr = Mesh<3>{0_st, Spectral::Basis::Uninitialized,
+                                Spectral::Quadrature::Uninitialized};
+          },
+          make_not_null(&box));
+      const auto conservatives_before =
+          db::get<::Tags::Variables<typename ConsVars::tags_list>>(box);
+      if (test_this == TestThis::PrimRecoveryFailed) {
+        // No rollback exists on this path: failure must not silently continue
+        // with the stale primitive variables or enforce a repaired state.
+        CHECK_THROWS_WITH(db::mutate_apply<SkippedTci>(make_not_null(&box)),
+                          Catch::Matchers::ContainsSubstring(
+                              "All primitive inversion schemes failed"));
+      } else {
+        REQUIRE(test_this == TestThis::AllGood);
+        db::mutate_apply<SkippedTci>(make_not_null(&box));
+        CHECK_FALSE(db::get<hydro::Tags::RestMassDensity<DataVector>>(box) ==
+                    original_rest_mass_density);
+        // This fixture has zero momentum and a flat metric, hence W=1 and
+        // rho=D.
+        CHECK_ITERABLE_APPROX(
+            db::get<hydro::Tags::RestMassDensity<DataVector>>(box),
+            db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box));
+        CHECK_ITERABLE_APPROX(
+            db::get<hydro::Tags::LorentzFactor<DataVector>>(box),
+            (Scalar<DataVector>{mesh.number_of_grid_points(), 1.0}));
+        CHECK_ITERABLE_APPROX(
+            (db::get<hydro::Tags::MagneticField<DataVector, 3>>(box)),
+            (db::get<grmhd::ValenciaDivClean::Tags::TildeB<>>(box)));
+        CHECK(db::get<hydro::Tags::DivergenceCleaningField<DataVector>>(box) ==
+              get<hydro::Tags::DivergenceCleaningField<DataVector>>(prim_vars));
+      }
+      CHECK(db::get<::Tags::Variables<typename ConsVars::tags_list>>(box) ==
+            conservatives_before);
+    } else {
+      FAIL_CHECK("The TCI must recover primitives when skipped.");
+    }
+    return;
+  }
+
   // Set the RDMP TCI past data.
   using std::max;
   using std::min;
@@ -361,6 +417,24 @@ void test(const TestThis test_this, const int expected_tci_status,
   }
 }
 }  // namespace
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.ValenciaDivClean.Subcell.SkippedTciRecovery",
+    "[Unit][Evolution]") {
+  using Kastaun =
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl;
+  using Newman =
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin;
+  test<Kastaun>(TestThis::AllGood, 0, true, true);
+  test<Newman>(TestThis::AllGood, 0, true, true);
+  test<Kastaun>(TestThis::PrimRecoveryFailed, -4, true, true);
+  test<Newman>(TestThis::PrimRecoveryFailed, -4, true, true);
+  // The coupled GH system inherits the same recovery-only interface.
+  test<Kastaun, true>(TestThis::AllGood, 0, true, true);
+  test<Newman, true>(TestThis::AllGood, 0, true, true);
+  test<Kastaun, true>(TestThis::PrimRecoveryFailed, -4, true, true);
+  test<Newman, true>(TestThis::PrimRecoveryFailed, -4, true, true);
+}
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
                   "[Unit][Evolution]") {
