@@ -15,10 +15,10 @@ set(LIBS_TO_LINK
   Informer
   LinearOperators
   MathFunctions
-  NewtonianEuler
-  NewtonianEulerAnalyticData
-  NewtonianEulerSolutions
-  NewtonianEulerSources
+  NewtonianMhd
+  NewtonianMhdAnalyticData
+  NewtonianMhdSolutions
+  NewtonianMhdSources
   Observer
   Options
   Parallel

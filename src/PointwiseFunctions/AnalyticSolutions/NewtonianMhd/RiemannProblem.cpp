@@ -1,0 +1,521 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianMhd/RiemannProblem.hpp"
+
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <pup.h>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Math.hpp"
+
+namespace {
+
+// Any of the two functions of the pressure and the initial data
+// in Eqns. (4.6) and (4.7) of Toro.
+template <size_t Dim>
+struct FunctionOfPressureAndData {
+  FunctionOfPressureAndData(
+      const typename NewtonianMhd::Solutions::RiemannProblem<Dim>::InitialData&
+          data,
+      const double adiabatic_index)
+      : state_pressure_(data.pressure_),
+        constant_a_(data.constant_a_),
+        constant_b_(data.constant_b_) {
+    prefactor_ = 2.0 * data.sound_speed_ / (adiabatic_index - 1.0);
+    exponent_ = 0.5 * (adiabatic_index - 1.0) / adiabatic_index;
+  }
+
+  double operator()(const double pressure) const {
+    // Value depends on whether the initial state is a shock
+    // (pressure > pressure of initial state) or a rarefaction wave
+    // (pressure <= pressure of initial state)
+    return pressure > state_pressure_
+               ? (pressure - state_pressure_) *
+                     sqrt(constant_a_ / (pressure + constant_b_))
+               : prefactor_ *
+                     (pow(pressure / state_pressure_, exponent_) - 1.0);
+  }
+
+ private:
+  double state_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  double constant_a_ = std::numeric_limits<double>::signaling_NaN();
+  double constant_b_ = std::numeric_limits<double>::signaling_NaN();
+
+  // Auxiliary variables for computing the rarefaction wave
+  double prefactor_ = std::numeric_limits<double>::signaling_NaN();
+  double exponent_ = std::numeric_limits<double>::signaling_NaN();
+};
+
+}  // namespace
+
+namespace NewtonianMhd::Solutions {
+
+template <size_t Dim>
+RiemannProblem<Dim>::RiemannProblem(
+    const double adiabatic_index, const double initial_position,
+    const double left_mass_density,
+    const std::array<double, Dim>& left_velocity, const double left_pressure,
+    const double right_mass_density,
+    const std::array<double, Dim>& right_velocity, const double right_pressure,
+    const double pressure_star_tol)
+    : adiabatic_index_(adiabatic_index),
+      initial_position_(initial_position),
+      left_initial_data_(left_mass_density, left_velocity, left_pressure,
+                         adiabatic_index, propagation_axis_),
+      right_initial_data_(right_mass_density, right_velocity, right_pressure,
+                          adiabatic_index, propagation_axis_),
+      pressure_star_tol_(pressure_star_tol),
+      equation_of_state_(adiabatic_index) {
+  const double delta_u = right_initial_data_.normal_velocity_ -
+                         left_initial_data_.normal_velocity_;
+
+  // The pressure positivity condition must be met (Eqn. 4.40 of Toro).
+  ASSERT(2.0 *
+                     (left_initial_data_.sound_speed_ +
+                      right_initial_data_.sound_speed_) /
+                     (adiabatic_index_ - 1.0) -
+                 delta_u >
+             0.0,
+         "The pressure positivity condition must be met. Initial data do not "
+         "satisfy this criterion.");
+
+  // Before evaluating the solution at any (x, t), the type of solution
+  // (shock or rarefaction) on each side of the contact discontinuity
+  // must be sorted out. To do so, the first step is to compute the
+  // state variables in the star region by solving a transcendental equation,
+  // which is what all the math in this constructor is about.
+
+  // Compute bracket for root finder according to value of the function whose
+  // root we want (Eqn. 4.39 of Toro.)
+  const FunctionOfPressureAndData<Dim> f_of_p_left(left_initial_data_,
+                                                   adiabatic_index_);
+  const FunctionOfPressureAndData<Dim> f_of_p_right(right_initial_data_,
+                                                    adiabatic_index_);
+  const auto p_minmax =
+      std::minmax(left_initial_data_.pressure_, right_initial_data_.pressure_);
+  const double f_min =
+      f_of_p_left(p_minmax.first) + f_of_p_right(p_minmax.first) + delta_u;
+  const double f_max =
+      f_of_p_left(p_minmax.second) + f_of_p_right(p_minmax.second) + delta_u;
+
+  if (f_min > 0.0 and f_max > 0.0) {
+    const double exponent = 0.5 * (adiabatic_index_ - 1.0) / adiabatic_index_;
+    pressure_star_ = std::pow(
+        (left_initial_data_.sound_speed_ + right_initial_data_.sound_speed_ -
+         0.5 * (adiabatic_index_ - 1.0) * delta_u) /
+            (left_initial_data_.sound_speed_ *
+                 std::pow(left_initial_data_.pressure_, -exponent) +
+             right_initial_data_.sound_speed_ *
+                 std::pow(right_initial_data_.pressure_, -exponent)),
+        1.0 / exponent);
+    ASSERT(std::abs(f_of_p_left(pressure_star_) + f_of_p_right(pressure_star_) +
+                    delta_u) < 1.0e-8,
+           "Failed to analytically solve correctly.");
+  } else {
+    double pressure_lower = std::numeric_limits<double>::signaling_NaN();
+    double pressure_upper = std::numeric_limits<double>::signaling_NaN();
+    if (f_min < 0.0 and f_max > 0.0) {
+      pressure_lower = p_minmax.first;
+      pressure_upper = p_minmax.second;
+    } else {
+      pressure_lower = p_minmax.second;
+      pressure_upper = 10.0 * pressure_lower;  // Arbitrary upper bound < \infty
+    }
+
+    // Now get pressure by solving transcendental equation.
+    const auto f_of_p = [&f_of_p_left, &f_of_p_right,
+                         &delta_u](const double pressure) {
+      // Function of pressure in Eqn. (4.5) of Toro.
+      return f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u;
+    };
+    try {
+      pressure_star_ = RootFinder::toms748(
+          f_of_p, pressure_lower, pressure_upper, pressure_star_tol_, 1.0e-15);
+    } catch (std::exception& exception) {
+      ERROR(
+          "Failed to find p_* with Newton-Raphson root finder. Got "
+          "exception message:\n"
+          << exception.what()
+          << "\nIf the residual is small you can change the tolerance for the "
+             "root finder in the input file.");
+    }
+  }
+
+  // Calculated p_*, u_* is obtained from Eqn. (4.9) in Toro.
+  velocity_star_ =
+      0.5 * (left_initial_data_.normal_velocity_ +
+             right_initial_data_.normal_velocity_ -
+             f_of_p_left(pressure_star_) + f_of_p_right(pressure_star_));
+}
+
+template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+RiemannProblem<Dim>::get_clone() const {
+  return std::make_unique<RiemannProblem>(*this);
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::RiemannProblem(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg) {}
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID RiemannProblem<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
+void RiemannProblem<Dim>::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
+  p | adiabatic_index_;
+  p | initial_position_;
+  p | left_initial_data_;
+  p | right_initial_data_;
+  p | pressure_star_tol_;
+  p | pressure_star_;
+  p | velocity_star_;
+  p | equation_of_state_;
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::InitialData::InitialData(
+    const double mass_density, const std::array<double, Dim>& velocity,
+    const double pressure, const double adiabatic_index,
+    const size_t propagation_axis)
+    : mass_density_(mass_density), velocity_(velocity), pressure_(pressure) {
+  ASSERT(mass_density_ > 0.0,
+         "The mass density must be positive. Value given: " << mass_density);
+  ASSERT(pressure_ > 0.0,
+         "The pressure must be positive. Value given: " << pressure);
+
+  sound_speed_ = sqrt(adiabatic_index * pressure / mass_density);
+  normal_velocity_ = gsl::at(velocity, propagation_axis);
+  constant_a_ = 2.0 / (adiabatic_index + 1.0) / mass_density;
+  constant_b_ = (adiabatic_index - 1.0) * pressure / (adiabatic_index + 1.0);
+}
+
+template <size_t Dim>
+void RiemannProblem<Dim>::InitialData::pup(PUP::er& p) {
+  p | mass_density_;
+  p | velocity_;
+  p | pressure_;
+  p | sound_speed_;
+  p | normal_velocity_;
+  p | constant_a_;
+  p | constant_b_;
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::Wave::Wave(const InitialData& data,
+                                const double pressure_star,
+                                const double velocity_star,
+                                const double adiabatic_index, const Side& side)
+    : pressure_ratio_(pressure_star / data.pressure_),
+      is_shock_(pressure_ratio_ > 1.0),
+      data_(data),
+      shock_(data, pressure_ratio_, adiabatic_index, side),
+      rarefaction_(data, pressure_ratio_, velocity_star, adiabatic_index,
+                   side) {}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Wave::mass_density(const double x_shifted,
+                                               const double t) const {
+  return (is_shock_ ? shock_.mass_density(x_shifted, t, data_)
+                    : rarefaction_.mass_density(x_shifted, t, data_));
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Wave::normal_velocity(
+    const double x_shifted, const double t, const double velocity_star) const {
+  return (is_shock_ ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
+                    : rarefaction_.normal_velocity(x_shifted, t, data_,
+                                                   velocity_star));
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Wave::pressure(const double x_shifted,
+                                           const double t,
+                                           const double pressure_star) const {
+  return (is_shock_
+              ? shock_.pressure(x_shifted, t, data_, pressure_star)
+              : rarefaction_.pressure(x_shifted, t, data_, pressure_star));
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::Shock::Shock(const InitialData& data,
+                                  const double pressure_ratio,
+                                  const double adiabatic_index,
+                                  const Side& side)
+    : direction_(side == Side::Left ? -1.0 : 1.0) {
+  const double gamma_mm = adiabatic_index - 1.0;
+  const double gamma_pp = adiabatic_index + 1.0;
+  const double gamma_mm_over_gamma_pp = gamma_mm / gamma_pp;
+
+  mass_density_star_ = data.mass_density_ *
+                       (pressure_ratio + gamma_mm_over_gamma_pp) /
+                       (pressure_ratio * gamma_mm_over_gamma_pp + 1.0);
+
+  shock_speed_ =
+      data.normal_velocity_ +
+      direction_ * data.sound_speed_ *
+          sqrt(0.5 * (gamma_pp * pressure_ratio + gamma_mm) / adiabatic_index);
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Shock::mass_density(const double x_shifted,
+                                                const double t,
+                                                const InitialData& data) const {
+  return mass_density_star_ +
+         (data.mass_density_ - mass_density_star_) *
+             step_function(direction_ * (x_shifted - shock_speed_ * t));
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Shock::normal_velocity(
+    const double x_shifted, const double t, const InitialData& data,
+    const double velocity_star) const {
+  return velocity_star +
+         (data.normal_velocity_ - velocity_star) *
+             step_function(direction_ * (x_shifted - shock_speed_ * t));
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Shock::pressure(const double x_shifted,
+                                            const double t,
+                                            const InitialData& data,
+                                            const double pressure_star) const {
+  return pressure_star +
+         (data.pressure_ - pressure_star) *
+             step_function(direction_ * (x_shifted - shock_speed_ * t));
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::Rarefaction::Rarefaction(const InitialData& data,
+                                              const double pressure_ratio,
+                                              const double velocity_star,
+                                              const double adiabatic_index,
+                                              const Side& side)
+    : direction_(side == Side::Left ? -1.0 : 1.0) {
+  gamma_mm_ = adiabatic_index - 1.0;
+  gamma_pp_ = adiabatic_index + 1.0;
+  mass_density_star_ =
+      data.mass_density_ * pow(pressure_ratio, 1.0 / adiabatic_index);
+  sound_speed_star_ =
+      data.sound_speed_ *
+      pow(pressure_ratio, 0.5 * (adiabatic_index - 1.0) / adiabatic_index);
+  head_speed_ = data.normal_velocity_ + direction_ * data.sound_speed_;
+  tail_speed_ = velocity_star + direction_ * sound_speed_star_;
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Rarefaction::mass_density(
+    const double x_shifted, const double t, const InitialData& data) const {
+  const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
+  return direction_ * (x_shifted - tail_speed_ * t) < 0.0
+             ? mass_density_star_
+             : (direction_ * (x_shifted - tail_speed_ * t) >= 0.0 and
+                        direction_ * (x_shifted - head_speed_ * t) < 0.0
+                    ? (data.mass_density_ *
+                       pow((2.0 - direction_ * gamma_mm_ *
+                                      (data.normal_velocity_ - s) /
+                                      data.sound_speed_) /
+                               gamma_pp_,
+                           2.0 / gamma_mm_))
+                    : data.mass_density_);
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Rarefaction::normal_velocity(
+    const double x_shifted, const double t, const InitialData& data,
+    const double velocity_star) const {
+  const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
+  return direction_ * (x_shifted - tail_speed_ * t) < 0.0
+             ? velocity_star
+             : (direction_ * (x_shifted - tail_speed_ * t) >= 0.0 and
+                        direction_ * (x_shifted - head_speed_ * t) < 0.0
+                    ? (2.0 *
+                       (0.5 * gamma_mm_ * data.normal_velocity_ + s -
+                        direction_ * data.sound_speed_) /
+                       gamma_pp_)
+                    : data.normal_velocity_);
+}
+
+template <size_t Dim>
+double RiemannProblem<Dim>::Rarefaction::pressure(
+    const double x_shifted, const double t, const InitialData& data,
+    const double pressure_star) const {
+  const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
+  return direction_ * (x_shifted - tail_speed_ * t) < 0.0
+             ? pressure_star
+             : (direction_ * (x_shifted - tail_speed_ * t) >= 0.0 and
+                        direction_ * (x_shifted - head_speed_ * t) < 0.0
+                    ? (data.pressure_ *
+                       pow((2.0 - direction_ * gamma_mm_ *
+                                      (data.normal_velocity_ - s) /
+                                      data.sound_speed_) /
+                               gamma_pp_,
+                           2.0 * (gamma_mm_ + 1.0) / gamma_mm_))
+                    : data.pressure_);
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+RiemannProblem<Dim>::variables(
+    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
+    const Wave& left, const Wave& right) const {
+  auto mass_density = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
+  const double u_star_times_t = velocity_star_ * t;
+  for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
+    const double x_shifted_s = get_element(x_shifted.get(propagation_axis_), s);
+    get_element(get(mass_density), s) =
+        (x_shifted_s < u_star_times_t ? left.mass_density(x_shifted_s, t)
+                                      : right.mass_density(x_shifted_s, t));
+  }
+  return mass_density;
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>
+RiemannProblem<Dim>::variables(
+    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/,
+    const Wave& left, const Wave& right) const {
+  auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
+      get<0>(x_shifted), 0.0);
+
+  const double u_star_times_t = velocity_star_ * t;
+  for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
+    const double x_shifted_s = get_element(x_shifted.get(propagation_axis_), s);
+
+    size_t index = propagation_axis_ % Dim;
+    get_element(velocity.get(index), s) =
+        (x_shifted_s < u_star_times_t
+             ? left.normal_velocity(x_shifted_s, t, velocity_star_)
+             : right.normal_velocity(x_shifted_s, t, velocity_star_));
+
+    if (Dim > 1) {
+      index = (propagation_axis_ + 1) % Dim;
+      get_element(velocity.get(index), s) =
+          (x_shifted_s < u_star_times_t
+               ? gsl::at(left_initial_data_.velocity_, index)
+               : gsl::at(right_initial_data_.velocity_, index));
+    }
+
+    if (Dim > 2) {
+      index = (propagation_axis_ + 2) % Dim;
+      get_element(velocity.get(index), s) =
+          (x_shifted_s < u_star_times_t
+               ? gsl::at(left_initial_data_.velocity_, index)
+               : gsl::at(right_initial_data_.velocity_, index));
+    }
+  }
+  return velocity;
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
+RiemannProblem<Dim>::variables(
+    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/, const Wave& left,
+    const Wave& right) const {
+  auto pressure = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
+  const double u_star_times_t = velocity_star_ * t;
+  for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
+    const double x_shifted_s = get_element(x_shifted.get(propagation_axis_), s);
+    get_element(get(pressure), s) =
+        (x_shifted_s < u_star_times_t
+             ? left.pressure(x_shifted_s, t, pressure_star_)
+             : right.pressure(x_shifted_s, t, pressure_star_));
+  }
+  return pressure;
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
+RiemannProblem<Dim>::variables(
+    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+    const Wave& left, const Wave& right) const {
+  return equation_of_state_.specific_internal_energy_from_density_and_pressure(
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          x_shifted, t, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{},
+          left, right)),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(x_shifted, t, tmpl::list<hydro::Tags::Pressure<DataType>>{},
+                    left, right)));
+}
+
+template <size_t Dim>
+bool operator==(const RiemannProblem<Dim>& lhs,
+                const RiemannProblem<Dim>& rhs) {
+  return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
+         lhs.initial_position_ == rhs.initial_position_ and
+         lhs.left_initial_data_ == rhs.left_initial_data_ and
+         lhs.right_initial_data_ == rhs.right_initial_data_ and
+         lhs.pressure_star_tol_ == rhs.pressure_star_tol_ and
+         lhs.pressure_star_ == rhs.pressure_star_ and
+         lhs.velocity_star_ == rhs.velocity_star_;
+}
+
+template <size_t Dim>
+bool operator!=(const RiemannProblem<Dim>& lhs,
+                const RiemannProblem<Dim>& rhs) {
+  return not(lhs == rhs);
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
+
+#define INSTANTIATE_CLASS(_, data)                            \
+  template class RiemannProblem<DIM(data)>;                   \
+  template bool operator==(const RiemannProblem<DIM(data)>&,  \
+                           const RiemannProblem<DIM(data)>&); \
+  template bool operator!=(const RiemannProblem<DIM(data)>&,  \
+                           const RiemannProblem<DIM(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
+
+#define INSTANTIATE_SCALARS(_, data)                                         \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                    \
+      RiemannProblem<DIM(data)>::variables(                                  \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
+          const double t, tmpl::list<TAG(data) < DTYPE(data)> >,             \
+          const Wave& left, const Wave& right) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
+                        (hydro::Tags::RestMassDensity, hydro::Tags::Pressure,
+                         hydro::Tags::SpecificInternalEnergy))
+
+#define INSTANTIATE_VELOCITY(_, data)                                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)> >         \
+      RiemannProblem<DIM(data)>::variables(                                  \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
+          const double t, tmpl::list<TAG(data) < DTYPE(data), DIM(data)> >,  \
+          const Wave& left, const Wave& right) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
+                        (hydro::Tags::SpatialVelocity))
+
+#undef DIM
+#undef DTYPE
+#undef TAG
+#undef INSTANTIATE_CLASS
+#undef INSTANTIATE_SCALARS
+#undef INSTANTIATE_VELOCITY
+
+}  // namespace NewtonianMhd::Solutions
