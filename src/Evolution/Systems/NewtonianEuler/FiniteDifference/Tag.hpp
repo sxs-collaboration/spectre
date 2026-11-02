@@ -11,9 +11,8 @@
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Options/String.hpp"
 
-namespace NewtonianEuler::fd {
 /// Option tags for reconstruction
-namespace OptionTags {
+namespace NewtonianEuler::fd::OptionTags {
 /// \brief Option tag for the reconstructor
 template <size_t Dim>
 struct Reconstructor {
@@ -22,10 +21,10 @@ struct Reconstructor {
   static constexpr Options::String help = {"The reconstruction scheme to use."};
   using group = evolution::dg::subcell::OptionTags::SubcellSolverGroup;
 };
-}  // namespace OptionTags
+}  // namespace NewtonianEuler::fd::OptionTags
 
 /// %Tags for reconstruction
-namespace Tags {
+namespace NewtonianEuler::fd::Tags {
 /// \brief Tag for the reconstructor
 template <size_t Dim>
 struct Reconstructor : db::SimpleTag {
@@ -37,5 +36,4 @@ struct Reconstructor : db::SimpleTag {
     return reconstructor->get_clone();
   }
 };
-}  // namespace Tags
-}  // namespace NewtonianEuler::fd
+}  // namespace NewtonianEuler::fd::Tags

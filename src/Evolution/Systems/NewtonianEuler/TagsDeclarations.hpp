@@ -8,8 +8,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 
 /// \cond
-namespace NewtonianEuler {
-namespace Tags {
+namespace NewtonianEuler::Tags {
 
 struct MassDensityCons;
 template <size_t Dim, typename Fr = Frame::Inertial>
@@ -38,6 +37,5 @@ struct SpecificKineticEnergy;
 
 template <size_t Dim>
 struct SourceTerm;
-}  // namespace Tags
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Tags
 /// \endcond

@@ -29,7 +29,6 @@
 #include "Evolution/Systems/NewtonianEuler/Limiters/Flattener.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/KxrcfTci.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/VariablesToLimit.hpp"
-#include "Evolution/Systems/NewtonianEuler/Limiters/Weno.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"

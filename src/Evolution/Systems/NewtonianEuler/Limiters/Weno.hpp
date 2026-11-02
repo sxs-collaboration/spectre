@@ -53,8 +53,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Limiters {
+namespace NewtonianEuler::Limiters {
 
 /// \ingroup LimitersGroup
 /// \brief A compact-stencil WENO limiter for the NewtonianEuler system.
@@ -210,5 +209,4 @@ class Weno {
 template <size_t VolumeDim>
 bool operator!=(const Weno<VolumeDim>& lhs, const Weno<VolumeDim>& rhs);
 
-}  // namespace Limiters
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Limiters

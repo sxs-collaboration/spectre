@@ -13,8 +13,7 @@ struct create_from_yaml;
 }  // namespace Options
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Limiters {
+namespace NewtonianEuler::Limiters {
 /// \ingroup LimitersGroup
 /// \brief Type of NewtonianEuler variables to apply limiter to
 ///
@@ -36,8 +35,7 @@ enum class VariablesToLimit {
 };
 
 std::ostream& operator<<(std::ostream& os, VariablesToLimit vars_to_limit);
-}  // namespace Limiters
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Limiters
 
 template <>
 struct Options::create_from_yaml<NewtonianEuler::Limiters::VariablesToLimit> {

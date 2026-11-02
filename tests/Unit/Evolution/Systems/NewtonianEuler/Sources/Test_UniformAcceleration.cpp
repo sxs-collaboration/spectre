@@ -49,7 +49,8 @@ void test_sources(const std::array<double, Dim>& acceleration_field,
       {"source_momentum_density", "source_energy_density"}, {{{0.0, 3.0}}},
       std::make_tuple(acceleration_field), used_for_size);
 
-  NewtonianEuler::Sources::UniformAcceleration<Dim> source(acceleration_field);
+  const NewtonianEuler::Sources::UniformAcceleration<Dim> source(
+      acceleration_field);
   NewtonianEuler::Sources::UniformAcceleration<Dim> source_to_move(
       acceleration_field);
   test_move_semantics(std::move(source_to_move), source);  // NOLINT

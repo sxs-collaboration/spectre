@@ -10,8 +10,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace NewtonianEuler::subcell {
-namespace detail {
+namespace NewtonianEuler::subcell::detail {
 template <size_t Dim, typename TagsList, typename... ReturnTags,
           typename... ArgumentTags>
 void compute_fluxes_impl(const gsl::not_null<Variables<TagsList>*> vars,
@@ -20,7 +19,9 @@ void compute_fluxes_impl(const gsl::not_null<Variables<TagsList>*> vars,
   NewtonianEuler::ComputeFluxes<Dim>::apply(
       make_not_null(&get<ReturnTags>(*vars))..., get<ArgumentTags>(*vars)...);
 }
-}  // namespace detail
+}  // namespace NewtonianEuler::subcell::detail
+
+namespace NewtonianEuler::subcell {
 
 /*!
  * \brief Helper function that calls `ComputeFluxes` by retrieving the return

@@ -10,8 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace NewtonianEuler {
-namespace detail {
+namespace NewtonianEuler::detail {
 template <size_t Dim>
 void fluxes_impl(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_cons_flux,
@@ -34,7 +33,9 @@ void fluxes_impl(
     energy_density_flux->get(i) = get(*enthalpy_density) * velocity.get(i);
   }
 }
-}  // namespace detail
+}  // namespace NewtonianEuler::detail
+
+namespace NewtonianEuler {
 
 template <size_t Dim>
 void ComputeFluxes<Dim>::apply(

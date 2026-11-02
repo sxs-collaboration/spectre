@@ -7,9 +7,8 @@
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 
-namespace NewtonianEuler {
 /// \brief Boundary conditions for the Newtonian Euler hydrodynamics system
-namespace BoundaryConditions {
+namespace NewtonianEuler::BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
@@ -24,5 +23,4 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 
   void pup(PUP::er& p) override;
 };
-}  // namespace BoundaryConditions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::BoundaryConditions

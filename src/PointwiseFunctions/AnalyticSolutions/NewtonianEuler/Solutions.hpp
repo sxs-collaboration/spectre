@@ -3,10 +3,8 @@
 
 #pragma once
 
-namespace NewtonianEuler {
 /*!
  * \ingroup AnalyticSolutionsGroup
  * \brief Holds classes implementing a solution to the Newtonian Euler system.
  */
-namespace Solutions {}
-}  // namespace NewtonianEuler
+namespace NewtonianEuler::Solutions {}

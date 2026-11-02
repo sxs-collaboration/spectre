@@ -21,9 +21,7 @@
 class DataVector;
 /// \endcond
 
-namespace NewtonianEuler {
-
-namespace detail {
+namespace NewtonianEuler::detail {
 // Compute the flux Jacobian for the NewtonianEuler system
 //
 // The flux Jacobian is \f$n_i A^i = n_i \partial F^i / \partial U\f$.
@@ -37,7 +35,9 @@ Matrix flux_jacobian(const tnsr::I<double, Dim>& velocity,
                      double kappa_over_density, double b_times_theta,
                      double specific_enthalpy,
                      const tnsr::i<double, Dim>& unit_normal);
-}  // namespace detail
+}  // namespace NewtonianEuler::detail
+
+namespace NewtonianEuler {
 
 /// @{
 /*!

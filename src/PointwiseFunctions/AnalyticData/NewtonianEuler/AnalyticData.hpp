@@ -3,10 +3,8 @@
 
 #pragma once
 
-namespace NewtonianEuler {
 /*!
  * \ingroup AnalyticDataGroup
  * \brief Holds classes implementing analytic data for the NewtonianEuler system
  */
-namespace AnalyticData {}
-}  // namespace NewtonianEuler
+namespace NewtonianEuler::AnalyticData {}

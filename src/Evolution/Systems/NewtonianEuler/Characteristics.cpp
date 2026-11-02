@@ -18,8 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace NewtonianEuler {
-namespace detail {
+namespace NewtonianEuler::detail {
 template <>
 Matrix flux_jacobian<1>(const tnsr::I<double, 1>& velocity,
                         const double kappa_over_density,
@@ -112,7 +111,9 @@ Matrix flux_jacobian<3>(const tnsr::I<double, 3>& velocity,
        w * (kappa_over_density + 1.)}};
   return n_x * a_x + n_y * a_y + n_z * a_z;
 }
-}  // namespace detail
+}  // namespace NewtonianEuler::detail
+
+namespace NewtonianEuler {
 
 template <size_t Dim>
 void characteristic_speeds(

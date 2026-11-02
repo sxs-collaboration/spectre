@@ -17,19 +17,18 @@
 class DataVector;
 /// \endcond
 
-namespace NewtonianEuler {
 /// %OptionTags for the conservative formulation of the Newtonian Euler system
-namespace OptionTags {
+namespace NewtonianEuler::OptionTags {
 template <size_t Dim>
 struct SourceTerm {
   using type = std::unique_ptr<NewtonianEuler::Sources::Source<Dim>>;
   static constexpr Options::String help = "The source term to be used.";
   using group = ::evolution::OptionTags::SystemGroup;
 };
-}  // namespace OptionTags
+}  // namespace NewtonianEuler::OptionTags
 
 /// %Tags for the conservative formulation of the Newtonian Euler system
-namespace Tags {
+namespace NewtonianEuler::Tags {
 /// The mass density of the fluid (as a conservative variable).
 struct MassDensityCons : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -117,5 +116,4 @@ struct SourceTerm : db::SimpleTag {
   }
 };
 
-}  // namespace Tags
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Tags

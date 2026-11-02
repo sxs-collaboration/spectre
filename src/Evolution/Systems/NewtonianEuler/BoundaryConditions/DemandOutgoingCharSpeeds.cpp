@@ -93,7 +93,7 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
   }
 
   return std::nullopt;
-}  // namespace NewtonianEuler::BoundaryConditions
+}
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

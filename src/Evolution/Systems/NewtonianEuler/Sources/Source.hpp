@@ -22,11 +22,10 @@ class EquationOfState;
 }  // namespace EquationsOfState
 /// \endcond
 
-namespace NewtonianEuler {
 /*!
  * Holds classes implementing sources for the Newtonian Euler system.
  */
-namespace Sources {
+namespace NewtonianEuler::Sources {
 /*!
  * \brief Source terms base class.
  */
@@ -58,5 +57,4 @@ class Source : public PUP::able {
       const EquationsOfState::EquationOfState<false, 2>& eos,
       const tnsr::I<DataVector, Dim>& coords, double time) const = 0;
 };
-}  // namespace Sources
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Sources

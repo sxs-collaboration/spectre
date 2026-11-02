@@ -58,8 +58,7 @@ struct SizeOfElement;
 }  // namespace domain
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Limiters {
+namespace NewtonianEuler::Limiters {
 
 /// \ingroup LimitersGroup
 /// \brief A minmod-based generalized slope limiter for the NewtonianEuler
@@ -182,5 +181,4 @@ class Minmod {
 template <size_t VolumeDim>
 bool operator!=(const Minmod<VolumeDim>& lhs, const Minmod<VolumeDim>& rhs);
 
-}  // namespace Limiters
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Limiters

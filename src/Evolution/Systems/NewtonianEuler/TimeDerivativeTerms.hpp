@@ -24,8 +24,7 @@ class not_null;
 class DataVector;
 /// \endcond
 
-namespace NewtonianEuler {
-namespace detail {
+namespace NewtonianEuler::detail {
 template <size_t Dim>
 void fluxes_impl(
     gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_cons_flux,
@@ -36,7 +35,9 @@ void fluxes_impl(
     const Scalar<DataVector>& energy_density,
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& pressure);
-}  // namespace detail
+}  // namespace NewtonianEuler::detail
+
+namespace NewtonianEuler {
 
 /*!
  * \brief Compute the time derivative of the conserved variables for the
