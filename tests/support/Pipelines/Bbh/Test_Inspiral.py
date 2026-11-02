@@ -15,6 +15,7 @@ from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import (
     INSPIRAL_INPUT_FILE_TEMPLATE,
     inspiral_parameters,
+    inspiral_parameters_spec,
     start_inspiral_command,
 )
 from spectre.support.Logging import configure_logging
@@ -146,6 +147,33 @@ class TestInspiral(unittest.TestCase):
         )
         self.assertEqual(params["AhABMinResolutionL"], 6)
         self.assertEqual(params["AhABMaxPileUpModes"], 4)
+
+    def test_inspiral_parameters_spec(self):
+        id_params = {
+            "ID_MA": 0.6,
+            "ID_MB": 0.4,
+            "ID_chiA": [0.0, 0.0, 0.0],
+            "ID_chiAMagnitude": 0.0,
+            "ID_chiB": [0.0, 0.0, 0.0],
+            "ID_chiBMagnitude": 0.0,
+            "ID_d": 20.0,
+            "ID_rExcA": 0.8,
+            "ID_rExcB": 0.7,
+            "ID_cA": [8.0, 0.0, 0.0],
+            "ID_cB": [-12.0, 0.0, 0.0],
+            "ID_Omega0": 0.01,
+            "ID_adot0": -1.0e-5,
+        }
+        for cylindrical_domain in [False, True]:
+            with self.subTest(cylindrical_domain=cylindrical_domain):
+                params = inspiral_parameters_spec(
+                    id_params=id_params,
+                    id_run_dir=self.id_run_dir,
+                    cylindrical_domain=cylindrical_domain,
+                )
+                self.assertEqual(
+                    params["UseCylindricalDomain"], cylindrical_domain
+                )
 
     def test_cli(self):
         common_args = [

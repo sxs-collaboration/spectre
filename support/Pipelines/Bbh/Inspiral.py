@@ -401,6 +401,7 @@ def inspiral_parameters_spec(
         # Initial data files
         "IdFromEvolution": 0,
         "SpecDataDirectory": str(Path(id_run_dir).resolve()),
+        "UseCylindricalDomain": cylindrical_domain,
         # Domain geometry
         # SpEC excision in ID_Params.perl is 0.97 * apparent horizon radius.
         # Using the exact same excision from ID_Params.perl works for equal
