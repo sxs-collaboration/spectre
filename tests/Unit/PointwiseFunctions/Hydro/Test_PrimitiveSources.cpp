@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/multiprecision/cpp_bin_float.hpp>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -23,25 +22,41 @@ const Vector zero{{0., 0., 0.}};
 
 // A parallel magnetic field has exactly zero Poynting momentum. This remains
 // true for received binary64 speeds near 0.499, not only the exact-W case 0.5.
-// Form the independent fluid reference with 512-bit binary arithmetic before
-// narrowing once, rather than using the kernel's prepared Lorentz factor.
+// References are rho*s/(1-3*s*s), evaluated independently from the received
+// binary64 inputs in C++23 with 512-bit binary arithmetic and rounded once.
+// Hexadecimal literals preserve those reference bits without instantiating
+// Boost's float-conversion templates in the unit test's static analysis.
 void test_parallel_field_cancellation() {
-  using High =
-      boost::multiprecision::number<boost::multiprecision::cpp_bin_float<
-          512, boost::multiprecision::digit_base_2>>;
   const auto relative =
       Approx::custom()
           .epsilon(128. * std::numeric_limits<double>::epsilon())
           .scale(0.);
-  std::vector<double> speeds{}, fields{}, densities{}, expected{};
-  for (const double speed : {-0.499, 0., std::nextafter(0.499, 0.), 0.499,
-                             std::nextafter(0.499, 1.), 0.5}) {
+  std::vector<double> speeds{};
+  std::vector<double> fields{};
+  std::vector<double> densities{};
+  std::vector<double> expected{};
+  const std::array<double, 6> test_speeds{{-0.499, 0.,
+                                           std::nextafter(0.499, 0.), 0.499,
+                                           std::nextafter(0.499, 1.), 0.5}};
+  const std::array<double, 3> test_densities{{0., 1.e-20, 1.}};
+  const std::array<Vector, 6> reference_momenta{{
+      {{-0x0p+0, -0x1.7491414188a67p-66, -0x1.f8ec48a1cb3e4p+0}},
+      {{0x0p+0, 0x0p+0, 0x0p+0}},
+      {{0x0p+0, 0x1.7491414188a62p-66, 0x1.f8ec48a1cb3ddp+0}},
+      {{0x0p+0, 0x1.7491414188a67p-66, 0x1.f8ec48a1cb3e4p+0}},
+      {{0x0p+0, 0x1.7491414188a6cp-66, 0x1.f8ec48a1cb3ebp+0}},
+      {{0x0p+0, 0x1.79ca10c924223p-66, 0x1p+1}},
+  }};
+  for (size_t speed_index = 0; speed_index < test_speeds.size();
+       ++speed_index) {
+    const double speed = gsl::at(test_speeds, speed_index);
     for (const double field : {0., 1., std::ldexp(1., 30)}) {
-      for (const double rho : {0., 1.e-20, 1.}) {
+      for (size_t density_index = 0; density_index < test_densities.size();
+           ++density_index) {
+        const double rho = gsl::at(test_densities, density_index);
         CAPTURE(speed, field, rho);
-        const High v{speed};
-        const High momentum = High{rho} * v / (1 - 3 * v * v);
-        const double reference = static_cast<double>(momentum);
+        const double reference =
+            gsl::at(gsl::at(reference_momenta, speed_index), density_index);
         const Vector velocity{{speed, speed, speed}};
         const Vector magnetic_field{{field, field, field}};
         const auto result = sources::joint_sources(rho, 0., 0., velocity,
@@ -59,7 +74,9 @@ void test_parallel_field_cancellation() {
   // Exercise all states in one heterogeneous batch, including empty matter,
   // tiny fluid momentum, both signs of velocity and different field strengths.
   const size_t n = speeds.size();
-  DataVector rho(n), speed(n), field(n);
+  DataVector rho(n);
+  DataVector speed(n);
+  DataVector field(n);
   for (size_t k = 0; k < n; ++k) {
     rho[k] = densities[k];
     speed[k] = speeds[k];
