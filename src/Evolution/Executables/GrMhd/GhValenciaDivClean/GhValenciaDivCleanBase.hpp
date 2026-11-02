@@ -43,6 +43,7 @@
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
 #include "Evolution/DgSubcell/GetActiveTag.hpp"
+#include "Evolution/DgSubcell/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
@@ -856,14 +857,19 @@ struct GhValenciaDivCleanTemplateBase<
                           dg_step_actions>;
 
   using initialization_actions = tmpl::list<
-      Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, TimeStepper,
-                                       use_control_systems, true>,
-          evolution::dg::Initialization::Domain<derived_metavars,
-                                                use_control_systems>>,
+      Initialization::Actions::InitializeItems<tmpl::flatten<
+          tmpl::list<Initialization::TimeStepping<derived_metavars, TimeStepper,
+                                                  use_control_systems, true>,
+                     evolution::dg::Initialization::Domain<
+                         derived_metavars, use_control_systems>>>>,
       Initialization::Actions::ConservativeSystem<system>,
-      Initialization::Actions::InitializeItems<
-          Initialization::TimeStepperHistory<system>>,
+      Initialization::Actions::InitializeItems<tmpl::flatten<tmpl::list<
+          Initialization::TimeStepperHistory<system>,
+          tmpl::conditional_t<use_dg_subcell,
+                              evolution::dg::subcell::GhostZoneInverseJacobian<
+                                  volume_dim, grmhd::GhValenciaDivClean::fd::
+                                                  Tags::Reconstructor<system>>,
+                              tmpl::list<>>>>>,
       // This conditional is untested and probably doesn't work if
       // `use_dg_subcell` is `false`
       tmpl::conditional_t<

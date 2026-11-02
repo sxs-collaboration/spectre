@@ -5,8 +5,11 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <optional>
 #include <type_traits>
+#include <vector>
 
 #include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -28,11 +31,14 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/ReconstructionOrder.hpp"
+#include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -51,6 +57,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "NumericalAlgorithms/FiniteDifference/HighOrderFluxCorrection.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
@@ -62,6 +69,7 @@
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -99,7 +107,12 @@ struct ComputeTimeDerivImpl<
           boundary_corrections,
       const Variables<
           db::wrap_tags_in<::Tags::deriv, typename System::gradients_tags,
-                           tmpl::size_t<3>, Frame::Inertial>>& gh_derivs) {
+                           tmpl::size_t<3>, Frame::Inertial>>& gh_derivs,
+      const std::array<tnsr::i<DataVector, 3, Frame::Inertial>, 3>& conormal,
+      const std::array<DirectionMap<3, tnsr::i<DataVector, 3, Frame::Inertial>>,
+                       3>& ghost_cells_conormal,
+      const std::optional<std::array<gsl::span<std::uint8_t>, 3>>&
+          reconstruction_order) {
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box);
     const size_t number_of_points = subcell_mesh.number_of_grid_points();
@@ -199,7 +212,6 @@ struct ComputeTimeDerivImpl<
           sqrt(
               get(get<gr::Tags::DetSpatialMetric<DataVector>>(*temp_tags_ptr)));
     }
-
     // Add source terms from moving mesh
     if (mesh_velocity_dg.has_value()) {
       tmpl::for_each<tmpl::list<GhDtTags...>>([&dt_vars_ptr,
@@ -413,9 +425,32 @@ struct ComputeTimeDerivImpl<
         get<Tags::TraceReversedStressEnergy>(temp_tags),
         get<gr::Tags::Lapse<DataVector>>(temp_tags));
 
+    const auto fd_derivative_order =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(*box)
+            .finite_difference_derivative_order();
+    using grmhd_evolved_vars_tag =
+        typename grmhd::ValenciaDivClean::System::variables_tag;
+    using grmhd_evolved_vars_tags = typename grmhd_evolved_vars_tag::tags_list;
+
+    std::optional<std::array<Variables<grmhd_evolved_vars_tags>, 3>>
+        high_order_corrections{};
+    ::fd::cartesian_high_order_flux_corrections(
+        make_not_null(&high_order_corrections),
+        db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
+            grmhd_evolved_vars_tags, 3>>(*box),
+        boundary_corrections, fd_derivative_order,
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
+            *box),
+        subcell_mesh,
+        db::get<fd::Tags::Reconstructor<System>>(*box).ghost_zone_size(),
+        reconstruction_order.value_or(std::array<gsl::span<std::uint8_t>, 3>{}),
+        false, conormal, ghost_cells_conormal);
+
     for (size_t dim = 0; dim < comp_dim; ++dim) {
       const auto& boundary_correction_in_axis =
-          gsl::at(boundary_corrections, dim);
+          high_order_corrections.has_value()
+              ? gsl::at(high_order_corrections.value(), dim)
+              : gsl::at(boundary_corrections, dim);
       const double inverse_delta = gsl::at(one_over_delta_xi, dim);
       EXPAND_PACK_LEFT_TO_RIGHT([&dt_vars_ptr, &boundary_correction_in_axis,
                                  &cell_centered_det_inv_jacobian, dim,
@@ -518,6 +553,17 @@ struct TimeDerivative {
            "ElementID "
                << element.id());
 
+    // Arrays representing the conormals used for
+    // `cartesian_high_order_flux_corrections`. These are not normalized
+    // by the magnitude of the conormals, but they do include a factor of the
+    // determinant of the Jacobian, i.e. \tilde{n}_\hat{i} = J n_\hat{i}
+    std::array<tnsr::i<DataVector, 3, Frame::Inertial>, 3> conormal;
+    const auto ghost_zone_inv_jac =
+        db::get<evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>>(
+            *box);
+    std::array<DirectionMap<3, tnsr::i<DataVector, 3, Frame::Inertial>>, 3>
+        ghost_cells_conormal;
+
     const fd::Reconstructor<System>& recons =
         db::get<fd::Tags::Reconstructor<System>>(*box);
     // If the element has external boundaries and subcell is enabled for
@@ -527,27 +573,49 @@ struct TimeDerivative {
         fd::BoundaryConditionGhostData<System>::apply(box, element, recons);
       }
     }
+    const auto fd_derivative_order =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(*box)
+            .finite_difference_derivative_order();
+    std::optional<std::array<std::vector<std::uint8_t>, 3>>
+        reconstruction_order_data{};
     std::optional<std::array<gsl::span<std::uint8_t>, 3>>
         reconstruction_order{};
+    if (static_cast<int>(fd_derivative_order) < 0) {
+      reconstruction_order_data = make_array<3>(std::vector<std::uint8_t>(
+          (subcell_mesh.extents(0) + 2) * subcell_mesh.extents(1) *
+              subcell_mesh.extents(2),
+          std::numeric_limits<std::uint8_t>::max()));
+      reconstruction_order = std::array<gsl::span<std::uint8_t>, 3>{};
+      for (size_t i = 0; i < 3; ++i) {
+        gsl::at(reconstruction_order.value(), i) = gsl::make_span(
+            gsl::at(reconstruction_order_data.value(), i).data(),
+            gsl::at(reconstruction_order_data.value(), i).size());
+      }
+    }
 
     if (const auto& filter_options =
             db::get<grmhd::GhValenciaDivClean::fd::Tags::FilterOptions>(*box);
         filter_options.spacetime_dissipation.has_value()) {
       db::mutate<evolved_vars_tag>(
-          [&filter_options, &recons, &subcell_mesh](const auto evolved_vars_ptr,
-                                                    const auto& ghost_data) {
+          [&filter_options, &recons, &subcell_mesh](
+              const auto evolved_vars_ptr, const auto& ghost_data,
+              const auto& compute_cell_centered_flux) {
             typename evolved_vars_tag::type filtered_vars = *evolved_vars_ptr;
             // $(recons.ghost_zone_size() - 1) * 2 + 1$ => always use highest
             // order dissipation filter possible.
-            grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter(
-                make_not_null(&filtered_vars), *evolved_vars_ptr, ghost_data,
-                subcell_mesh, 2 * recons.ghost_zone_size(),
-                filter_options.spacetime_dissipation.value());
+            grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter<
+                System>(make_not_null(&filtered_vars), *evolved_vars_ptr,
+                        ghost_data, subcell_mesh, 2 * recons.ghost_zone_size(),
+                        filter_options.spacetime_dissipation.value(),
+                        compute_cell_centered_flux);
             *evolved_vars_ptr = filtered_vars;
           },
           box,
           db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
-              *box));
+              *box),
+          db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
+              typename System::flux_variables, 3>>(*box)
+              .has_value());
     }
 
     // Velocity of the moving mesh on the dg grid, if applicable.
@@ -579,6 +647,9 @@ struct TimeDerivative {
         make_not_null(&cell_centered_gh_derivs), evolved_vars,
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
+        db::get<evolution::dg::subcell::Tags::CellCenteredFlux<
+            typename System::flux_variables, 3>>(*box)
+            .has_value(),
         recons.ghost_zone_size() * 2, subcell_mesh,
         cell_centered_logical_to_inertial_inv_jacobian, inertial_coords);
 
@@ -734,33 +805,85 @@ struct TimeDerivative {
             // The unnormalized normal vector is
             // n_j = d \xi^{\hat i}/dx^j
             // with "i" the current face.
-            tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal{
+            tnsr::i<DataVector, 3, Frame::Inertial> lower_outward_conormal_face{
                 reconstructed_num_pts, 0.0};
+            tnsr::i<DataVector, 3, Frame::Inertial> conormal_in_dir{
+                subcell_mesh.extents().product(), 0.0};
             for (size_t j = 0; j < 3; j++) {
-              lower_outward_conormal.get(j) =
+              conormal_in_dir.get(j) = evolution::dg::subcell::fd::project(
+                  inv_jacobian_dg.get(i, j), dg_mesh, subcell_mesh.extents(),
+                  (i == 0) != (j == 0) ? Spectral::Parity::Odd
+                                       : Spectral::Parity::Even);
+              lower_outward_conormal_face.get(j) =
                   evolution::dg::subcell::fd::project_to_faces(
                       inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i,
                       (i == 0) != (j == 0) ? Spectral::Parity::Odd
                                            : Spectral::Parity::Even);
             }
+            const auto det_inv_jacobian = evolution::dg::subcell::fd::project(
+                get(det_inv_jacobian_dg), dg_mesh, subcell_mesh.extents(),
+                Spectral::Parity::Even);
             const auto det_inv_jacobian_face =
                 evolution::dg::subcell::fd::project_to_faces(
                     get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i,
                     Spectral::Parity::Even);
 
-            const Scalar<DataVector> normalization{sqrt(get(
-                dot_product(lower_outward_conormal, lower_outward_conormal,
-                            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
-                                vars_upper_face))))};
+            const Scalar<DataVector> normalization{sqrt(get(dot_product(
+                lower_outward_conormal_face, lower_outward_conormal_face,
+                get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+                    vars_upper_face))))};
             for (size_t j = 0; j < 3; j++) {
-              lower_outward_conormal.get(j) =
-                  lower_outward_conormal.get(j) / get(normalization);
+              lower_outward_conormal_face.get(j) =
+                  lower_outward_conormal_face.get(j) / get(normalization);
             }
 
-            tnsr::i<DataVector, 3, Frame::Inertial> upper_outward_conormal{
+            tnsr::i<DataVector, 3, Frame::Inertial> upper_outward_conormal_face{
                 reconstructed_num_pts, 0.0};
             for (size_t j = 0; j < 3; j++) {
-              upper_outward_conormal.get(j) = -lower_outward_conormal.get(j);
+              upper_outward_conormal_face.get(j) =
+                  -lower_outward_conormal_face.get(j);
+              gsl::at(conormal, i).get(j) =
+                  conormal_in_dir.get(j) / det_inv_jacobian;
+            }
+
+            for (const auto side : {Side::Lower, Side::Upper}) {
+              const Direction<3> direction{i, side};
+              const auto& ghost_cells_grid_coords = get<
+                  evolution::dg::subcell::Tags::Coordinates<3, Frame::Grid>>(
+                  ghost_zone_inv_jac.at(direction));
+              const auto& ghost_cells_grid_inv_jacobian =
+                  get<evolution::dg::subcell::fd::Tags::
+                          InverseJacobianLogicalToGrid<3>>(
+                      ghost_zone_inv_jac.at(direction));
+              const auto& ghost_cells_inertial_inv_jacobian =
+                  db::get<domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>>(*box)
+                      .inv_jacobian(
+                          ghost_cells_grid_coords, db::get<::Tags::Time>(*box),
+                          db::get<::domain::Tags::FunctionsOfTime>(*box));
+              auto total_inv_jacobian =
+                  make_with_value<tnsr::Ij<DataVector, 3>>(
+                      ghost_cells_inertial_inv_jacobian, 0.0);
+              for (size_t m = 0; m < 3; m++) {
+                for (size_t n = 0; n < 3; n++) {
+                  for (size_t j = 0; j < 3; j++) {
+                    total_inv_jacobian.get(m, n) +=
+                        ghost_cells_grid_inv_jacobian.get(m, j) *
+                        ghost_cells_inertial_inv_jacobian.get(j, n);
+                  }
+                }
+              }
+              const auto ghost_cells_det_inv_jacobian =
+                  determinant(total_inv_jacobian);
+              tnsr::i<DataVector, 3, Frame::Inertial> tmp_ghost_cells_conormal{
+                  ghost_cells_grid_coords.size()};
+              for (size_t j = 0; j < 3; j++) {
+                tmp_ghost_cells_conormal.get(j) =
+                    total_inv_jacobian.get(i, j) /
+                    get(ghost_cells_det_inv_jacobian);
+              }
+              gsl::at(ghost_cells_conormal, i)
+                  .insert_or_assign(direction, tmp_ghost_cells_conormal);
             }
             // Note: we probably should compute the normal vector in addition to
             // the co-vector. Not a huge issue since we'll get an FPE right now
@@ -774,15 +897,17 @@ struct TimeDerivative {
             evolution::dg::Actions::detail::dg_package_data<System>(
                 make_not_null(&upper_packaged_data),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                vars_upper_face, upper_outward_conormal, mesh_velocity_on_face,
-                *box, typename DerivedCorrection::dg_package_data_volume_tags{},
+                vars_upper_face, upper_outward_conormal_face,
+                mesh_velocity_on_face, *box,
+                typename DerivedCorrection::dg_package_data_volume_tags{},
                 dg_package_data_projected_tags{});
 
             evolution::dg::Actions::detail::dg_package_data<System>(
                 make_not_null(&lower_packaged_data),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                vars_lower_face, lower_outward_conormal, mesh_velocity_on_face,
-                *box, typename DerivedCorrection::dg_package_data_volume_tags{},
+                vars_lower_face, lower_outward_conormal_face,
+                mesh_velocity_on_face, *box,
+                typename DerivedCorrection::dg_package_data_volume_tags{},
                 dg_package_data_projected_tags{});
 
             // Now need to check if any of our neighbors are doing DG,
@@ -839,7 +964,8 @@ struct TimeDerivative {
                                    DetInverseJacobianLogicalToInertial>(*box),
                        cell_centered_logical_to_inertial_inv_jacobian,
                        one_over_delta_xi, boundary_corrections,
-                       cell_centered_gh_derivs);
+                       cell_centered_gh_derivs, conormal, ghost_cells_conormal,
+                       reconstruction_order);
     evolution::dg::subcell::store_reconstruction_order_in_databox(
         box, reconstruction_order);
   }

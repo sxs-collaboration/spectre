@@ -13,6 +13,9 @@
 #include <utility>
 
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
+#include "DataStructures/SliceVariables.hpp"
+#include "DataStructures/TaggedContainers.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -45,6 +48,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ConstraintPreservingFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -52,6 +56,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Framework/Pypp.hpp"
@@ -91,9 +96,12 @@ struct EvolutionMetaVars {
 using SolutionForTest =
     gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>;
 
+template <typename T>
+using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+
 template <typename System, typename BoundaryConditionType>
 void test(const BoundaryConditionType& boundary_condition,
-          const SolutionForTest& solution) {
+          const bool set_fluxes, const SolutionForTest& solution) {
   CAPTURE(pretty_type::name<BoundaryConditionType>());
   const size_t num_dg_pts = 4;
 
@@ -167,6 +175,8 @@ void test(const BoundaryConditionType& boundary_condition,
   using Phi = gh::Tags::Phi<DataVector, 3>;
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using Temperature = hydro::Tags::Temperature<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
@@ -174,6 +184,17 @@ void test(const BoundaryConditionType& boundary_condition,
   using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
   using DivergenceCleaningField =
       hydro::Tags::DivergenceCleaningField<DataVector>;
+
+  Variables<tmpl::append<typename System::spacetime_variables_tag::tags_list,
+                         typename System::primitive_variables_tag::tags_list>>
+      volume_vars{subcell_mesh.number_of_grid_points()};
+  volume_vars.assign_subset(solution.variables(
+      subcell_inertial_coords, time,
+      tmpl::append<typename System::spacetime_variables_tag::tags_list,
+                   typename System::primitive_variables_tag::tags_list>{}));
+  for (size_t i = 0; i < 3; ++i) {
+    get<gr::Tags::Shift<DataVector, 3>>(volume_vars).get(i) = -2.0;
+  }
 
   std::optional<tnsr::I<DataVector, 3>> volume_mesh_velocity{};
 
@@ -223,6 +244,9 @@ void test(const BoundaryConditionType& boundary_condition,
   get(get<RestMassDensity>(volume_prim_vars)) = 1.0;
   get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
   get(get<Temperature>(volume_prim_vars)) = 0.5;
+  get(get<SpecificInternalEnergy>(volume_prim_vars)) =
+      get(solution.equation_of_state().specific_internal_energy_from_density(
+          get<RestMassDensity>(volume_prim_vars)));
   get(get<Pressure>(volume_prim_vars)) =
       get(solution.equation_of_state().pressure_from_density(
           get<RestMassDensity>(volume_prim_vars)));
@@ -244,7 +268,19 @@ void test(const BoundaryConditionType& boundary_condition,
   // lambda for every type in the factory list, so the tag must be present.
   typename System::variables_tag::type volume_evolved_vars{
       subcell_mesh.number_of_grid_points()};
+  volume_evolved_vars.assign_subset(solution.variables(
+      subcell_inertial_coords, time, tmpl::list<SpacetimeMetric, Pi, Phi>{}));
 
+  using cons_tags = typename ValenciaDivClean::System::variables_tag::tags_list;
+  using CellCenteredFluxesTag = evolution::dg::subcell::Tags::CellCenteredFlux<
+      typename System::flux_variables, 3>;
+  typename CellCenteredFluxesTag::type cell_centered_fluxes{};
+  if (set_fluxes) {
+    cell_centered_fluxes = typename CellCenteredFluxesTag::type::value_type{
+        subcell_mesh.number_of_grid_points()};
+    grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
+        make_not_null(&cell_centered_fluxes.value()), volume_vars);
+  }
   // create a box for test
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<EvolutionMetaVars<System>>,
@@ -259,6 +295,7 @@ void test(const BoundaryConditionType& boundary_condition,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
       typename System::variables_tag, typename System::primitive_variables_tag,
+      CellCenteredFluxesTag,
       ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>,
       hydro::Tags::GrmhdEquationOfState>>(
       EvolutionMetaVars<System>{}, std::move(domain),
@@ -274,8 +311,8 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_evolved_vars, volume_prim_vars, variable_fixer,
-      solution.equation_of_state().promote_to_3d_eos());
+      volume_evolved_vars, volume_prim_vars, cell_centered_fluxes,
+      variable_fixer, solution.equation_of_state().promote_to_3d_eos());
 
   // compute FD ghost data and retrieve the result
   fd::BoundaryConditionGhostData<System>::apply(
@@ -299,7 +336,71 @@ void test(const BoundaryConditionType& boundary_condition,
   const size_t num_face_pts{
       subcell_mesh.extents().slice_away(direction.dimension()).product()};
   Variables<prims_to_reconstruct> fd_ghost_vars{ghost_zone_size * num_face_pts};
-  std::copy(fd_ghost_data.begin(), fd_ghost_data.end(), fd_ghost_vars.data());
+  std::copy(fd_ghost_data.begin(),
+            std::next(fd_ghost_data.begin(),
+                      static_cast<std::ptrdiff_t>(fd_ghost_vars.size())),
+            fd_ghost_vars.data());
+  using VarsFluxes =
+      Variables<db::wrap_tags_in<Flux, typename System::flux_variables>>;
+  VarsFluxes fd_ghost_fluxes{ghost_zone_size * num_face_pts, 0.0};
+  if (set_fluxes) {
+    REQUIRE(fd_ghost_data.size() ==
+            (fd_ghost_vars.size() + fd_ghost_fluxes.size()));
+    std::copy(std::next(fd_ghost_data.begin(),
+                        static_cast<std::ptrdiff_t>(fd_ghost_vars.size())),
+              fd_ghost_data.end(), fd_ghost_fluxes.data());
+  } else {
+    REQUIRE(fd_ghost_data.size() == fd_ghost_vars.size());
+  }
+
+  const auto check_fluxes =
+      [&fd_ghost_fluxes](
+          const auto& rest_mass_density, const auto& electron_fraction,
+          const auto& specific_internal_energy, const auto& local_temperature,
+          const auto& spatial_velocity, const auto& lorentz_factor,
+          const auto& magnetic_field, const auto& div_cleaning_field,
+          const auto& local_pressure, const auto& spatial_metric,
+          const auto& inv_spatial_metric, const auto& sqrt_det_spatial_metric,
+          const auto& local_lapse, const auto& local_shift) {
+        using fluxes_tags =
+            tmpl::push_back<typename System::primitive_variables_tag::tags_list,
+                            gr::Tags::SpatialMetric<DataVector, 3>,
+                            gr::Tags::Lapse<DataVector>,
+                            gr::Tags::Shift<DataVector, 3>,
+                            gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                            gr::Tags::InverseSpatialMetric<DataVector, 3>>;
+        Variables<fluxes_tags> boundary_data{get(rest_mass_density).size()};
+        get<RestMassDensity>(boundary_data) = rest_mass_density;
+        get<ElectronFraction>(boundary_data) = electron_fraction;
+        get<SpecificInternalEnergy>(boundary_data) = specific_internal_energy;
+        get<Temperature>(boundary_data) = local_temperature;
+        get<SpatialVelocity>(boundary_data) = spatial_velocity;
+        get<LorentzFactor>(boundary_data) = lorentz_factor;
+        get<MagneticField>(boundary_data) = magnetic_field;
+        get<DivergenceCleaningField>(boundary_data) = div_cleaning_field;
+        get<Pressure>(boundary_data) = local_pressure;
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(boundary_data) =
+            spatial_metric;
+        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_data) =
+            inv_spatial_metric;
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(boundary_data) =
+            sqrt_det_spatial_metric;
+        get<gr::Tags::Lapse<DataVector>>(boundary_data) = local_lapse;
+        get<gr::Tags::Shift<DataVector, 3>>(boundary_data) = local_shift;
+
+        typename evolution::dg::subcell::Tags::CellCenteredFlux<
+            typename System::flux_variables, 3>::type::value_type
+            expected_neighbor_fluxes{get(rest_mass_density).size()};
+        grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
+            make_not_null(&expected_neighbor_fluxes), boundary_data);
+        tmpl::for_each<cons_tags>([&fd_ghost_fluxes,
+                                   &expected_neighbor_fluxes](auto cons_tag_v) {
+          using tag = Flux<tmpl::type_from<std::decay_t<decltype(cons_tag_v)>>>;
+          CAPTURE(pretty_type::get_name<tag>());
+          CHECK_ITERABLE_APPROX(get<tag>(fd_ghost_fluxes),
+                                get<tag>(expected_neighbor_fluxes));
+        });
+      };
 
   //
   // now test each boundary conditions
@@ -349,6 +450,125 @@ void test(const BoundaryConditionType& boundary_condition,
                           expected_spacetime_metric);
     CHECK_ITERABLE_APPROX(get<Pi>(fd_ghost_vars), expected_pi);
     CHECK_ITERABLE_APPROX(get<Phi>(fd_ghost_vars), expected_phi);
+    if (set_fluxes) {
+      const auto ghost_state = solution.variables(
+          ghost_inertial_coords, time,
+          tmpl::list<SpecificInternalEnergy, Pressure,
+                     gr::Tags::SpatialMetric<DataVector, 3>,
+                     gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                     gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                     gr::Tags::Lapse<DataVector>,
+                     gr::Tags::Shift<DataVector, 3>>{});
+      check_fluxes(
+          expected_rest_mass_density, expected_electron_fraction,
+          get<SpecificInternalEnergy>(ghost_state), expected_Temperature,
+          expected_spatial_velocity, expected_lorentz_factor,
+          expected_magnetic_field, expected_div_cleaning_field,
+          get<Pressure>(ghost_state),
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(ghost_state),
+          get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(ghost_state),
+          get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(ghost_state),
+          get<gr::Tags::Lapse<DataVector>>(ghost_state),
+          get<gr::Tags::Shift<DataVector, 3>>(ghost_state));
+    }
+  }
+
+  if (typeid(BoundaryConditionType) ==
+      typeid(BoundaryConditions::DirichletFreeOutflow<System>)) {
+    const size_t num_ghost_pts = ghost_zone_size * num_face_pts;
+
+    const auto ghost_logical_coords =
+        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
+            subcell_mesh, ghost_zone_size, direction);
+    const auto ghost_inertial_coords = (*grid_to_inertial_map)(
+        logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
+    const auto [expected_spacetime_metric, expected_pi, expected_phi] =
+        solution.variables(ghost_inertial_coords, time,
+                           tmpl::list<SpacetimeMetric, Pi, Phi>{});
+    CHECK_ITERABLE_APPROX(get<SpacetimeMetric>(fd_ghost_vars),
+                          expected_spacetime_metric);
+    CHECK_ITERABLE_APPROX(get<Pi>(fd_ghost_vars), expected_pi);
+    CHECK_ITERABLE_APPROX(get<Phi>(fd_ghost_vars), expected_phi);
+
+    Variables<prims_to_reconstruct> expected_ghost_vars{num_ghost_pts};
+    get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
+    get(get<ElectronFraction>(expected_ghost_vars)) = 0.1;
+    get(get<Temperature>(expected_ghost_vars)) = 0.5;
+    get(get<DivergenceCleaningField>(expected_ghost_vars)) = 0.0;
+    for (size_t i = 0; i < 3; ++i) {
+      get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) = 0.2;
+      get<MagneticField>(expected_ghost_vars).get(i) = 0.5;
+    }
+    tmpl::for_each<tmpl::list<RestMassDensity, ElectronFraction, Temperature,
+                              LorentzFactorTimesSpatialVelocity, MagneticField,
+                              DivergenceCleaningField>>(
+        [&expected_ghost_vars, &fd_ghost_vars](auto tag_v) {
+          using tag = tmpl::type_from<decltype(tag_v)>;
+          CAPTURE(pretty_type::get_name<tag>());
+          CHECK_ITERABLE_APPROX(get<tag>(fd_ghost_vars),
+                                get<tag>(expected_ghost_vars));
+        });
+
+    if (set_fluxes) {
+      using metric_tags =
+          tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                     gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                     gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                     gr::Tags::Lapse<DataVector>,
+                     gr::Tags::Shift<DataVector, 3>>;
+      Variables<metric_tags> volume_metric{
+          subcell_mesh.number_of_grid_points()};
+      volume_metric.assign_subset(
+          solution.variables(subcell_inertial_coords, time, metric_tags{}));
+      const auto outermost_metric = data_on_slice(
+          volume_metric, subcell_mesh.extents(), direction.dimension(),
+          subcell_mesh.extents(direction.dimension()) - 1);
+
+      Variables<metric_tags> ghost_metric{num_ghost_pts};
+      tmpl::for_each<metric_tags>([&ghost_metric, &outermost_metric,
+                                   &ghost_zone_size,
+                                   &num_face_pts](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        for (size_t comp = 0; comp < get<tag>(ghost_metric).size(); ++comp) {
+          for (size_t face = 0; face < num_face_pts; ++face) {
+            for (size_t i_ghost = 0; i_ghost < ghost_zone_size; ++i_ghost) {
+              get<tag>(ghost_metric)[comp][i_ghost + ghost_zone_size * face] =
+                  get<tag>(outermost_metric)[comp][face];
+            }
+          }
+        }
+      });
+
+      const auto& expected_lorentz_times_velocity =
+          get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars);
+      const Scalar<DataVector> expected_lorentz_factor{sqrt(
+          1.0 +
+          get(dot_product(
+              expected_lorentz_times_velocity, expected_lorentz_times_velocity,
+              get<gr::Tags::SpatialMetric<DataVector, 3>>(ghost_metric))))};
+      const auto expected_spatial_velocity = tenex::evaluate<ti::I>(
+          expected_lorentz_times_velocity(ti::I) / expected_lorentz_factor());
+
+      const auto expected_pressure =
+          solution.equation_of_state().pressure_from_density(
+              get<RestMassDensity>(expected_ghost_vars));
+      const auto expected_specific_internal_energy =
+          solution.equation_of_state().specific_internal_energy_from_density(
+              get<RestMassDensity>(expected_ghost_vars));
+
+      check_fluxes(
+          get<RestMassDensity>(expected_ghost_vars),
+          get<ElectronFraction>(expected_ghost_vars),
+          expected_specific_internal_energy,
+          get<Temperature>(expected_ghost_vars), expected_spatial_velocity,
+          expected_lorentz_factor, get<MagneticField>(expected_ghost_vars),
+          get<DivergenceCleaningField>(expected_ghost_vars), expected_pressure,
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(ghost_metric),
+          get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(ghost_metric),
+          get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(ghost_metric),
+          get<gr::Tags::Lapse<DataVector>>(ghost_metric),
+          get<gr::Tags::Shift<DataVector, 3>>(ghost_metric));
+    }
   }
 }
 
@@ -363,14 +583,19 @@ SPECTRE_TEST_CASE(
   const SolutionForTest solution{RelativisticEuler::Solutions::TovStar{
       1.28e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
-  test<System>(
-      grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic<
-          System>{std::make_unique<SolutionForTest>(solution)},
-      solution);
-  CHECK_THROWS_WITH(test<System>(
-                        grmhd::GhValenciaDivClean::BoundaryConditions::
-                            ConstraintPreservingFreeOutflow{},
-                        solution),
+  for (const bool set_fluxes : {true, false}) {
+    test<System>(
+        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic<
+            System>{std::make_unique<SolutionForTest>(solution)},
+        set_fluxes, solution);
+    test<System>(
+        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletFreeOutflow<
+            System>{std::make_unique<SolutionForTest>(solution)},
+        set_fluxes, solution);
+  }
+  CHECK_THROWS_WITH(test<System>(grmhd::GhValenciaDivClean::BoundaryConditions::
+                                     ConstraintPreservingFreeOutflow{},
+                                 false, solution),
                     Catch::Matchers::ContainsSubstring(
                         "Not implemented because it's not trivial "
                         "to figure out what the right way of"));
@@ -378,10 +603,9 @@ SPECTRE_TEST_CASE(
 // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
-      test<System>(
-          domain::BoundaryConditions::Periodic<
-              BoundaryConditions::BoundaryCondition>{},
-          solution),
+      test<System>(domain::BoundaryConditions::Periodic<
+                       BoundaryConditions::BoundaryCondition>{},
+                   false, solution),
       Catch::Matchers::ContainsSubstring("not on external boundaries"));
 #endif
 }

@@ -326,14 +326,22 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
          lorentz_factor_times_spatial_velocity, magnetic_field,
          divergence_cleaning_field, spacetime_metric, pi, phi] = vars;
 
+  using flux_variables =
+      typename grmhd::ValenciaDivClean::System::flux_variables;
+  using FluxVars =
+      Variables<db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<3>,
+                                 Frame::Inertial>>;
+  std::optional<FluxVars> cell_centered_ghost_fluxes{};
+
   boundary_condition.fd_ghost(
       make_not_null(&spacetime_metric), make_not_null(&pi), make_not_null(&phi),
       make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
       make_not_null(&temperature),
       make_not_null(&lorentz_factor_times_spatial_velocity),
       make_not_null(&magnetic_field), make_not_null(&divergence_cleaning_field),
-      direction, subcell_mesh, time, functions_of_time, logical_to_grid_map,
-      grid_to_inertial_map, reconstructor);
+      make_not_null(&cell_centered_ghost_fluxes), direction, subcell_mesh, time,
+      functions_of_time, logical_to_grid_map, grid_to_inertial_map,
+      reconstructor);
   // failing line
   CHECK(vars == expected_vars);
 }
