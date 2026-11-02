@@ -92,7 +92,7 @@ class Main : public CBase_Main<Metavariables> {
   explicit Main(const Parallel::charmxx::
                     MainChareRegistrationConstructor& /*used_for_reg*/) {}
   ~Main() override {
-    (void)Parallel::charmxx::RegisterChare<
+    (void)&Parallel::charmxx::RegisterChare<
         Main<Metavariables>, CkIndex_Main<Metavariables>>::registrar;
   }
   Main(const Main&) = default;
@@ -237,7 +237,7 @@ class AtSyncIndicator : public CBase_AtSyncIndicator<Metavariables> {
   AtSyncIndicator(AtSyncIndicator&&) = default;
   AtSyncIndicator& operator=(AtSyncIndicator&&) = default;
   ~AtSyncIndicator() override {
-    (void)Parallel::charmxx::RegisterChare<
+    (void)&Parallel::charmxx::RegisterChare<
         AtSyncIndicator<Metavariables>,
         CkIndex_AtSyncIndicator<Metavariables>>::registrar;
   }
@@ -887,7 +887,7 @@ void Main<Metavariables>::phase_change_reduction(
         reduction_data) {
   using tagged_tuple_type = std::decay_t<
       std::tuple_element_t<0, std::decay_t<decltype(reduction_data.data())>>>;
-  (void)Parallel::charmxx::RegisterPhaseChangeReduction<
+  (void)&Parallel::charmxx::RegisterPhaseChangeReduction<
       Metavariables, InvokeCombine, Tags...>::registrar;
   static_assert(tt::is_a_v<tuples::TaggedTuple, tagged_tuple_type>,
                 "The main chare expects a tagged tuple in the phase change "

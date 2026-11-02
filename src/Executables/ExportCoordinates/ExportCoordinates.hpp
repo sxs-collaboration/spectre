@@ -302,14 +302,14 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<
-            amr::Criterion,
-            tmpl::list<amr::Criteria::DriveToTarget<volume_dim,
-                                                    amr::Criteria::Type::h>,
-                       amr::Criteria::DriveToTarget<volume_dim,
-                                                    amr::Criteria::Type::p>,
-                       amr::Criteria::Random<amr::Criteria::Type::h>,
-                       amr::Criteria::Random<amr::Criteria::Type::p>,
-                       amr::Criteria::TruncationError<
+            ::amr::Criterion,
+            tmpl::list<::amr::Criteria::DriveToTarget<volume_dim,
+                                                      ::amr::Criteria::Type::h>,
+                       ::amr::Criteria::DriveToTarget<volume_dim,
+                                                      ::amr::Criteria::Type::p>,
+                       ::amr::Criteria::Random<::amr::Criteria::Type::h>,
+                       ::amr::Criteria::Random<::amr::Criteria::Type::p>,
+                       ::amr::Criteria::TruncationError<
                            volume_dim, tmpl::list<::domain::Tags::Coordinates<
                                            volume_dim, Frame::Inertial>>>>>,
         tmpl::pair<Event, tmpl::list<Events::MonitorMemory<volume_dim>,

@@ -209,7 +209,7 @@ struct SetSubcellGrid {
             for (const auto& [direction, neighbors_in_direction] :
                  element.neighbors()) {
               if (element.face_types().at(direction) ==
-                  domain::FaceType::MultipleNonconforming) {
+                  ::domain::FaceType::MultipleNonconforming) {
                 continue;
               }
               for (const auto& neighbor : neighbors_in_direction.ids()) {
@@ -580,7 +580,7 @@ struct SetInitialGridFromTciData {
                 // tracked because those elements are forced to remain on DG.
                 ASSERT(element.face_types().at(
                            directional_element_id.direction()) ==
-                           domain::FaceType::MultipleNonconforming,
+                           ::domain::FaceType::MultipleNonconforming,
                        "NeighborTciDecisions does not contain the neighbor "
                            << directional_element_id
                            << " but the face is not MultipleNonconforming. "

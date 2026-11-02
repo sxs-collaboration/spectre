@@ -191,7 +191,7 @@ struct RegisterParallelComponent : RegistrationHelper {
  *
  * The chare that is being registered must have the following in the destructor:
  * \code
- * (void)Parallel::charmxx::RegisterChare<ChareName,
+ * (void)&Parallel::charmxx::RegisterChare<ChareName,
  *     CkIndex_ChareName>::registrar;
  * \endcode
  *

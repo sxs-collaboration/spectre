@@ -443,7 +443,7 @@ bool DgElementArrayMember<Dim, Metavariables,
 
 #ifdef SPECTRE_CHARM_PROJECTIONS
   if constexpr (Parallel::is_array<ParallelComponent>::value) {
-    (void)Parallel::charmxx::RegisterInvokeIterableAction<
+    (void)&Parallel::charmxx::RegisterInvokeIterableAction<
         ParallelComponent, ThisAction, PhaseIndex, DataBoxIndex>::registrar;
   }
 #endif  // SPECTRE_CHARM_PROJECTIONS
