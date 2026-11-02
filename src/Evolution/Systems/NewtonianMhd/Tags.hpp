@@ -25,6 +25,20 @@ struct SourceTerm {
   static constexpr Options::String help = "The source term to be used.";
   using group = ::evolution::OptionTags::SystemGroup;
 };
+
+struct DivergenceCleaningSpeed {
+  using type = double;
+  static constexpr Options::String help =
+      "Propagation speed of the hyperbolic divergence-cleaning waves.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
+
+struct DampingParameter {
+  using type = double;
+  static constexpr Options::String help =
+      "Constraint damping parameter for divergence cleaning.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
 }  // namespace NewtonianMhd::OptionTags
 
 /// %Tags for the conservative formulation of the Newtonian Euler system
@@ -44,6 +58,39 @@ struct MomentumDensity : db::SimpleTag {
 /// The energy density of the fluid.
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataVector>;
+};
+
+/// The magnetic field \f$B^i\f$ as a conservative variable.
+///
+/// Only present when the system is instantiated with
+/// `EvolveMagneticField == true`.
+template <typename Fr>
+struct MagneticFieldCons : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3, Fr>;
+  static std::string name() {
+    return Frame::prefix<Fr>() + "MagneticFieldCons";
+  }
+};
+
+/// The GLM divergence-cleaning field \f$\psi\f$ as a conservative variable.
+struct DivergenceCleaningFieldCons : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// The GLM cleaning propagation speed \f$c_h\f$.
+struct DivergenceCleaningSpeed : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::DivergenceCleaningSpeed>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double value) { return value; }
+};
+
+/// The constraint damping parameter for divergence cleaning.
+struct ConstraintDampingParameter : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::DampingParameter>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double value) { return value; }
 };
 
 /// The sound speed.

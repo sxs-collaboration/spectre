@@ -138,7 +138,7 @@ template <size_t Dim>
 struct SmoothFlowMetaVars {
   static constexpr size_t volume_dim = Dim;
   using initial_data = NewtonianMhd::Solutions::SmoothFlow<Dim>;
-  using system = NewtonianMhd::System<Dim>;
+  using system = NewtonianMhd::System<Dim, false>;
   using source_term_tag = NewtonianMhd::Tags::SourceTerm<Dim>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -155,7 +155,7 @@ struct SmoothFlowMetaVars {
 struct LaneEmdenStarMetaVars {
   static constexpr size_t volume_dim = 3;
   using initial_data = NewtonianMhd::Solutions::LaneEmdenStar;
-  using system = NewtonianMhd::System<3>;
+  using system = NewtonianMhd::System<3, false>;
   using source_term_tag = NewtonianMhd::Tags::SourceTerm<3>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

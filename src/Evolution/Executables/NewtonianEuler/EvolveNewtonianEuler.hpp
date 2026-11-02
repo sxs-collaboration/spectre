@@ -142,7 +142,7 @@ struct EvolutionMetavars {
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
-  using system = NewtonianMhd::System<Dim>;
+  using system = NewtonianMhd::System<Dim, false>;
 
   using temporal_id = Tags::TimeStepId;
 

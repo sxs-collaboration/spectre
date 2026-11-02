@@ -10,11 +10,13 @@
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                            \
-  template class ChangeTimeStepperOrder<NewtonianMhd::System<DIM(data)>>; \
-  template class CleanHistory<NewtonianMhd::System<DIM(data)>>;           \
-  template class RecordTimeStepperData<NewtonianMhd::System<DIM(data)>>;  \
-  template class UpdateU<NewtonianMhd::System<DIM(data)>>;
+#define INSTANTIATION(r, data)                                         \
+  template class ChangeTimeStepperOrder<                               \
+      NewtonianMhd::System<DIM(data), false>>;                         \
+  template class CleanHistory<NewtonianMhd::System<DIM(data), false>>; \
+  template class RecordTimeStepperData<                                \
+      NewtonianMhd::System<DIM(data), false>>;                         \
+  template class UpdateU<NewtonianMhd::System<DIM(data), false>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

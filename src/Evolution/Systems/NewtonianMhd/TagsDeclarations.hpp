@@ -14,6 +14,11 @@ struct MassDensityCons;
 template <size_t Dim, typename Fr = Frame::Inertial>
 struct MomentumDensity;
 struct EnergyDensity;
+template <typename Fr = Frame::Inertial>
+struct MagneticFieldCons;
+struct DivergenceCleaningFieldCons;
+struct DivergenceCleaningSpeed;
+struct ConstraintDampingParameter;
 template <typename DataType>
 struct SoundSpeed;
 
