@@ -125,35 +125,35 @@ SPECTRE_TEST_CASE(
   const double initial_position = 0.7;
 
   // Sod or Shock-Tube problem: one shock wave and one rarefaction wave.
-  NewtonianEuler::Solutions::RiemannProblem<1> sod(
+  const NewtonianEuler::Solutions::RiemannProblem<1> sod(
       adiabatic_index, initial_position, 1.0, {{0.0}}, 1.0, 0.125, {{0.0}},
       0.1);
   CHECK_ITERABLE_CUSTOM_APPROX(sod.diagnostic_star_region_values(),
                                make_array(0.30313, 0.92745), larger_approx);
 
   // "123" problem: two strong rarefaction waves. Contact is stationary.
-  NewtonianEuler::Solutions::RiemannProblem<2> one_two_three(
+  const NewtonianEuler::Solutions::RiemannProblem<2> one_two_three(
       adiabatic_index, initial_position, 1.0, {{-2.0}}, 0.4, 1.0, {{2.0}}, 0.4);
   CHECK_ITERABLE_CUSTOM_APPROX(one_two_three.diagnostic_star_region_values(),
                                make_array(0.00189, 0.),
                                Approx::custom().epsilon(1.e-2));
 
   // Left half of the blast wave problem of Woodward&Corella.
-  NewtonianEuler::Solutions::RiemannProblem<3> left_blast_wave(
+  const NewtonianEuler::Solutions::RiemannProblem<3> left_blast_wave(
       adiabatic_index, initial_position, 1.0, {{0.0}}, 1000.0, 1.0, {{0.0}},
       0.01);
   CHECK_ITERABLE_CUSTOM_APPROX(left_blast_wave.diagnostic_star_region_values(),
                                make_array(460.894, 19.5975), larger_approx);
 
   // Right half of the blast wave problem of Woodward&Corella.
-  NewtonianEuler::Solutions::RiemannProblem<3> right_blast_wave(
+  const NewtonianEuler::Solutions::RiemannProblem<3> right_blast_wave(
       adiabatic_index, initial_position, 1.0, {{0.0}}, 0.01, 1.0, {{0.0}},
       100.0);
   CHECK_ITERABLE_CUSTOM_APPROX(right_blast_wave.diagnostic_star_region_values(),
                                make_array(46.0950, -6.19633), larger_approx);
 
   // Collision of the two previous shocks.
-  NewtonianEuler::Solutions::RiemannProblem<3> shock_collision(
+  const NewtonianEuler::Solutions::RiemannProblem<3> shock_collision(
       adiabatic_index, initial_position, 5.99924, {{19.5975}}, 460.894, 5.99242,
       {{-6.19633}}, 46.0950);
   CHECK_ITERABLE_CUSTOM_APPROX(shock_collision.diagnostic_star_region_values(),

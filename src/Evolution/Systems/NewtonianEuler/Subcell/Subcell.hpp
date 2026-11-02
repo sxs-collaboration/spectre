@@ -3,7 +3,5 @@
 
 #pragma once
 
-namespace NewtonianEuler {
 /// \brief Code required by the DG-subcell/FD hybrid solver.
-namespace subcell {}
-}  // namespace NewtonianEuler
+namespace NewtonianEuler::subcell {}

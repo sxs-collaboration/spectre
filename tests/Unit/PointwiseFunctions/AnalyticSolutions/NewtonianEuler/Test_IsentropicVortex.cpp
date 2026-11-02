@@ -110,7 +110,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
                    mean_velocity_3d, "[-0.04, 0.14, 0.3]",
                    perturbation_amplitude, "0.5");
 
-  NewtonianEuler::Solutions::IsentropicVortex<3> vortex(
+  const NewtonianEuler::Solutions::IsentropicVortex<3> vortex(
       1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 0.05, 1.7);
 
   MAKE_GENERATOR(gen);

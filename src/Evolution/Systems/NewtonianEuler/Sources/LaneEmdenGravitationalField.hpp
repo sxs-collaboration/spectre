@@ -14,11 +14,9 @@
 /// \cond
 class DataVector;
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 struct LaneEmdenStar;
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions
 
 namespace PUP {
 class er;

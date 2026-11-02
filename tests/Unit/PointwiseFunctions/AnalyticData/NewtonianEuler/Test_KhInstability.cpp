@@ -101,7 +101,7 @@ void test_analytic_data(const DataType& used_for_size) {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability",
     "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/NewtonianEuler"};
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;

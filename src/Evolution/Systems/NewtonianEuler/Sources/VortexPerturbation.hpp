@@ -18,12 +18,10 @@
 /// \cond
 class DataVector;
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 template <size_t Dim>
 struct IsentropicVortex;
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions
 
 namespace Tags {
 struct Time;

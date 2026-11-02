@@ -3,7 +3,5 @@
 
 #pragma once
 
-namespace NewtonianEuler {
 /// Finite difference functionality for Newtonian Euler
-namespace fd {}
-}  // namespace NewtonianEuler
+namespace NewtonianEuler::fd {}

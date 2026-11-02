@@ -36,9 +36,7 @@ template <size_t VolumeDim>
 class ElementId;
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Limiters {
-namespace Tci {
+namespace NewtonianEuler::Limiters::Tci {
 
 /// \ingroup LimitersGroup
 /// \brief Implements the troubled-cell indicator from Krivodonova et al, 2004.
@@ -224,6 +222,4 @@ bool kxrcf_indicator(
           ratio_for_energy > kxrcf_constant);
 }
 
-}  // namespace Tci
-}  // namespace Limiters
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Limiters::Tci
