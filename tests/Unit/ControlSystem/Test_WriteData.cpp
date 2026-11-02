@@ -265,10 +265,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
     write_components_to_disk<FakeQuatControlSystem>(
         time, cache, quat_fot, quat_q_and_derivs[i], quat_timescales[i]);
 
-    // 3 for one control system, 2 for the other (because of the nullopt)
+    // All components of a control system are written with a single threaded
+    // action, so there is one queued action per control system
     size_t num_threaded_actions =
         ActionTesting::number_of_queued_threaded_actions<observer>(runner, 0);
-    const size_t expected_num_threaded_actions = 2 * total_components - 1;
+    const size_t expected_num_threaded_actions = 2;
     CHECK(num_threaded_actions == expected_num_threaded_actions);
     for (size_t j = 0; j < expected_num_threaded_actions; j++) {
       ActionTesting::invoke_queued_threaded_action<observer>(

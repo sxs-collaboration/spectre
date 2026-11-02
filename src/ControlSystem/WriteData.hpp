@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "ControlSystem/Component.hpp"
@@ -35,8 +34,12 @@ namespace control_system {
  * - dtControlError
  * - DampingTimescale
  *
- * Data will be stored in the reduction file. All subfiles for the control
- * system within the H5 file will be under the group "/ControlSystems".
+ * Data will be stored in the reduction file. All components are sent to the
+ * `observers::ObserverWriter` in a single
+ * `observers::ThreadedActions::WriteMultipleReductionDataRows` call so the
+ * reduction file is opened only once per control system and measurement. All
+ * subfiles for the control system within the H5 file will be under the group
+ * "/ControlSystems".
  * Within this group, there will be one group for each control system. The name
  * of each group will be the result of the `name()` function from each control
  * system. An example would look like
@@ -92,7 +95,15 @@ void write_components_to_disk(
   // ControlSystems/Translation/X.dat
   // ControlSystems/Translation/Y.dat
   // ControlSystems/Translation/Z.dat
+  //
+  // All components are collected and written with a single call so the
+  // reduction file is opened only once rather than once per component.
+  const std::vector<std::string> legend{
+      "Time",         "FunctionOfTime", "dtFunctionOfTime", "d2tFunctionOfTime",
+      "ControlError", "dtControlError", "DampingTimescale"};
   const size_t num_components = function_at_current_time[0].size();
+  std::vector<observers::DatRows> rows_to_write{};
+  rows_to_write.reserve(num_components);
   for (size_t i = 0; i < num_components; ++i) {
     const std::optional<std::string> component_name_opt =
         ControlSystem::component_name(i, num_components);
@@ -101,21 +112,10 @@ void write_components_to_disk(
     }
     // Currently all reduction data is written to the reduction file so preface
     // everything with ControlSystems/
-    const std::string subfile_name{"/ControlSystems/" + ControlSystem::name() +
-                                   "/" + *component_name_opt};
-    std::vector<std::string> legend{"Time",
-                                    "FunctionOfTime",
-                                    "dtFunctionOfTime",
-                                    "d2tFunctionOfTime",
-                                    "ControlError",
-                                    "dtControlError",
-                                    "DampingTimescale"};
-
-    Parallel::threaded_action<
-        observers::ThreadedActions::WriteReductionDataRow>(
-        // Node 0 is always the writer
-        observer_writer_proxy[0], subfile_name, std::move(legend),
-        std::make_tuple(
+    rows_to_write.push_back(observers::DatRows{
+        "/ControlSystems/" + ControlSystem::name() + "/" + *component_name_opt,
+        legend,
+        {{
             // clang-format off
             time,
             function_at_current_time[0][i],
@@ -123,9 +123,17 @@ void write_components_to_disk(
             function_at_current_time[2][i],
             q_and_dtq[0][i],
             q_and_dtq[1][i],
-            timescales[i])
-        // clang-format on
-    );
+            timescales[i]
+            // clang-format on
+        }}});
   }
+  if (rows_to_write.empty()) {
+    return;
+  }
+
+  Parallel::threaded_action<
+      observers::ThreadedActions::WriteMultipleReductionDataRows>(
+      // Node 0 is always the writer
+      observer_writer_proxy[0], std::move(rows_to_write));
 }
 }  // namespace control_system

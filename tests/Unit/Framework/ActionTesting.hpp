@@ -276,13 +276,15 @@ struct get_array_index;
  * Meaning that calls to `Parallel::contribute_to_reduction` and
  * `Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>`
  * are not supported. However, the ATF does support calls using
- * `WriteReductionDataRow` without having to actually write any data to disk
- * (this avoids unnecessary IO when all we really care about is if the values
- * are correct).
+ * `WriteReductionDataRow` and `WriteMultipleReductionDataRows` without having
+ * to actually write any data to disk (this avoids unnecessary IO when all we
+ * really care about is if the values are correct).
  *
  * If you want to test code that has a call to
  * `Parallel::threaded_action<
- * observers::ThreadedActions::WriteReductionDataRow>`,
+ * observers::ThreadedActions::WriteReductionDataRow>` or
+ * `Parallel::threaded_action<
+ * observers::ThreadedActions::WriteMultipleReductionDataRows>`,
  * you'll need to add the `TestHelpers::observers::MockObserverWriter`
  * component, found in Helpers/IO/Observers/MockWriteReductionDataRow.hpp, to
  * your test metavars (see next section for what mocking a component means).

@@ -68,7 +68,10 @@ to send data to the `observers::Observer` component in the case where there is a
 reduction done across an array or subset of an array. If a singleton parallel
 component or a specific chare needs to write data directly to disk it should use
 the `observers::ThreadedActions::WriteReductionDataRow` action called on the
-zeroth element of the `observers::ObserverWriter` component.
+zeroth element of the `observers::ObserverWriter` component. Each call opens
+and closes the reductions file, so use
+`observers::ThreadedActions::WriteMultipleReductionDataRows` to write to several
+subfiles, or several rows to one subfile, in a single call.
 
 ### Volume Data
 

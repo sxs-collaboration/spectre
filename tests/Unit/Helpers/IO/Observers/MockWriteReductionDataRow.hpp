@@ -79,6 +79,42 @@ struct MockWriteReductionDataRow {
 };
 
 /*!
+ * \brief Action meant to mock WriteMultipleReductionDataRows.
+ *
+ * \details Like MockWriteReductionDataRow, this action records the rows in
+ * the MockReductionFileTag stored in the DataBox of the MockObserverWriter
+ * instead of writing them to disk.
+ */
+struct MockWriteMultipleReductionDataRows {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(::db::DataBox<DbTagsList>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::vector<::observers::DatRows>& data) {
+    if constexpr (::db::tag_is_retrievable_v<MockReductionFileTag,
+                                             ::db::DataBox<DbTagsList>>) {
+      ::db::mutate<MockReductionFileTag>(
+          [&data](const gsl::not_null<MockH5File*> mock_h5_file) {
+            for (const auto& [subfile_name, legend, rows] : data) {
+              auto& dat_file = (*mock_h5_file).try_insert(subfile_name);
+              for (const auto& row : rows) {
+                dat_file.append(legend, row);
+              }
+            }
+          },
+          make_not_null(&box));
+    } else {
+      (void)data;
+      ERROR(
+          "Wrong DataBox. Cannot retrieve the MockReductionFileTag. Expecting "
+          "DataBox for MockObserverWriter.");
+    }
+  }
+};
+
+/*!
  * \brief Component that mocks the ObserverWriter.
  *
  * \details The only tag that is added to the DataBox is the
@@ -86,8 +122,10 @@ struct MockWriteReductionDataRow {
  *
  * \snippet Test_MockWriteReductionDataRow.cpp initialize_component
  *
- * This component replaces the WriteReductionDataRow threaded action with the
- * MockWriteReductionDataRow threaded action.
+ * This component replaces the WriteReductionDataRow and
+ * WriteMultipleReductionDataRows threaded actions with the
+ * MockWriteReductionDataRow and MockWriteMultipleReductionDataRows threaded
+ * actions.
  */
 template <typename Metavariables>
 struct MockObserverWriter {
@@ -101,7 +139,9 @@ struct MockObserverWriter {
   using component_being_mocked = ::observers::ObserverWriter<Metavariables>;
 
   using replace_these_threaded_actions =
-      tmpl::list<::observers::ThreadedActions::WriteReductionDataRow>;
-  using with_these_threaded_actions = tmpl::list<MockWriteReductionDataRow>;
+      tmpl::list<::observers::ThreadedActions::WriteReductionDataRow,
+                 ::observers::ThreadedActions::WriteMultipleReductionDataRows>;
+  using with_these_threaded_actions =
+      tmpl::list<MockWriteReductionDataRow, MockWriteMultipleReductionDataRows>;
 };
 }  // namespace TestHelpers::observers
