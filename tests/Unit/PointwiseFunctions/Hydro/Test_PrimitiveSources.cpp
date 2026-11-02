@@ -4,9 +4,11 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <boost/multiprecision/cpp_bin_float.hpp>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "PointwiseFunctions/Hydro/PrimitiveSources.hpp"
@@ -18,6 +20,70 @@ using Vector = std::array<double, 3>;
 using Metric = std::array<Vector, 3>;
 const Metric identity{{{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}}};
 const Vector zero{{0., 0., 0.}};
+
+// A parallel magnetic field has exactly zero Poynting momentum. This remains
+// true for received binary64 speeds near 0.499, not only the exact-W case 0.5.
+// Form the independent fluid reference with 512-bit binary arithmetic before
+// narrowing once, rather than using the kernel's prepared Lorentz factor.
+void test_parallel_field_cancellation() {
+  using High =
+      boost::multiprecision::number<boost::multiprecision::cpp_bin_float<
+          512, boost::multiprecision::digit_base_2>>;
+  const auto relative =
+      Approx::custom()
+          .epsilon(128. * std::numeric_limits<double>::epsilon())
+          .scale(0.);
+  std::vector<double> speeds{}, fields{}, densities{}, expected{};
+  for (const double speed : {-0.499, 0., std::nextafter(0.499, 0.), 0.499,
+                             std::nextafter(0.499, 1.), 0.5}) {
+    for (const double field : {0., 1., std::ldexp(1., 30)}) {
+      for (const double rho : {0., 1.e-20, 1.}) {
+        CAPTURE(speed, field, rho);
+        const High v{speed};
+        const High momentum = High{rho} * v / (1 - 3 * v * v);
+        const double reference = static_cast<double>(momentum);
+        const Vector velocity{{speed, speed, speed}};
+        const Vector magnetic_field{{field, field, field}};
+        const auto result = sources::joint_sources(rho, 0., 0., velocity,
+                                                   magnetic_field, identity);
+        for (size_t d = 1; d < 4; ++d) {
+          CHECK_ITERABLE_CUSTOM_APPROX(gsl::at(result, d), reference, relative);
+        }
+        speeds.push_back(speed);
+        fields.push_back(field);
+        densities.push_back(rho);
+        expected.push_back(reference);
+      }
+    }
+  }
+  // Exercise all states in one heterogeneous batch, including empty matter,
+  // tiny fluid momentum, both signs of velocity and different field strengths.
+  const size_t n = speeds.size();
+  DataVector rho(n), speed(n), field(n);
+  for (size_t k = 0; k < n; ++k) {
+    rho[k] = densities[k];
+    speed[k] = speeds[k];
+    field[k] = fields[k];
+  }
+  const DataVector zeros(n, 0.);
+  const std::array<DataVector, 3> velocity{{speed, speed, speed}};
+  const std::array<DataVector, 3> magnetic_field{{field, field, field}};
+  std::array<std::array<DataVector, 3>, 3> metric{};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      gsl::at(gsl::at(metric, i), j) = DataVector(n, i == j ? 1. : 0.);
+    }
+  }
+  const auto result = sources::joint_sources(rho, zeros, zeros, velocity,
+                                             magnetic_field, metric);
+  for (size_t k = 0; k < n; ++k) {
+    CAPTURE(k, speeds[k], fields[k], densities[k]);
+    for (size_t d = 1; d < 4; ++d) {
+      CHECK_ITERABLE_CUSTOM_APPROX(gsl::at(result, d)[k], expected[k],
+                                   relative);
+    }
+  }
+}
 
 void test_thermodynamics() {
   const auto relative =
@@ -190,6 +256,7 @@ void test_exact_enthalpy_sign() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.PrimitiveSources",
                   "[Unit][Hydro]") {
+  test_parallel_field_cancellation();
   test_thermodynamics();
   test_vacuum();
   test_metric_and_batch();
