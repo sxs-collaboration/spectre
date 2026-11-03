@@ -24,6 +24,13 @@ export SPECTRE_CLI={{ spectre_cli }}
 CHARM_PPN=$(expr ${SLURM_CPUS_PER_TASK} - 1)
 {% endblock %}
 
+{% block mpi_configuration %}
+{% endblock %}
+
+{% block charm_cpu_affinity %}
+CHARM_CPU_AFFINITY=+setcpuaffinity
+{% endblock %}
+
 echo "###################################"
 echo "######       JOB INFO        ######"
 echo "###################################"
@@ -73,7 +80,7 @@ export SPECTRE_PROFILING_PREFIX="hpcrun -t -o hpctoolkit-measurements"
 mpirun -n ${SLURM_NTASKS} \
   ${SPECTRE_PROFILING_PREFIX} \
   ${SPECTRE_EXECUTABLE} --input-file ${SPECTRE_INPUT_FILE} \
-  ++ppn ${CHARM_PPN} +setcpuaffinity \
+  ++ppn ${CHARM_PPN} ${CHARM_CPU_AFFINITY} \
   ${SPECTRE_CHECKPOINT:+ +restart "${SPECTRE_CHECKPOINT}"}
 {% endblock %}
 

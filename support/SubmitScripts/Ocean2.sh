@@ -15,3 +15,16 @@
 #SBATCH -p {{ queue | default("normal") }}
 #SBATCH -t {{ time_limit | default("01-00:00:00") }}
 {% endblock %}
+
+{% block mpi_configuration %}
+export I_MPI_PIN=1
+export I_MPI_PIN_RESPECT_CPUSET=1
+export I_MPI_PIN_DOMAIN=${SLURM_CPUS_PER_TASK}:compact
+export I_MPI_PIN_ORDER=compact
+{% endblock %}
+
+{# Intel MPI confines each rank to its CPU domain. Charm++'s automatic
+   affinity does not respect that domain, so leave thread placement to Linux. #}
+{% block charm_cpu_affinity %}
+CHARM_CPU_AFFINITY=
+{% endblock %}
