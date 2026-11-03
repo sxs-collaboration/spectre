@@ -9,6 +9,7 @@ Machine:
     https://github.com/sxs-collaboration/WelcomeToSXS/wiki/Mbot
   DefaultTasksPerNode: 6
   DefaultProcsPerTask: 32
+  LoginNodeRegex: '^mbot\.cac\.cornell\.edu'
   DefaultQueue: "normal"
   DefaultTimeLimit: "1-00:00:00"
   LaunchCommandSingleNode: ["mpirun", "-n", "1"]
