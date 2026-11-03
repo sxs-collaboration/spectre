@@ -248,9 +248,12 @@ void fill_filter(gsl::not_null<SparseMatrixType*> matrix, size_t ell_max,
  * system.
  *
  * Since the data being cached depends on parameters, those parameters are also
- * cached.
+ * cached. This includes `ell_max`, so that filling the holder again after a
+ * change of angular resolution (e.g. from p-refinement) rebuilds the
+ * matrices.
  */
 struct FilterMatrixHolder {
+  size_t ell_max{};
   size_t number_of_ell_modes_to_kill{};
   CoefficientNormalization coefficient_normalization{};
   std::optional<size_t> half_power;
