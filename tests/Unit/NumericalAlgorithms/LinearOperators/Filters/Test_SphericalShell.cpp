@@ -564,6 +564,79 @@ void test_apply_on_boundary() {
 #endif
 }
 
+// Changes l_max and runs both the volume and the boundary code path through
+// an increase, a decrease and a return to an earlier resolution, comparing
+// against a fresh filter.
+void test_cached_matrices_follow_ell_max() {
+  INFO("cached matrices follow ell_max");
+  const Approx custom_approx = Approx::custom().epsilon(5.0e-12);
+  MAKE_GENERATOR(generator);
+  const auto new_filter = []() {
+    return make_filter(2, 16, 8, true, std::nullopt, false, false, std::nullopt,
+                       std::nullopt);
+  };
+  const auto reused_volume_filter = new_filter();
+  const auto reused_boundary_filter = new_filter();
+  for (const auto& extents :
+       std::array<std::array<size_t, 2>, 4>{{{4, 6}, {5, 8}, {3, 5}, {4, 6}}}) {
+    const size_t radial_extents = extents[0];
+    const size_t ell_max = extents[1];
+    CAPTURE(radial_extents);
+    CAPTURE(ell_max);
+    const auto& ylm = ::ylm::get_spherepack_cache(ell_max);
+    {
+      INFO("apply_in_volume");
+      const size_t physical_grid_points = ylm.physical_size() * radial_extents;
+      const Mesh<volume_dim> mesh = make_shell_mesh(radial_extents, ell_max);
+      const auto initial_vars =
+          random_nodal_vars(radial_extents, ell_max, generator);
+      InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>
+          inv_jac_grid_to_inertial(physical_grid_points);
+      Jacobian<DataVector, 3, Frame::Grid, Frame::Inertial>
+          jac_grid_to_inertial(physical_grid_points);
+      make_jacobians(make_not_null(&inv_jac_grid_to_inertial),
+                     make_not_null(&jac_grid_to_inertial), physical_grid_points,
+                     generator);
+      auto vars = initial_vars;
+      reused_volume_filter.apply_in_volume(make_not_null(&vars), mesh,
+                                           inv_jac_grid_to_inertial,
+                                           jac_grid_to_inertial);
+      auto expected = initial_vars;
+      new_filter().apply_in_volume(make_not_null(&expected), mesh,
+                                   inv_jac_grid_to_inertial,
+                                   jac_grid_to_inertial);
+      CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+    }
+    {
+      INFO("apply_on_boundary");
+      const size_t physical_grid_points = ylm.physical_size();
+      const Mesh<2> face_mesh{
+          std::array<size_t, 2>{ell_max + 1, 2 * ell_max + 1},
+          std::array<Spectral::Basis, 2>{Spectral::Basis::SphericalHarmonic,
+                                         Spectral::Basis::SphericalHarmonic},
+          std::array<Spectral::Quadrature, 2>{
+              Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
+      const auto initial_vars = random_nodal_vars(1, ell_max, generator);
+      InverseJacobian<DataVector, 3, Frame::Grid, Frame::Inertial>
+          inv_jac_grid_to_inertial(physical_grid_points);
+      Jacobian<DataVector, 3, Frame::Grid, Frame::Inertial>
+          jac_grid_to_inertial(physical_grid_points);
+      make_jacobians(make_not_null(&inv_jac_grid_to_inertial),
+                     make_not_null(&jac_grid_to_inertial), physical_grid_points,
+                     generator);
+      auto vars = initial_vars;
+      reused_boundary_filter.apply_on_boundary(make_not_null(&vars), face_mesh,
+                                               inv_jac_grid_to_inertial,
+                                               jac_grid_to_inertial);
+      auto expected = initial_vars;
+      new_filter().apply_on_boundary(make_not_null(&expected), face_mesh,
+                                     inv_jac_grid_to_inertial,
+                                     jac_grid_to_inertial);
+      CHECK_VARIABLES_CUSTOM_APPROX(vars, expected, custom_approx);
+    }
+  }
+}
+
 void test_supports_mesh() {
   INFO("supports_mesh");
   const auto filter = make_filter(2, 16, 8, true, std::nullopt, false, false,
@@ -738,6 +811,7 @@ SPECTRE_TEST_CASE(
   test_pup_round_trip();
   test_apply_in_volume();
   test_apply_on_boundary();
+  test_cached_matrices_follow_ell_max();
   test_supports_mesh();
   test_option_parsing();
 }
