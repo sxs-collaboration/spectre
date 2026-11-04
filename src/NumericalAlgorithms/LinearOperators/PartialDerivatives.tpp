@@ -1727,9 +1727,7 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
 
     raw_transpose(make_not_null(local_buffer1.data()), (*logical_du)[0],
                   num_components_times_xi_slices, mesh.extents(0));
-    std::copy(local_buffer1.data(), local_buffer1.data() + local_buffer_size,
-              local_buffer2.data());
-    // local_buffer 1 and local_buffer2 hold angular modal rep
+    // local_buffer1 holds angular modal rep
 
     // Copy even/odd subsets to compact regions for 3D cylinder
     const size_t n_even_cols =
