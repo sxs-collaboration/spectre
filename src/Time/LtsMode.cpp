@@ -19,6 +19,8 @@ std::ostream& operator<<(std::ostream& os, LtsMode value) {
       return os << "Off";
     case LtsMode::Conservative:
       return os << "Conservative";
+    case LtsMode::Extrapolated:
+      return os << "Extrapolated";
     default:
       ERROR("Unknown LtsMode: " << static_cast<int>(value));
   }
