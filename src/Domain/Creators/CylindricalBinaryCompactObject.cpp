@@ -267,7 +267,6 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     block_groups_[group_name].insert(name);
     block_positions_[name] = block_names_.size() - 1;
     hollow_cylinder_names.insert(name);
-    hollow_cylinder_names.insert(group_name);
   };
 
   // CA Filled Cylinder
@@ -339,55 +338,26 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
          "Size of block_positions_ map should be equal to the number of blocks "
          "in the domain.");
 
-  // Since BinaryCompactObject::InitialGridPoints type differs from
-  // CylindricalBinaryCompactObject::InitialGridPoints type, need to first
-  // create the BCO-compatible type with the CBCO data to be able to reuse the
-  // functionality of bco::validate_initial_grid_points() and
-  // bco::set_initial_grid_points().
-  const auto bco_initial_grid_points = std::visit(
-      [](const auto& value) {
-        return BinaryCompactObject::InitialGridPoints::type{value};
-      },
-      initial_grid_points);
-  // Validate that the input file has the correct format for
-  // InitialGridPoints. No need to validate the format for InitialRefinement
-  // because it does not accept a map of strings to possibly
-  // differently-sized arrays for refinement. If a map is provided, it already
-  // only accepts a map of size_t keys.
-  bco::validate_initial_grid_points(context, bco_initial_grid_points,
-                                    spherical_harmonic_shell_names,
-                                    filled_cylinder_names);
-
   // For expanding initial refinement and grid points over all blocks
   const ExpandOverBlocks<std::array<size_t, 3>> expand_over_blocks{
       block_names_, block_groups_};
   try {
-    // Since BinaryCompactObject::InitialRefinement map type differs from
-    // CylindricalBinaryCompactObject::InitialRefinement map type, need to first
-    // create the BCO-compatible type with the CBCO data to be able to reuse the
-    // functionality of bco::set_initial_refinement().
-    using bco_ref_map_type =
-        std::unordered_map<std::string,
-                           std::variant<std::array<size_t, 3>, size_t>>;
-    using cbco_ref_map_type = std::unordered_map<std::string, size_t>;
-    const auto bco_initial_refinement =
-        std::holds_alternative<size_t>(initial_refinement)
-            ? BinaryCompactObject::InitialRefinement::type{std::get<size_t>(
-                  initial_refinement)}
-            : BinaryCompactObject::InitialRefinement::type{bco_ref_map_type{
-                  std::get<cbco_ref_map_type>(initial_refinement).begin(),
-                  std::get<cbco_ref_map_type>(initial_refinement).end()}};
-    initial_refinement_ = bco::set_initial_refinement(
-        expand_over_blocks, bco_initial_refinement,
-        spherical_harmonic_shell_names, all_cylinder_names);
+    // Convert to BCO-CBCO superset variant type (see `bco::InitialRefinement`)
+    const auto bco_initial_refinement = std::visit(
+        [](const auto& value) { return bco::InitialRefinement{value}; },
+        initial_refinement);
+    bco::validate_initial_refinement(context, bco_initial_refinement,
+                                     spherical_harmonic_shell_names,
+                                     all_cylinder_names);
+    initial_refinement_ =
+        bco::set_initial_refinement(expand_over_blocks, bco_initial_refinement);
     // If a global single-number h-refinement was used, post-process the
     // expanded cylinder and spherical shell blocks to make the angular
     // directions have h refinement = 0.
     if (std::holds_alternative<size_t>(initial_refinement)) {
       for (const auto& [name, position] : block_positions_) {
         if (name.find("Cylinder") != std::string::npos) {
-          // Set cylinder h refinement to {0, 0, z}
-          initial_refinement_[position][0] = 0;
+          // Set cylinder h refinement to {radial, 0, z}
           initial_refinement_[position][1] = 0;
         } else if (name.find("Shell") != std::string::npos) {
           // Set spherical shell h refinement to {r, 0, 0}
@@ -403,12 +373,11 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // Validate angular h-refinement == 0 in cylinder and spherical shell blocks
   for (const auto& [name, position] : block_positions_) {
     if (name.find("Cylinder") != std::string::npos) {
-      if (gsl::at(gsl::at(initial_refinement_, position), 0) != 0 or
-          gsl::at(gsl::at(initial_refinement_, position), 1) != 0) {
+      if (gsl::at(gsl::at(initial_refinement_, position), 1) != 0) {
         PARSE_ERROR(context,
                     "Angular h-refinement is not supported for cylindrical "
                     "blocks. Specify refinement for "
-                        << name << " as a single number.");
+                        << name << " as [radial, z].");
       }
     } else if (name.find("Shell") != std::string::npos) {
       if (gsl::at(gsl::at(initial_refinement_, position), 1) != 0 or
@@ -422,12 +391,26 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
 
   try {
+    // Since BinaryCompactObject::InitialGridPoints type differs from
+    // CylindricalBinaryCompactObject::InitialGridPoints type, need to first
+    // create the BCO-compatible type with the CBCO data to be able to reuse the
+    // functionality of bco::validate_initial_grid_points() and
+    // bco::set_initial_grid_points().
+    const auto bco_initial_grid_points = std::visit(
+        [](const auto& value) {
+          return BinaryCompactObject::InitialGridPoints::type{value};
+        },
+        initial_grid_points);
+    bco::validate_initial_grid_points(
+        context, bco_initial_grid_points, spherical_harmonic_shell_names,
+        hollow_cylinder_names, filled_cylinder_names);
+
     initial_grid_points_ = bco::set_initial_grid_points(
         expand_over_blocks, bco_initial_grid_points,
         spherical_harmonic_shell_names, filled_cylinder_names);
     // If a global single-number p-refinement was used, post-process the
     // expanded filled cylinder blocks to make the angular directions have the
-    // correct number of spectral points for ZernikeB2.
+    // max number of spectral theta points for ZernikeB2.
     if (std::holds_alternative<size_t>(initial_grid_points)) {
       for (const auto& [name, position] : block_positions_) {
         if (name.find("FilledCylinder") != std::string::npos) {
@@ -461,22 +444,19 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
                         << name
                         << " must have more than 2 radial grid points.");
       }
-
       // Validate number of angular grid points in filled cylinder blocks is
-      // what is expected by ZernikeB2. The Zernike disk is fully specified by
-      // either the number of radial points or the number of theta points, so
-      // check that they relate as expected.
-      const size_t num_theta_modes =
-          gsl::at(gsl::at(initial_grid_points_, position), 1) / 2;
-      const size_t expected_num_r_points =
-          (num_theta_modes / 2) + 1 + (num_theta_modes % 2);
-      if (gsl::at(gsl::at(initial_grid_points_, position), 0) !=
-          expected_num_r_points) {
-        PARSE_ERROR(context,
-                    "Filled cylinder blocks must have "
-                    "num_r_points = ((num_theta_points / 2) / 2) + 1 + "
-                    "((num_theta_points / 2) % 2). Specify grid points for "
-                        << name << " as [num_radial_points, num_z_points].");
+      // not more than the maximum for ZernikeB2: (4 * r - 3).
+      if ((4 * gsl::at(gsl::at(initial_grid_points_, position), 0) - 3) <
+          gsl::at(gsl::at(initial_grid_points_, position), 1)) {
+        PARSE_ERROR(
+            context,
+            "Filled cylinder blocks must have (4 * num_r_points - 3) >= "
+            "num_theta_points. Specify grid points for "
+                << name
+                << " as [num_radial_points, num_z_points] for num_theta_points "
+                   "to be set to the max, or as "
+                   "[num_radial_points, num_theta_points, num_z_points], where "
+                   "(4 * num_r_points - 3) >= num_theta_points.");
       }
     }
     if (name.find("Cylinder") != std::string::npos) {
