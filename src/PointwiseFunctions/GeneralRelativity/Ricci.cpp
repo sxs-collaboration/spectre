@@ -7,12 +7,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void ricci_tensor(
+KOKKOS_FUNCTION void ricci_tensor(
     const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame, Index>*> result,
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
@@ -41,7 +42,7 @@ void ricci_tensor(
 }
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind) {
@@ -52,7 +53,7 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
 }
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void ricci_scalar(
+KOKKOS_FUNCTION void ricci_scalar(
     const gsl::not_null<Scalar<DataType>*> ricci_scalar_result,
     const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) {
@@ -60,7 +61,7 @@ void ricci_scalar(
 }
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-Scalar<DataType> ricci_scalar(
+KOKKOS_FUNCTION Scalar<DataType> ricci_scalar(
     const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) {
   auto ricci_scalar_result =
@@ -103,7 +104,9 @@ Scalar<DataType> ricci_scalar(
       const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
           inverse_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (IndexType::Spatial, IndexType::Spacetime))
 

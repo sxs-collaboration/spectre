@@ -10,11 +10,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
+KOKKOS_FUNCTION tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) {
   tnsr::A<DataType, SpatialDim, Frame> local_spacetime_normal_vector{
@@ -25,7 +26,7 @@ tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spacetime_normal_vector(
+KOKKOS_FUNCTION void spacetime_normal_vector(
     const gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
         spacetime_normal_vector,
     const Scalar<DataType>& lapse,
@@ -53,7 +54,9 @@ void spacetime_normal_vector(
       const Scalar<DTYPE(data)>& lapse,                                  \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

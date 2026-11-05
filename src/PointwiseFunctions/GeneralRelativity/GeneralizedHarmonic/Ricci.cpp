@@ -11,11 +11,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gh {
 template <typename DataType, size_t VolumeDim, typename Frame>
-void spatial_ricci_tensor(
+KOKKOS_FUNCTION void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> ricci,
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
@@ -125,7 +126,7 @@ void spatial_ricci_tensor(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
+KOKKOS_FUNCTION tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric) {
@@ -155,7 +156,9 @@ tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                \
           inverse_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

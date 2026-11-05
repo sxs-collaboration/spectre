@@ -9,14 +9,16 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, typename Frame>
-void expansion1D(const gsl::not_null<Scalar<DataType>*> expansion,
-                 const tnsr::ii<DataType, 3, Frame>& spatial_metric,
-                 const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
-                 const tnsr::ii<DataType, 3, Frame>& ext_curvature,
-                 const tnsr::I<DataType, 3, Frame>& coords) {
+KOKKOS_FUNCTION void expansion1D(
+    const gsl::not_null<Scalar<DataType>*> expansion,
+    const tnsr::ii<DataType, 3, Frame>& spatial_metric,
+    const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
+    const tnsr::ii<DataType, 3, Frame>& ext_curvature,
+    const tnsr::I<DataType, 3, Frame>& coords) {
   expansion->get() = (2.0 * spatial_metric.get(2, 2) +
                       get<0>(coords) * deriv_spatial_metric.get(0, 2, 2)) /
                          (get<0>(coords) * spatial_metric.get(2, 2) *
@@ -25,7 +27,7 @@ void expansion1D(const gsl::not_null<Scalar<DataType>*> expansion,
 }
 
 template <typename DataType, typename Frame>
-Scalar<DataType> expansion1D(
+KOKKOS_FUNCTION Scalar<DataType> expansion1D(
     const tnsr::ii<DataType, 3, Frame>& spatial_metric,
     const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
     const tnsr::ii<DataType, 3, Frame>& ext_curvature,
@@ -53,7 +55,9 @@ Scalar<DataType> expansion1D(
       const tnsr::ii<DTYPE(data), 3, FRAME(data)>& ext_curvature,         \
       const tnsr::I<DTYPE(data), 3, FRAME(data)>& coords);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

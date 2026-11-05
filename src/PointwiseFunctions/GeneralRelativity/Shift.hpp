@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup GeneralRelativityGroup
@@ -28,14 +29,15 @@ namespace gr {
  * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::I<DataType, SpatialDim, Frame> shift(
+KOKKOS_FUNCTION tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void shift(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
-           const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
-           const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
+KOKKOS_FUNCTION void shift(
+    gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 /// @}
 
 namespace Tags {

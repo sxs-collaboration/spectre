@@ -11,6 +11,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -35,7 +36,7 @@ namespace gh {
  * See Eqs. 8 and 9 of \cite Lindblom2005qh
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void gauge_source(
+KOKKOS_FUNCTION void gauge_source(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -47,7 +48,7 @@ void gauge_source(
     const tnsr::i<DataType, SpatialDim, Frame>& trace_christoffel_last_indices);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::a<DataType, SpatialDim, Frame> gauge_source(
+KOKKOS_FUNCTION tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,

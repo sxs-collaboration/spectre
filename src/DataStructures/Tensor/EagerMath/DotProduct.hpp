@@ -21,8 +21,6 @@
  * \details
  * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
  * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
@@ -61,8 +59,6 @@ KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
  * input one form \f$B_b\f$
  * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
  * input vector \f$B^b\f$.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
@@ -104,8 +100,6 @@ KOKKOS_FUNCTION Scalar<DataTypeResult> dot_product(
  * \f$A^a\f$ is vector_a, and \f$B^b\f$ is vector_b.
  * Or, returns \f$g^{ab} A_a B_b\f$ when given one forms \f$A_a\f$
  * and \f$B_b\f$ with an inverse metric \f$g^{ab}\f$.
- *
- * These functions can be called in Kokkos kernels with `double`s.
  */
 SPECTRE_KOKKOS_DISABLE_EXEC_CHECK
 template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,

@@ -8,11 +8,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t Dim, typename Frame>
-void spacetime_metric(
+KOKKOS_FUNCTION void spacetime_metric(
     const gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric) {
@@ -45,7 +46,7 @@ void spacetime_metric(
 }
 
 template <typename DataType, size_t Dim, typename Frame>
-tnsr::aa<DataType, Dim, Frame> spacetime_metric(
+KOKKOS_FUNCTION tnsr::aa<DataType, Dim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric) {
   tnsr::aa<DataType, Dim, Frame> spacetime_metric{};
@@ -71,7 +72,9 @@ tnsr::aa<DataType, Dim, Frame> spacetime_metric(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

@@ -139,8 +139,6 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
  * \ingroup UtilitiesGroup
  * \brief Retrieve a entry from a container, with checks in Debug mode that
  * the index being retrieved is valid.
- *
- * The overloads for `std::array` can be called in Kokkos kernels.
  */
 template <class T, std::size_t N, typename Size>
 KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr,

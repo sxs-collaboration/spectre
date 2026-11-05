@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 /// @{
@@ -23,7 +24,7 @@ namespace gh {
  * \f}
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_derivative_of_spacetime_metric(
+KOKKOS_FUNCTION void time_derivative_of_spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> dt_spacetime_metric,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -31,7 +32,8 @@ void time_derivative_of_spacetime_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame>
+time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,

@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -51,7 +52,7 @@ namespace gh {
  *
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void second_time_deriv_of_spacetime_metric(
+KOKKOS_FUNCTION void second_time_deriv_of_spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> d2t2_spacetime_metric,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -62,7 +63,8 @@ void second_time_deriv_of_spacetime_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& dt_pi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::aa<DataType, SpatialDim, Frame> second_time_deriv_of_spacetime_metric(
+KOKKOS_FUNCTION tnsr::aa<DataType, SpatialDim, Frame>
+second_time_deriv_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,

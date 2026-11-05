@@ -19,6 +19,10 @@ set(LIBRARY_SOURCES
   Test_Trace.cpp
   )
 
+if(SPECTRE_KOKKOS)
+  list(APPEND LIBRARY_SOURCES Test_EagerMathKokkos.cpp)
+endif()
+
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(

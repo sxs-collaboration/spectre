@@ -9,10 +9,11 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spacetime_derivative_of_spacetime_metric(
+KOKKOS_FUNCTION void spacetime_derivative_of_spacetime_metric(
     const gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
         da_spacetime_metric,
     const Scalar<DataType>& lapse,
@@ -44,7 +45,9 @@ void spacetime_derivative_of_spacetime_metric(
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -39,14 +40,15 @@ namespace gh {
  * x axis.
  */
 template <typename DataType, typename Frame>
-void expansion1D(gsl::not_null<Scalar<DataType>*> expansion,
-                 const tnsr::ii<DataType, 3, Frame>& spatial_metric,
-                 const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
-                 const tnsr::ii<DataType, 3, Frame>& ext_curvature,
-                 const tnsr::I<DataType, 3, Frame>& coords);
+KOKKOS_FUNCTION void expansion1D(
+    gsl::not_null<Scalar<DataType>*> expansion,
+    const tnsr::ii<DataType, 3, Frame>& spatial_metric,
+    const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
+    const tnsr::ii<DataType, 3, Frame>& ext_curvature,
+    const tnsr::I<DataType, 3, Frame>& coords);
 
 template <typename DataType, typename Frame>
-Scalar<DataType> expansion1D(
+KOKKOS_FUNCTION Scalar<DataType> expansion1D(
     const tnsr::ii<DataType, 3, Frame>& spatial_metric,
     const tnsr::ijj<DataType, 3, Frame>& deriv_spatial_metric,
     const tnsr::ii<DataType, 3, Frame>& ext_curvature,

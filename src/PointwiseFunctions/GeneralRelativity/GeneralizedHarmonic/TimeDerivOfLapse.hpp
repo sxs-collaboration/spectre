@@ -12,6 +12,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -67,7 +68,7 @@ namespace gh {
  *
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_deriv_of_lapse(
+KOKKOS_FUNCTION void time_deriv_of_lapse(
     gsl::not_null<Scalar<DataType>*> dt_lapse, const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
@@ -75,7 +76,7 @@ void time_deriv_of_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> time_deriv_of_lapse(
+KOKKOS_FUNCTION Scalar<DataType> time_deriv_of_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,

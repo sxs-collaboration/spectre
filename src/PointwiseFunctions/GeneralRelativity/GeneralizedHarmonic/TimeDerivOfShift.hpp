@@ -12,6 +12,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -40,7 +41,7 @@ namespace gh {
  * \f}
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_deriv_of_shift(
+KOKKOS_FUNCTION void time_deriv_of_shift(
     gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> dt_shift,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -50,7 +51,7 @@ void time_deriv_of_shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
+KOKKOS_FUNCTION tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,

@@ -12,6 +12,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -35,12 +36,12 @@ namespace gh {
  * This quantity is needed for computing spatial Christoffel symbols.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void deriv_spatial_metric(
+KOKKOS_FUNCTION void deriv_spatial_metric(
     gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*> d_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
+KOKKOS_FUNCTION tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 

@@ -10,10 +10,11 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void deriv_spatial_metric(
+KOKKOS_FUNCTION void deriv_spatial_metric(
     const gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
@@ -32,7 +33,7 @@ void deriv_spatial_metric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
+KOKKOS_FUNCTION tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::ijj<DataType, SpatialDim, Frame> d_spatial_metric{};
   gh::deriv_spatial_metric<DataType, SpatialDim, Frame>(
@@ -54,7 +55,9 @@ tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
   gh::deriv_spatial_metric(                                                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

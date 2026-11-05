@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup GeneralRelativityGroup
@@ -21,11 +22,11 @@ namespace gr {
  * \details Simply pull out the spatial components.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spatial_metric(
+KOKKOS_FUNCTION void spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 /// @}

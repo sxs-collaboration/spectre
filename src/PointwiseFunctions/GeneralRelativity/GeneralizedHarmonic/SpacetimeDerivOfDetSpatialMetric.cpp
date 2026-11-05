@@ -13,6 +13,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace gh {
@@ -49,7 +50,7 @@ struct D4gBuffer<DataVector, SpatialDim, Frame> {
 }  // namespace
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spacetime_deriv_of_det_spatial_metric(
+KOKKOS_FUNCTION void spacetime_deriv_of_det_spatial_metric(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>
         d4_det_spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric,
@@ -97,7 +98,8 @@ void spacetime_deriv_of_det_spatial_metric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
+KOKKOS_FUNCTION tnsr::a<DataType, SpatialDim, Frame>
+spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
@@ -131,7 +133,9 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

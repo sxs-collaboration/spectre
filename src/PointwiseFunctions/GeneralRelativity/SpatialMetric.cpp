@@ -10,11 +10,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   tnsr::ii<DataType, SpatialDim, Frame> local_spatial_metric{
       get_size(get<0, 0>(spacetime_metric))};
@@ -23,7 +24,7 @@ tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void spatial_metric(
+KOKKOS_FUNCTION void spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -46,7 +47,9 @@ void spatial_metric(
           spatial_metric,                                                     \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

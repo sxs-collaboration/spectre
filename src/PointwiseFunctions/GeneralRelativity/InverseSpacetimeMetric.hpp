@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup GeneralRelativityGroup
@@ -30,7 +31,7 @@ namespace gr {
  * inverse spatial metric respectively
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void inverse_spacetime_metric(
+KOKKOS_FUNCTION void inverse_spacetime_metric(
     gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>
         inverse_spacetime_metric,
     const Scalar<DataType>& lapse,
@@ -38,7 +39,7 @@ void inverse_spacetime_metric(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
+KOKKOS_FUNCTION tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);

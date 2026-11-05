@@ -10,11 +10,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> lapse(
+KOKKOS_FUNCTION Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   Scalar<DataType> local_lapse{get_size(get<0, 0>(spacetime_metric))};
@@ -23,9 +24,10 @@ Scalar<DataType> lapse(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void lapse(const gsl::not_null<Scalar<DataType>*> lapse,
-           const tnsr::I<DataType, SpatialDim, Frame>& shift,
-           const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
+KOKKOS_FUNCTION void lapse(
+    const gsl::not_null<Scalar<DataType>*> lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   get(*lapse) = -get<0, 0>(spacetime_metric);
   for (size_t i = 0; i < SpatialDim; ++i) {
     get(*lapse) += shift.get(i) * spacetime_metric.get(i + 1, 0);
@@ -47,7 +49,9 @@ void lapse(const gsl::not_null<Scalar<DataType>*> lapse,
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

@@ -8,11 +8,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
@@ -24,7 +25,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_electric(
+KOKKOS_FUNCTION void weyl_electric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>
         weyl_electric_part,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
@@ -46,7 +47,7 @@ void weyl_electric(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_electric_scalar(
+KOKKOS_FUNCTION void weyl_electric_scalar(
     const gsl::not_null<Scalar<DataType>*> weyl_electric_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
@@ -78,7 +79,7 @@ void weyl_electric_scalar(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> weyl_electric_scalar(
+KOKKOS_FUNCTION Scalar<DataType> weyl_electric_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   Scalar<DataType> weyl_electric_scalar_result{};
@@ -118,7 +119,9 @@ Scalar<DataType> weyl_electric_scalar(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
           inverse_spatial_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 namespace gr {
 /// @{
@@ -29,7 +30,7 @@ namespace gr {
  * curvature.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void time_derivative_of_spatial_metric(
+KOKKOS_FUNCTION void time_derivative_of_spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> dt_spatial_metric,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -39,7 +40,8 @@ void time_derivative_of_spatial_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> time_derivative_of_spatial_metric(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame>
+time_derivative_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,

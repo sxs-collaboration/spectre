@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -34,13 +35,13 @@ namespace gr {
  * \note This needs additional terms for computations in a non-vacuum.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_electric(
+KOKKOS_FUNCTION void weyl_electric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_electric_part,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
@@ -62,12 +63,12 @@ void weyl_electric(
  * terms for matter.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> weyl_electric_scalar(
+KOKKOS_FUNCTION Scalar<DataType> weyl_electric_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_electric_scalar(
+KOKKOS_FUNCTION void weyl_electric_scalar(
     gsl::not_null<Scalar<DataType>*> weyl_electric_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);

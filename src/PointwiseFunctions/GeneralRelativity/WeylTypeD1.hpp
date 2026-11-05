@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -35,13 +36,13 @@ namespace gr {
  * electric part ofthe Weyl tensor.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_type_D1(
+KOKKOS_FUNCTION void weyl_type_D1(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_type_D1,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
@@ -61,13 +62,13 @@ void weyl_type_D1(
  * \note The Weyl Type D1 \f$D_{ij}\f$ is available via gr::weyl_type_D1.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_type_D1_scalar(
+KOKKOS_FUNCTION void weyl_type_D1_scalar(
     gsl::not_null<Scalar<DataType>*> weyl_type_D1_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_type_D1,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-Scalar<DataType> weyl_type_D1_scalar(
+KOKKOS_FUNCTION Scalar<DataType> weyl_type_D1_scalar(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_type_D1,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 

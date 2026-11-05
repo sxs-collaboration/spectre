@@ -8,11 +8,13 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::II<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::II<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector) {
   tnsr::II<DataType, VolumeDim, Frame> projection_tensor(
@@ -23,7 +25,7 @@ tnsr::II<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::II<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
@@ -38,7 +40,8 @@ void transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::ii<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::ii<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) {
   tnsr::ii<DataType, VolumeDim, Frame> projection_tensor(
@@ -49,7 +52,7 @@ tnsr::ii<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
@@ -64,7 +67,8 @@ void transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::Ij<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::Ij<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
     const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) {
   tnsr::Ij<DataType, VolumeDim, Frame> projection_tensor(
@@ -75,7 +79,7 @@ tnsr::Ij<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::Ij<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
@@ -90,7 +94,8 @@ void transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::AA<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::AA<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::AA<DataType, VolumeDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector) {
@@ -103,7 +108,7 @@ tnsr::AA<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::AA<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::AA<DataType, VolumeDim, Frame>& inverse_spacetime_metric,
@@ -126,7 +131,8 @@ void transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::aa<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::aa<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
@@ -140,7 +146,7 @@ tnsr::aa<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
@@ -169,7 +175,8 @@ void transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-tnsr::Ab<DataType, VolumeDim, Frame> transverse_projection_operator(
+KOKKOS_FUNCTION tnsr::Ab<DataType, VolumeDim, Frame>
+transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
@@ -185,7 +192,7 @@ tnsr::Ab<DataType, VolumeDim, Frame> transverse_projection_operator(
 }
 
 template <typename DataType, size_t VolumeDim, typename Frame>
-void transverse_projection_operator(
+KOKKOS_FUNCTION void transverse_projection_operator(
     const gsl::not_null<tnsr::Ab<DataType, VolumeDim, Frame>*>
         projection_tensor,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
@@ -311,7 +318,9 @@ void transverse_projection_operator(
           interface_unit_normal_one_form,                                    \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

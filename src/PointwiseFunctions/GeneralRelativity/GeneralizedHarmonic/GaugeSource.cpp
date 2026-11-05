@@ -9,11 +9,12 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>
-void gauge_source(
+KOKKOS_FUNCTION void gauge_source(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -60,7 +61,7 @@ void gauge_source(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::a<DataType, SpatialDim, Frame> gauge_source(
+KOKKOS_FUNCTION tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -106,7 +107,9 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
           trace_christoffel_last_indices);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Inertial))
 
 #undef DIM

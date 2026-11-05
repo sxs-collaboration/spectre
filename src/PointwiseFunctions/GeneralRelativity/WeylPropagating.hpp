@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 
 /// \cond
 namespace gsl {
@@ -45,7 +46,7 @@ namespace gr {
  * project tensors transverse to \f$n^i\f$.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
+KOKKOS_FUNCTION tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -56,7 +57,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij, double sign);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void weyl_propagating(
+KOKKOS_FUNCTION void weyl_propagating(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_prop_u8,
     const tnsr::ii<DataType, SpatialDim, Frame>& ricci,
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,

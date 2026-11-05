@@ -9,11 +9,12 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void christoffel_first_kind(
+KOKKOS_FUNCTION void christoffel_first_kind(
     const gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame, Index>*>
         christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) {
@@ -31,7 +32,8 @@ void christoffel_first_kind(
 }
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
+KOKKOS_FUNCTION tnsr::abb<DataType, SpatialDim, Frame, Index>
+christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) {
   auto christoffel =
       make_with_value<tnsr::abb<DataType, SpatialDim, Frame, Index>>(d_metric,
@@ -41,7 +43,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
 }
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-void christoffel_second_kind(
+KOKKOS_FUNCTION void christoffel_second_kind(
     const gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*>
         christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
@@ -66,7 +68,7 @@ void christoffel_second_kind(
   }
 }
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-auto christoffel_second_kind(
+KOKKOS_FUNCTION auto christoffel_second_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric)
     -> tnsr::Abb<DataType, SpatialDim, Frame, Index> {
@@ -109,7 +111,9 @@ auto christoffel_second_kind(
       const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
           inverse_metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        SPECTRE_DEVICE_AND_HOST_TYPES((double),
+                                                      (double, DataVector)),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial,
                          Frame::Spherical<Frame::Inertial>,
                          Frame::Spherical<Frame::Distorted>,
