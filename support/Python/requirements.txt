@@ -30,6 +30,9 @@ pybind11 >= 2.7.0
 pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 12.0.0
+# Scri: to transform CCE waveforms at future null infinity into the correct
+# Bondi-Metzner-Sachs (BMS) frame. See 'spectre bbh frame-fix'.
+scri
 scipy
 # SimulationSupport: shared routines for SpEC and SpECTRE
 SimulationSupport @ git+https://github.com/sxs-collaboration/SimulationSupport.git@0b73ea057a6a8915e57cfc37a7c8cb0630a834ad
