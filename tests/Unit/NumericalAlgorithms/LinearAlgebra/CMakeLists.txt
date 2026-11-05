@@ -5,6 +5,7 @@ set(LIBRARY "Test_LinearAlgebra")
 
 set(LIBRARY_SOURCES
   Test_FindGeneralizedEigenvalues.cpp
+  Test_FindRealEigensystem.cpp
   Test_LinearLeastSquares.cpp
   )
 
@@ -14,4 +15,5 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   LinearAlgebra
+  Utilities
   )
