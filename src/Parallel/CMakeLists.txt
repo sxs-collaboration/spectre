@@ -11,6 +11,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AlgorithmExecution.cpp
   ArrayComponentId.cpp
   CharmRegistration.cpp
   ExitCode.cpp

@@ -161,6 +161,7 @@ add_algorithm_test_with_restart_from_checkpoint("CheckpointRestart")
 set(LIBRARY "Test_Parallel")
 
 set(LIBRARY_SOURCES
+  Test_AlgorithmExecution.cpp
   Test_ArrayComponentId.cpp
   Test_DomainDiagnosticInfo.cpp
   Test_ExitCode.cpp
