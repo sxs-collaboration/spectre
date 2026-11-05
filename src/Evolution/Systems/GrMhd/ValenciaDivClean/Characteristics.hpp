@@ -170,6 +170,9 @@ constexpr size_t LambdaPlus = 2;
  * - `characteristic_speeds.get(0)`: acoustic speed \f$\lambda_-\f$
  * - `characteristic_speeds.get(1)`: degenerate speed \f$v_n\f$
  * - `characteristic_speeds.get(2)`: acoustic speed \f$\lambda_+\f$
+ *
+ * \see `grmhd::ValenciaDivClean::numerical_characteristics` for how these
+ * speeds are paired with characteristic modes and characteristic projectors.
  */
 
 template <size_t ThermodynamicDim>
@@ -203,6 +206,123 @@ tnsr::i<DataVector, 3> characteristic_speeds_hydro(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 /// @}
+
+/**
+ * \brief Compute the characteristic matrix (flux Jacobian) for relativistic
+ * hydrodynamics + composition ($Y_e$), in a given direction.
+ *
+ * The characteristic matrix is the Jacobian of the flux along the unit normal
+ * $n_i$ with respect to the conserved variables $U_n$,
+ * \begin{equation}
+ *   A_{m}{}^{n} = \frac{\partial (n_i F^i_m)}{\partial U_n},
+ * \end{equation}
+ * evaluated with unit lapse and zero shift. With lapse $\alpha$ and shift
+ * $\beta^i$, the physical characteristic speeds are $\alpha \lambda - \beta_n$,
+ * where $\lambda$ are the eigenvalues of this matrix and
+ * $\beta_n = n_i \beta^i$.
+ *
+ * The index $m$ labels the rows of the matrix (the flux components), and the
+ * index $n$ labels its columns (the conserved variables). Both follow the order
+ * $(D, S_i, \tau, D Y_e)$, which differs from the order of the system's
+ * `variables_tag`.
+ *
+ * \note The normal must be unit with respect to the spatial metric.
+ *
+ * \note With a 2D equation of state, the pressure must be positive, since
+ * $\kappa = \partial p / \partial \epsilon |_\rho$ is recovered from
+ * $\kappa p / \rho^2$, the only form the 2D interface provides.
+ *
+ * \note The specific enthalpy must be consistent with the equation of state,
+ * $h = 1 + \epsilon + p / \rho$. The matrix uses both $h$ and
+ * $h - 1 = \epsilon + p / \rho$, which is computed from the equation of state
+ * to avoid cancellation when $h \approx 1$.
+ *
+ * \see `grmhd::ValenciaDivClean::numerical_characteristics` for the
+ * conventions relating this matrix to characteristic speeds, modes, and
+ * projectors.
+ *
+ * \see `find_real_eigensystem` for the index conventions of the matrix.
+ */
+template <size_t ThermodynamicDim>
+void flux_jacobian_hydro(
+    gsl::not_null<tnsr::iJ<DataVector, 6>*> characteristic_matrix,
+
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+
+/**
+ * \brief Compute numerical characteristic speeds (eigenvalues), characteristic
+ * projectors (left eigenvectors), and characteristic modes (right eigenvectors)
+ * in a given direction, from the primitive variables.
+ *
+ * \note Currently, this function only supports building the eigensystem for
+ * relativistic hydrodynamics (no magnetic field) with composition dependence
+ * ($Y_e$).
+ *
+ * The characteristic speeds $\lambda_{(i)}$ are the eigenvalues of the
+ * characteristic matrix in a given direction, $A_{m}{}^{n}$. The characteristic
+ * projectors $L^{im}$ and modes $R_{im}$ are its left and right eigenvectors,
+ * with the index conventions of `find_real_eigensystem`. We provide the
+ * characteristics in the following types:
+ * - Eigenvalues $\lambda_{(i)}$: `tnsr::i<DataVector, 6> characteristic_speeds`
+ * - Right eigenvectors $R_{in}$: `tnsr::ij<DataVector, 6> characteristic_modes`
+ * - Left eigenvectors $L^{im}$: `tnsr::IJ<DataVector, 6>
+ *   characteristic_projectors`
+ *
+ * We refer to the left eigenvectors as "projectors" because they are used to
+ * project a state into the characteristic basis. Similarly, we refer to the
+ * right eigenvectors as "modes" because they are used to reconstruct the state.
+ * For example, consider a state vector $U_{m}$ that can be represented in the
+ * characteristic basis as
+ * \begin{equation}
+ *   U_{m} = \sum_i w^{i} R_{im}.
+ * \end{equation}
+ * Then, the characteristic fields $w^{i}$ can be obtained by projecting the
+ * state vector $U_{m}$ into the characteristic basis using the left
+ * eigenvectors:
+ * \begin{equation}
+ *   w^{i} = \sum_m L^{im} U_{m}.
+ * \end{equation}
+ *
+ * The eigenvalues are in increasing order. The eigenvectors are normalized so
+ * that $\sum_m L^{im} R_{jm} = \delta^{i}_{j}$. The right eigenvectors are not
+ * unit vectors.
+ *
+ * \see `find_real_eigensystem` for the index conventions and for how this
+ * eigensystem is computed at each grid point.
+ */
+template <size_t ThermodynamicDim>
+void numerical_characteristics(
+    gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,
+    gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,
+    gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors,
+
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
 
 namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of
