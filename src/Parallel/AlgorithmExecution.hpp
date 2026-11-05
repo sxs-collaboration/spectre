@@ -26,6 +26,8 @@ enum class AlgorithmExecution {
   Halt
 };
 
+std::ostream& operator<<(std::ostream& os, const AlgorithmExecution& exec);
+
 /// Return type for iterable actions.  The std::optional can be used to specify
 /// the index of the action to be called next in the phase dependent action
 /// list.  Passing std::nullopt will execute the next action in the list.
