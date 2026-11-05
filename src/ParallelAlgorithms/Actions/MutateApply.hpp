@@ -4,10 +4,12 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
@@ -47,6 +49,8 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(mutable_global_cache_tags)
  */
 template <typename Mutator>
 struct MutateApply {
+  static std::string name() { return pretty_type::name<Mutator>(); }
+
   using simple_tags =
       detail::get_simple_tags_or_default_t<Mutator, tmpl::list<>>;
   using compute_tags =
