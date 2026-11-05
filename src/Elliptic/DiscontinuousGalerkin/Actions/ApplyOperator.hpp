@@ -376,7 +376,7 @@ struct ReceiveMortarDataAndApplyOperator<
         typename elliptic::get_fluxes_volume_tags<System, Linearized>;
     DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
         fluxes_args_on_faces{};
-    for (const auto& direction : Direction<Dim>::all_directions()) {
+    for (const auto& direction : element.all_boundaries()) {
       fluxes_args_on_faces.emplace(
           direction, elliptic::util::apply_at<
                          domain::make_faces_tags<Dim, fluxes_args_tags,
@@ -631,7 +631,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         elliptic::get_fluxes_volume_tags<System, false>;
     DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
         fluxes_args_on_faces{};
-    for (const auto& direction : Direction<Dim>::all_directions()) {
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+    for (const auto& direction : element.all_boundaries()) {
       fluxes_args_on_faces.emplace(
           direction, elliptic::util::apply_at<
                          domain::make_faces_tags<Dim, fluxes_args_tags,
