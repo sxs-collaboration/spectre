@@ -3,6 +3,7 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
@@ -96,9 +97,44 @@ void compute_characteristic_speeds_approximate_mhd(
   char_speeds[8] = char_speeds[0] + get(lapse);
   char_speeds[0] -= get(lapse);
 }
+
+// Compute the sound speed squared from the equation of state.
+template <size_t ThermodynamicDim>
+void sound_speed_squared_from_eos(
+    const gsl::not_null<Scalar<DataVector>*> sound_speed_squared,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& specific_enthalpy,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) {
+  if constexpr (ThermodynamicDim == 1) {
+    get(*sound_speed_squared) =
+        get(equation_of_state.chi_from_density(rest_mass_density)) +
+        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+            rest_mass_density));
+    get(*sound_speed_squared) /= get(specific_enthalpy);
+  } else if constexpr (ThermodynamicDim == 2) {
+    get(*sound_speed_squared) =
+        get(equation_of_state.chi_from_density_and_energy(
+            rest_mass_density, specific_internal_energy)) +
+        get(equation_of_state
+                .kappa_times_p_over_rho_squared_from_density_and_energy(
+                    rest_mass_density, specific_internal_energy));
+    get(*sound_speed_squared) /= get(specific_enthalpy);
+  } else if constexpr (ThermodynamicDim == 3) {
+    const auto temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction);
+    get(*sound_speed_squared) =
+        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction));
+  }
+}
 }  // namespace
 
 namespace grmhd::ValenciaDivClean {
+
 template <size_t ThermodynamicDim>
 void characteristic_speeds_approximate_mhd(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
@@ -178,28 +214,10 @@ void characteristic_speeds_approximate_mhd(
 
   Scalar<DataVector>& sound_speed_squared =
       get<hydro::Tags::SoundSpeedSquared<DataVector>>(temp_tensors);
-  if constexpr (ThermodynamicDim == 1) {
-    get(sound_speed_squared) =
-        get(equation_of_state.chi_from_density(rest_mass_density)) +
-        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
-            rest_mass_density));
-    get(sound_speed_squared) /= get(specific_enthalpy);
-  } else if constexpr (ThermodynamicDim == 2) {
-    get(sound_speed_squared) =
-        get(equation_of_state.chi_from_density_and_energy(
-            rest_mass_density, specific_internal_energy)) +
-        get(equation_of_state
-                .kappa_times_p_over_rho_squared_from_density_and_energy(
-                    rest_mass_density, specific_internal_energy));
-    get(sound_speed_squared) /= get(specific_enthalpy);
-  } else if constexpr (ThermodynamicDim == 3) {
-    const auto temperature =
-        equation_of_state.temperature_from_density_and_energy(
-            rest_mass_density, specific_internal_energy, electron_fraction);
-    get(sound_speed_squared) =
-        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
-            rest_mass_density, temperature, electron_fraction));
-  }
+  sound_speed_squared_from_eos(make_not_null(&sound_speed_squared),
+                               rest_mass_density, specific_internal_energy,
+                               electron_fraction, specific_enthalpy,
+                               equation_of_state);
 
   compute_characteristic_speeds_approximate_mhd(
       char_speeds, lapse, shift, spatial_velocity, spatial_velocity_squared,
@@ -231,21 +249,23 @@ std::array<DataVector, 9> characteristic_speeds_approximate_mhd(
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds_hydro(
-    const gsl::not_null<std::array<DataVector, 3>*> char_speeds,
+    const gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,
+    /* primitive variables */
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
   const size_t num_grid_points = get(lorentz_factor).size();
-  if ((*char_speeds)[0].size() != num_grid_points) {
-    for (auto& cs : (*char_speeds)) {
-      cs = DataVector(num_grid_points, 0.0);
+  if (characteristic_speeds->get(0).size() != num_grid_points) {
+    for (size_t i = 0; i < 3; ++i) {
+      characteristic_speeds->get(i) = DataVector(num_grid_points, 0.0);
     }
   }
 
@@ -276,28 +296,10 @@ void characteristic_speeds_hydro(
 
   Scalar<DataVector>& sound_speed_squared =
       get<hydro::Tags::SoundSpeedSquared<DataVector>>(temp_tensors);
-  if constexpr (ThermodynamicDim == 1) {
-    get(sound_speed_squared) =
-        get(equation_of_state.chi_from_density(rest_mass_density)) +
-        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
-            rest_mass_density));
-    get(sound_speed_squared) /= get(specific_enthalpy);
-  } else if constexpr (ThermodynamicDim == 2) {
-    get(sound_speed_squared) =
-        get(equation_of_state.chi_from_density_and_energy(
-            rest_mass_density, specific_internal_energy)) +
-        get(equation_of_state
-                .kappa_times_p_over_rho_squared_from_density_and_energy(
-                    rest_mass_density, specific_internal_energy));
-    get(sound_speed_squared) /= get(specific_enthalpy);
-  } else if constexpr (ThermodynamicDim == 3) {
-    const auto temperature =
-        equation_of_state.temperature_from_density_and_energy(
-            rest_mass_density, specific_internal_energy, electron_fraction);
-    get(sound_speed_squared) =
-        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
-            rest_mass_density, temperature, electron_fraction));
-  }
+  sound_speed_squared_from_eos(make_not_null(&sound_speed_squared),
+                               rest_mass_density, specific_internal_energy,
+                               electron_fraction, specific_enthalpy,
+                               equation_of_state);
 
   // Calculate the characteristic speed for non-degenerate ones
   Scalar<DataVector>& denom = get<::Tags::TempScalar<1>>(temp_tensors);
@@ -314,36 +316,34 @@ void characteristic_speeds_hydro(
                             (1 - get(sound_speed_squared))) /
       (get(lorentz_factor) * get(denom));
 
-  enum HydroSpeed : uint32_t {
-    NormalDotVelocity = 0,
-    LambdaPlus = 1,
-    LambdaMinus = 2
-  };
-  // Degenerate eigenvalue (normal dot velocity)
-  (*char_speeds)[HydroSpeed::NormalDotVelocity] = get(normal_velocity);
-  (*char_speeds)[HydroSpeed::LambdaPlus] = get(first_term) + get(second_term);
-  (*char_speeds)[HydroSpeed::LambdaMinus] = get(first_term) - get(second_term);
+  // Degenerate characteristic speed (normal dot velocity)
+  characteristic_speeds->get(HydroSpeed::NormalDotVelocity) =
+      get(normal_velocity);
+  characteristic_speeds->get(HydroSpeed::LambdaPlus) =
+      get(first_term) + get(second_term);
+  characteristic_speeds->get(HydroSpeed::LambdaMinus) =
+      get(first_term) - get(second_term);
 }
 
-
 template <size_t ThermodynamicDim>
-std::array<DataVector, 3> characteristic_speeds_hydro(
+tnsr::i<DataVector, 3> characteristic_speeds_hydro(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
-  std::array<DataVector, 3> char_speeds{};
-  characteristic_speeds_hydro(
-      make_not_null(&char_speeds), spatial_velocity, rest_mass_density,
-      specific_internal_energy, specific_enthalpy, electron_fraction,
-      lorentz_factor, unit_normal, spatial_metric, equation_of_state);
-  return char_speeds;
+  tnsr::i<DataVector, 3> characteristic_speeds{};
+  characteristic_speeds_hydro(make_not_null(&characteristic_speeds),
+                              spatial_velocity, rest_mass_density,
+                              specific_internal_energy, electron_fraction,
+                              lorentz_factor, specific_enthalpy, spatial_metric,
+                              unit_normal, equation_of_state);
+  return characteristic_speeds;
 }
 
 namespace Tags {
@@ -395,58 +395,57 @@ GENERATE_INSTANTIATIONS(FUNCTION_INSTANTIATION, (1, 2, 3))
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template std::array<DataVector, 9>                                        \
-  characteristic_speeds_approximate_mhd<GET_DIM(data)>(                     \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template void characteristic_speeds_approximate_mhd<GET_DIM(data)>(       \
-      const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template std::array<DataVector, 3>                                        \
-  characteristic_speeds_hydro<GET_DIM(data)>(                               \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template void characteristic_speeds_hydro<GET_DIM(data)>(                 \
-      const gsl::not_null<std::array<DataVector, 3>*> char_speeds,          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
+#define INSTANTIATION(r, data)                                                \
+  template std::array<DataVector, 9>                                          \
+  characteristic_speeds_approximate_mhd<GET_DIM(data)>(                       \
+      const Scalar<DataVector>& rest_mass_density,                            \
+      const Scalar<DataVector>& electron_fraction,                            \
+      const Scalar<DataVector>& specific_internal_energy,                     \
+      const Scalar<DataVector>& specific_enthalpy,                            \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,        \
+      const Scalar<DataVector>& lorentz_factor,                               \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,          \
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,   \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
+      const tnsr::i<DataVector, 3>& unit_normal,                              \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&           \
+          equation_of_state);                                                 \
+  template void characteristic_speeds_approximate_mhd<GET_DIM(data)>(         \
+      const gsl::not_null<std::array<DataVector, 9>*> char_speeds,            \
+      const Scalar<DataVector>& rest_mass_density,                            \
+      const Scalar<DataVector>& electron_fraction,                            \
+      const Scalar<DataVector>& specific_internal_energy,                     \
+      const Scalar<DataVector>& specific_enthalpy,                            \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,        \
+      const Scalar<DataVector>& lorentz_factor,                               \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,          \
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,   \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
+      const tnsr::i<DataVector, 3>& unit_normal,                              \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&           \
+          equation_of_state);                                                 \
+  template tnsr::i<DataVector, 3> characteristic_speeds_hydro<GET_DIM(data)>( \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,        \
+      const Scalar<DataVector>& rest_mass_density,                            \
+      const Scalar<DataVector>& specific_internal_energy,                     \
+      const Scalar<DataVector>& electron_fraction,                            \
+      const Scalar<DataVector>& lorentz_factor,                               \
+      const Scalar<DataVector>& specific_enthalpy,                            \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
+      const tnsr::i<DataVector, 3>& unit_normal,                              \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&           \
+          equation_of_state);                                                 \
+  template void characteristic_speeds_hydro<GET_DIM(data)>(                   \
+      const gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,     \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,        \
+      const Scalar<DataVector>& rest_mass_density,                            \
+      const Scalar<DataVector>& specific_internal_energy,                     \
+      const Scalar<DataVector>& electron_fraction,                            \
+      const Scalar<DataVector>& lorentz_factor,                               \
+      const Scalar<DataVector>& specific_enthalpy,                            \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
+      const tnsr::i<DataVector, 3>& unit_normal,                              \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&           \
           equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

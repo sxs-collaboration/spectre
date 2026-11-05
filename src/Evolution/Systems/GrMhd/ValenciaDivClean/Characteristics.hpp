@@ -118,6 +118,21 @@ void characteristic_speeds_approximate_mhd(
         equation_of_state);
 /// @}
 
+/*!
+ * \brief Labels for the characteristic speeds of the relativistic hydrodynamics
+ * system.
+ *
+ * \see `grmhd::ValenciaDivClean::characteristic_speeds_hydro`
+ */
+namespace HydroSpeed {
+/// The smallest speed, $\lambda_-$
+constexpr size_t LambdaMinus = 0;
+/// The normal velocity, $v_n = n_i v^i$
+constexpr size_t NormalDotVelocity = 1;
+/// The largest speed, $\lambda_+$
+constexpr size_t LambdaPlus = 2;
+}  // namespace HydroSpeed
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the relativistic hydrodynamics
@@ -151,37 +166,40 @@ void characteristic_speeds_approximate_mhd(
  * c_s^2 &= \frac{1}{h}\left(\chi + \kappa \frac{p}{\rho^2}\right) ,
  * \f}
  *
- * The returned array has size 3 and contains the unique characteristic speeds:
- *  - `char_speeds[0]`: \f$v_n\f$ (degenerate eigenvalue, multiplicity 4 if the
- * electron fraction is included),
- *  - `char_speeds[1]`: \f$\lambda_+\f$ (right-propagating acoustic mode),
- *  - `char_speeds[2]`: \f$\lambda_-\f$ (left-propagating acoustic mode).
+ * The returned tensor has index 0..2, in increasing order (see `HydroSpeed`):
+ * - `characteristic_speeds.get(0)`: acoustic speed \f$\lambda_-\f$
+ * - `characteristic_speeds.get(1)`: degenerate speed \f$v_n\f$
+ * - `characteristic_speeds.get(2)`: acoustic speed \f$\lambda_+\f$
  */
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds_hydro(
-    gsl::not_null<std::array<DataVector, 3>*> pchar_speeds,
+    gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,
+
+    /* primitive variables */
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 
 template <size_t ThermodynamicDim>
-std::array<DataVector, 3> characteristic_speeds_hydro(
+tnsr::i<DataVector, 3> characteristic_speeds_hydro(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 /// @}

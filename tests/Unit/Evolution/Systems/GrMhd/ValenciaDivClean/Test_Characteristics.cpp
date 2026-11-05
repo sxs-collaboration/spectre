@@ -154,9 +154,9 @@ void test_hydro_characteristic_speed(const DataVector& used_for_size) {
     CHECK_ITERABLE_CUSTOM_APPROX(
         grmhd::ValenciaDivClean::characteristic_speeds_hydro<3>(
             spatial_velocity, rest_mass_density, specific_internal_energy,
-            specific_enthalpy, electron_fraction, lorentz_factor, unit_normal,
-            spatial_metric, *eos_3d),
-        (pypp::call<std::array<DataVector, 3>>(
+            electron_fraction, lorentz_factor, specific_enthalpy,
+            spatial_metric, unit_normal, *eos_3d),
+        (pypp::call<tnsr::i<DataVector, 3>>(
             "CharacteristicSpeeds", "characteristic_speeds_hydro",
             spatial_velocity, spatial_velocity_squared, sound_speed_squared,
             lorentz_factor, unit_normal)),
