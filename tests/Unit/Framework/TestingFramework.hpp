@@ -88,11 +88,10 @@ static const Approx approx =                                    // NOLINT
  * containers, keys are checked for strict equality and values are
  * checked for approximate equality.
  */
-#define CHECK_ITERABLE_APPROX(a, b)                                          \
-  do {                                                                       \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
-    check_iterable_approx<std::common_type_t<                                \
-        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
+#define CHECK_ITERABLE_APPROX(a, b)                                    \
+  do {                                                                 \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
+    check_iterable_approx_of_common_type(a, b);                        \
   } while (false)
 
 /*!
@@ -100,12 +99,10 @@ static const Approx approx =                                    // NOLINT
  * \brief Same as `CHECK_ITERABLE_APPROX` with user-defined Approx.
  *  The third argument should be of type `Approx`.
  */
-#define CHECK_ITERABLE_CUSTOM_APPROX(a, b, appx)                             \
-  do {                                                                       \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
-    check_iterable_approx<std::common_type_t<                                \
-        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
-                                                                      appx); \
+#define CHECK_ITERABLE_CUSTOM_APPROX(a, b, appx)                       \
+  do {                                                                 \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
+    check_iterable_approx_of_common_type(a, b, appx);                  \
   } while (false)
 
 /// \cond HIDDEN_SYMBOLS
@@ -231,6 +228,15 @@ struct check_iterable_approx<M, Requires<blaze::IsColumnMajorMatrix_v<M> and
     }
   }
 };
+
+// Deduces the types of the macro arguments as template parameters, because
+// nvcc has issues with `decltype` of the arguments in function templates.
+template <typename A, typename B>
+void check_iterable_approx_of_common_type(const A& a, const B& b,
+                                          const Approx& appx = approx) {
+  check_iterable_approx<
+      std::common_type_t<std::decay_t<A>, std::decay_t<B>>>::apply(a, b, appx);
+}
 /// \endcond
 
 /*!
