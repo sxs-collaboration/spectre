@@ -3,35 +3,36 @@
 
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
-#include <algorithm>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
 
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace {
-uint8_t combine(const Spectral::Basis basis,
-                const Spectral::Quadrature quadrature) {
+KOKKOS_FUNCTION uint8_t combine(const Spectral::Basis basis,
+                                const Spectral::Quadrature quadrature) {
   return static_cast<uint8_t>(basis) bitor static_cast<uint8_t>(quadrature);
 }
 
-Spectral::Basis extract_basis(const uint8_t bits) {
+KOKKOS_FUNCTION Spectral::Basis extract_basis(const uint8_t bits) {
   return static_cast<Spectral::Basis>(0b11110000 bitand bits);
 }
 
-Spectral::Quadrature extract_quadrature(const uint8_t bits) {
+KOKKOS_FUNCTION Spectral::Quadrature extract_quadrature(const uint8_t bits) {
   return static_cast<Spectral::Quadrature>(0b00001111 bitand bits);
 }
 }  // namespace
 
 template <size_t Dim>
-Mesh<Dim>::Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
-                const Spectral::Quadrature quadrature) {
+KOKKOS_FUNCTION Mesh<Dim>::Mesh(const size_t isotropic_extents,
+                                const Spectral::Basis basis,
+                                const Spectral::Quadrature quadrature) {
   static_assert(sizeof(Mesh<Dim>) == (Dim == 0 ? 2 : 2 * Dim));
   if constexpr (Dim > 0) {
     ASSERT(isotropic_extents <= 255, "Cannot have more than 255 grid points");
@@ -54,9 +55,9 @@ Mesh<Dim>::Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
 }
 
 template <size_t Dim>
-Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
-                const Spectral::Basis basis,
-                const Spectral::Quadrature quadrature) {
+KOKKOS_FUNCTION Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
+                                const Spectral::Basis basis,
+                                const Spectral::Quadrature quadrature) {
   if constexpr (Dim > 0) {
     ASSERT(
         extents[0] <= 255,
@@ -86,9 +87,10 @@ Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
 }
 
 template <size_t Dim>
-Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
-                const std::array<Spectral::Basis, Dim>& bases,
-                const std::array<Spectral::Quadrature, Dim>& quadratures) {
+KOKKOS_FUNCTION Mesh<Dim>::Mesh(
+    const std::array<size_t, Dim>& extents,
+    const std::array<Spectral::Basis, Dim>& bases,
+    const std::array<Spectral::Quadrature, Dim>& quadratures) {
   if constexpr (Dim > 0) {
     ASSERT(
         extents[0] <= 255,
@@ -118,7 +120,7 @@ Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
 }
 
 template <size_t Dim>
-Index<Dim> Mesh<Dim>::extents() const {
+KOKKOS_FUNCTION Index<Dim> Mesh<Dim>::extents() const {
   if constexpr (Dim == 0) {
     return Index<Dim>{};
   } else if constexpr (Dim == 1) {
@@ -138,7 +140,7 @@ Index<Dim> Mesh<Dim>::extents() const {
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 #endif
 template <size_t Dim>
-size_t Mesh<Dim>::extents(const size_t d) const {
+KOKKOS_FUNCTION size_t Mesh<Dim>::extents(const size_t d) const {
   ASSERT(d < Dim,
          "Cannot get extent for dim " << d << " in a mesh of Dim " << Dim);
   return gsl::at(extents_, d);
@@ -148,7 +150,7 @@ size_t Mesh<Dim>::extents(const size_t d) const {
 #endif
 
 template <size_t Dim>
-size_t Mesh<Dim>::number_of_grid_points() const {
+KOKKOS_FUNCTION size_t Mesh<Dim>::number_of_grid_points() const {
   if constexpr (Dim == 0) {
     return 1;
   } else if constexpr (Dim == 1) {
@@ -164,12 +166,12 @@ size_t Mesh<Dim>::number_of_grid_points() const {
 }
 
 template <size_t Dim>
-size_t Mesh<Dim>::storage_index(const Index<Dim>& index) const {
+KOKKOS_FUNCTION size_t Mesh<Dim>::storage_index(const Index<Dim>& index) const {
   return collapsed_index(index, extents());
 }
 
 template <size_t Dim>
-std::array<Spectral::Basis, Dim> Mesh<Dim>::basis() const {
+KOKKOS_FUNCTION std::array<Spectral::Basis, Dim> Mesh<Dim>::basis() const {
   if constexpr (Dim == 0) {
     return {};
   } else if constexpr (Dim == 1) {
@@ -185,12 +187,13 @@ std::array<Spectral::Basis, Dim> Mesh<Dim>::basis() const {
 }
 
 template <size_t Dim>
-Spectral::Basis Mesh<Dim>::basis(const size_t d) const {
+KOKKOS_FUNCTION Spectral::Basis Mesh<Dim>::basis(const size_t d) const {
   return extract_basis(gsl::at(quadrature_and_basis_, d));
 }
 
 template <size_t Dim>
-std::array<Spectral::Quadrature, Dim> Mesh<Dim>::quadrature() const {
+KOKKOS_FUNCTION std::array<Spectral::Quadrature, Dim> Mesh<Dim>::quadrature()
+    const {
   if constexpr (Dim == 0) {
     return {};
   } else if constexpr (Dim == 1) {
@@ -206,14 +209,15 @@ std::array<Spectral::Quadrature, Dim> Mesh<Dim>::quadrature() const {
 }
 
 template <size_t Dim>
-Spectral::Quadrature Mesh<Dim>::quadrature(const size_t d) const {
+KOKKOS_FUNCTION Spectral::Quadrature Mesh<Dim>::quadrature(
+    const size_t d) const {
   return extract_quadrature(gsl::at(quadrature_and_basis_, d));
 }
 
 template <size_t Dim>
 // clang-tidy: incorrectly reported redundancy in template expression
 template <size_t N, Requires<(N > 0 and N == Dim)>>  // NOLINT
-Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const {
+KOKKOS_FUNCTION Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const {
   ASSERT(d < Dim, "Tried to slice away non-existing dimension "
                       << d << " of " << Dim << "-dimensional mesh.");
   std::array<size_t, Dim - 1> dims{};
@@ -229,7 +233,7 @@ Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const {
 template <size_t Dim>
 // clang-tidy: incorrectly reported redundancy in template expression
 template <size_t N, Requires<(N > 0 and N == Dim)>>  // NOLINT
-Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
+KOKKOS_FUNCTION Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
   auto face = slice_away(d);
   // The outer boundary of a B3 ball (B2 disk) is an S2 (S1): convert the
   // remaining ZernikeB3 (ZernikeB2) angular bases to SphericalHarmonic
@@ -240,7 +244,10 @@ Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
            "A B3 ball's outer boundary is at the upper end of the radial "
            "dimension (GaussRadauUpper quadrature), but dimension "
                << d << " has quadrature " << quadrature(d));
-    ASSERT(basis() == make_array<Dim>(Spectral::Basis::ZernikeB3),
+    ASSERT(alg::all_of(basis(),
+                       [](const Spectral::Basis b) {
+                         return b == Spectral::Basis::ZernikeB3;
+                       }),
            "Mesh is using ZernikeB3 basis in a nonisotropic manner, got "
                << basis());
     return {face.extents().indices(),
@@ -255,13 +262,15 @@ Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
            "dimension (GaussRadauUpper quadrature), but dimension "
                << d << " has quadrature " << quadrature(d));
     auto bases = face.basis();
-    ASSERT(
-        std::count(bases.begin(), bases.end(), Spectral::Basis::ZernikeB2) == 1,
-        "Expected exactly one ZernikeB2 angular basis remaining in the "
-        "face after slicing a B2 mesh, got face bases "
-            << face.basis());
-    std::replace(bases.begin(), bases.end(), Spectral::Basis::ZernikeB2,
-                 Spectral::Basis::Fourier);
+    ASSERT(alg::count(bases, Spectral::Basis::ZernikeB2) == 1,
+           "Expected exactly one ZernikeB2 angular basis remaining in the "
+           "face after slicing a B2 mesh, got face bases "
+               << face.basis());
+    for (auto& basis : bases) {
+      if (basis == Spectral::Basis::ZernikeB2) {
+        basis = Spectral::Basis::Fourier;
+      }
+    }
     return {face.extents().indices(), bases, face.quadrature()};
   }
   return face;
@@ -269,17 +278,11 @@ Mesh<Dim - 1> Mesh<Dim>::on_interface(const size_t d) const {
 
 template <size_t Dim>
 template <size_t SliceDim, Requires<(SliceDim <= Dim)>>
-Mesh<SliceDim> Mesh<Dim>::slice_through(
+KOKKOS_FUNCTION Mesh<SliceDim> Mesh<Dim>::slice_through(
     const std::array<size_t, SliceDim>& dims) const {
-  // Check for duplicates in `dims`
-  ASSERT(
-      [&dims]() {
-        auto sorted_dims = dims;
-        std::sort(sorted_dims.begin(), sorted_dims.end());
-        auto last_unique = std::unique(sorted_dims.begin(), sorted_dims.end());
-        return last_unique == sorted_dims.end();
-      }(),
-      "Dimensions to slice through contain duplicates.");
+  ASSERT(alg::none_of(
+             dims, [&dims](const size_t d) { return alg::count(dims, d) > 1; }),
+         "Dimensions to slice through contain duplicates.");
   Mesh<SliceDim> result{};
   for (size_t i = 0; i < SliceDim; ++i) {
     const auto& d = gsl::at(dims, i);
@@ -293,7 +296,7 @@ Mesh<SliceDim> Mesh<Dim>::slice_through(
 }
 
 template <size_t Dim>
-std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const {
+KOKKOS_FUNCTION std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const {
   std::array<Mesh<1>, Dim> result{};
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(result, d) = Mesh<1>(extents(d), basis(d), quadrature(d));
@@ -308,24 +311,29 @@ void Mesh<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-bool is_isotropic(const Mesh<Dim>& mesh) {
+KOKKOS_FUNCTION bool is_isotropic(const Mesh<Dim>& mesh) {
   if constexpr (Dim == 0 or Dim == 1) {
     return true;
   } else {
-    return mesh.extents() == Index<Dim>(mesh.extents(0)) and
-           mesh.basis() == make_array<Dim>(mesh.basis(0)) and
-           mesh.quadrature() == make_array<Dim>(mesh.quadrature(0));
+    const auto all_equal_to_first = [](const auto& values) {
+      return alg::all_of(values, [&values](const auto& value) {
+        return value == gsl::at(values, 0);
+      });
+    };
+    return all_equal_to_first(mesh.extents().indices()) and
+           all_equal_to_first(mesh.basis()) and
+           all_equal_to_first(mesh.quadrature());
   }
 }
 
 template <size_t Dim>
-bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
-  return lhs.extents_ == rhs.extents_ and
-         lhs.quadrature_and_basis_ == rhs.quadrature_and_basis_;
+KOKKOS_FUNCTION bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
+  return alg::equal(lhs.extents_, rhs.extents_) and
+         alg::equal(lhs.quadrature_and_basis_, rhs.quadrature_and_basis_);
 }
 
 template <size_t Dim>
-bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
+KOKKOS_FUNCTION bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

@@ -54,6 +54,10 @@ set(LIBRARY_SOURCES
   Test_WrapText.cpp
   )
 
+if(SPECTRE_KOKKOS)
+  list(APPEND LIBRARY_SOURCES Test_AlgorithmKokkos.cpp)
+endif()
+
 add_subdirectory(Autodiff)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Kokkos)

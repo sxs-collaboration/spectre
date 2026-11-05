@@ -49,7 +49,7 @@ following configuration options:
 - `Kokkos_ENABLE_CUDA_CONSTEXPR=ON`
 - `Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE`
 
-## Writing code for devices
+# Writing code for devices
 
 - Annotate functions that should be callable on the device with
   `KOKKOS_FUNCTION` from `Utilities/Kokkos/KokkosMacros.hpp`. The annotation
@@ -75,3 +75,88 @@ following configuration options:
   that needs it, e.g. `exec.fence()`.
 - Test device code by comparing against its host counterpart. The tests run on
   the host backend in CI, which has no GPUs.
+
+## The C++ standard library in device code
+
+\warning Don't call standard library algorithms in device code, i.e. in
+`KOKKOS_FUNCTION`s and Kokkos kernels. This includes `<algorithm>`,
+`<numeric>`, `std::ranges` and `std::views`, the comparison operators of
+`std::array` (`==`, `<`, ...), and `std::complex`.
+
+CUDA doesn't support the host standard library (libstdc++) in device code.
+SpECTRE compiles device code with `--expt-relaxed-constexpr`, which lets device
+code call `constexpr` host functions, so many standard library functions compile
+for the device anyway. Some of them then give wrong results without any error
+or warning. In tests on an NVIDIA GH200, for example:
+
+- `std::array`'s `operator==`, `std::equal`, `std::copy` and `std::complex`
+  wrote no results at all: their kernels contained no instructions to write the
+  results.
+- `std::sort` (for some inputs), `std::rotate`, `std::upper_bound` and
+  `std::lcm` gave wrong values.
+- The `std::ranges` algorithms didn't compile for the device.
+
+One reason is that libstdc++ uses GCC builtins that CUDA doesn't support in
+device code, such as `__builtin_memmove`, `__builtin_memcmp` and
+`__builtin_mul_overflow`. Called directly in device code they are a compile
+error, but inside standard library functions they are compiled without an error
+and give wrong device code. Whether a function is affected depends on how
+libstdc++ implements it, so a function that works in a test isn't guaranteed to
+work for other types, inputs or compiler versions.
+
+These parts of the standard library gave correct results in device code in
+those tests and can be used:
+
+- `<cmath>` functions on `float` and `double`, which CUDA implements for the
+  device. Their results can differ from the host in the last bits, and
+  floating-point errors such as `std::sqrt(-1.0)` aren't trapped on the device.
+- `std::numeric_limits`
+- `std::array` element access (with `gsl::at`), iterators and range-based for
+  loops
+- `std::min`, `std::max`, `std::clamp` and `std::swap`
+- `std::pair`, `std::tuple`, `std::optional` and `std::span` (without
+  algorithms)
+
+Type traits, `std::move` and `std::forward` can be used too, since they don't
+generate any code of their own.
+
+Instead of standard library algorithms, use the `alg` functions from
+`Utilities/Algorithm.hpp`. For containers with contiguous iterators, such as
+`std::array`, they are implemented as plain loops and can
+be called in device code (except `alg::sample` and `alg::sort`). For other
+containers they can only be called on the host. `alg::sort` aborts on
+the device; sort short lists with `alg::bubble_sort` instead, which takes
+\f$O(N^2)\f$ operations. For algorithms over data on the device, such as
+reductions over all grid points, use Kokkos (e.g. `Kokkos::parallel_reduce`)
+instead.
+
+The `alg` functions use the elements' operators, so the rules above apply to
+them too: e.g. `alg::equal` or `alg::max_element` on a container of
+`std::array`s use `std::array`'s `==` or `<`. Pass a function object that
+compares element by element instead.
+
+A possible alternative is CUDA's own standard library,
+[libcu++](https://nvidia.github.io/cccl/unstable/libcudacxx/index.html)
+(`cuda::std`), which is written for device code. In the same tests on an NVIDIA
+GH200, `cuda::std` versions of the functions above gave correct
+results. However, libcu++ is only available with CUDA, not with the other Kokkos
+GPU backends (HIP and SYCL), and its version shipped with CUDA 13 doesn't
+provide `cuda::std::sort`. SpECTRE does not currently use it.
+
+## Enforcement and testing
+
+- The `device_std_algorithms` check in `tools/FileTestDefs.sh`, which runs in
+  CI, rejects calls to standard library algorithms in files under `src/` that
+  contain device code. Mark host-only code in such files with
+  `// NOLINT(spectre-device-std)`. The check is textual, so it can't find
+  standard library calls in functions that device code calls in other files,
+  or uses of `std::array`'s comparison operators.
+- nvcc warns about calls to host functions from device code ("calling a
+  `__host__` function from a `__host__ __device__` function"). Treat these
+  warnings as errors in the code you write. Calls to `constexpr` functions,
+  including most of the standard library, don't give this warning.
+- Code that compiles for the device can still give wrong results on the
+  device. Every function that can be called in device code needs a test that
+  calls it in a Kokkos kernel, e.g. with `TestHelpers::check_on_device`, and
+  these tests must be run on a GPU before code is merged. CI doesn't run tests
+  on GPUs.
