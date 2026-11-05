@@ -24,8 +24,11 @@ class not_null;
 
 namespace evolution::dg::subcell {
 /*!
- * \brief Invoked in directions where the neighbor is doing subcell, this
- * function copies received subcell data into the DataBox.
+ * \brief Copies the subcell data received from a neighbor into the DataBox.
+ *
+ * This is invoked by elements doing DG for every neighbor across a mortar
+ * without local time stepping, whether or not the element or the neighbor can
+ * use subcell. Elements whose mesh does not support subcell store nothing.
  *
  * The mesh and data needed for reconstruction are copied over into
  * `subcell::Tags::MeshForGhostData` and
@@ -36,6 +39,11 @@ namespace evolution::dg::subcell {
  * `subcell::Tags::DataForRdmpTci`. We handle the RDMP
  * data now because it is sent in the same buffer as the data for
  * reconstruction.
+ *
+ * Neighbors don't send this data to elements that can never use subcell, i.e.
+ * that are in or border a DG-only block (see
+ * `evolution::dg::subcell::prepare_neighbor_data`), so for those elements a
+ * message without ghost data is ignored. It is an error for any other element.
  */
 template <size_t VolumeDim>
 void receive_subcell_data_for_dg(
