@@ -76,6 +76,7 @@ target_link_libraries(
   Utilities
   VariableFixing
   PRIVATE
+  LinearAlgebra
   RootFinding
   Simd
   )
