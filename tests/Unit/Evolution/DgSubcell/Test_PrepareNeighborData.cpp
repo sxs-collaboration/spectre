@@ -6,8 +6,10 @@
 #include <cstddef>
 #include <iterator>
 #include <optional>
+#include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -34,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -153,12 +156,20 @@ DirectionalIdMap<Dim, Mesh<Dim>> compute_neighbor_meshes(
   return result;
 }
 
+// If `dg_only_direction_index` has a value, the neighbor in that direction (an
+// index into `expected_neighbor_directions`) is in a DG-only block, and so must
+// not get any data.
 template <size_t Dim>
 void test(const bool all_neighbors_are_doing_dg,
-          const ::fd::DerivativeOrder fd_derivative_order) {
+          const ::fd::DerivativeOrder fd_derivative_order,
+          const std::optional<size_t> dg_only_direction_index = std::nullopt) {
   CAPTURE(all_neighbors_are_doing_dg);
   CAPTURE(fd_derivative_order);
   CAPTURE(Dim);
+  INFO("DG-only direction index: "
+       << (dg_only_direction_index.has_value()
+               ? std::to_string(*dg_only_direction_index)
+               : std::string{"none"}));
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
@@ -168,6 +179,28 @@ void test(const bool all_neighbors_are_doing_dg,
 
   const auto neighbor_meshes = compute_neighbor_meshes(
       element, all_neighbors_are_doing_dg, dg_mesh, subcell_mesh);
+
+  std::optional<Direction<Dim>> dg_only_direction{};
+  std::vector<size_t> only_dg_block_ids{};
+  if (dg_only_direction_index.has_value()) {
+    dg_only_direction =
+        expected_neighbor_directions<Dim>().at(*dg_only_direction_index);
+    const ElementId<Dim>& neighbor_id =
+        *element.neighbors().at(*dg_only_direction).begin();
+    // A neighbor in a DG-only block is never doing FD
+    REQUIRE(neighbor_meshes.at(DirectionalId<Dim>{*dg_only_direction,
+                                                  neighbor_id}) == dg_mesh);
+    only_dg_block_ids.push_back(neighbor_id.block_id());
+  }
+  const auto expected_directions = [&dg_only_direction]() {
+    std::vector<Direction<Dim>> result{};
+    for (const auto& direction : expected_neighbor_directions<Dim>()) {
+      if (direction != dg_only_direction) {
+        result.push_back(direction);
+      }
+    }
+    return result;
+  }();
 
   Variables<tmpl::list<Var1>> vars{dg_mesh.number_of_grid_points(), 0.0};
   get(get<Var1>(vars)) = get<0>(logical_coordinates(dg_mesh));
@@ -231,13 +264,14 @@ void test(const bool all_neighbors_are_doing_dg,
       domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::SubcellOptions<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
-      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>>(
+      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>,
+      evolution::dg::Tags::OnlyDgBlockIds<Dim>>>(
       std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh, element,
       vars,
       // Set RDMP data since it would've been calculated before already.
       evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
       subcell_options, fd_to_fd_neighbor_interpolants,
-      dg_to_fd_neighbor_interpolants);
+      dg_to_fd_neighbor_interpolants, only_dg_block_ids);
 
   std::optional<Mesh<Dim>> ghost_data_mesh{std::nullopt};
   DirectionMap<Dim, DataVector> data_for_neighbors{};
@@ -272,17 +306,16 @@ void test(const bool all_neighbors_are_doing_dg,
                           static_cast<std::ptrdiff_t>(expected_vars.size())));
     }
 
-    for (const auto& direction : expected_neighbor_directions<Dim>()) {
+    for (const auto& direction : expected_directions) {
       expected_neighbor_data.insert(std::pair{direction, data});
     }
   } else {
     // Set all directions to false, enable the desired ones below
     std::unordered_set<Direction<Dim>> directions_to_slice{};
 
-    REQUIRE(data_for_neighbors.size() == Dim);
     const size_t num_ghost_points =
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size;
-    for (const auto& direction : expected_neighbor_directions<Dim>()) {
+    for (const auto& direction : expected_directions) {
       REQUIRE(data_for_neighbors.contains(direction));
       REQUIRE(data_for_neighbors.at(direction).size() ==
               num_ghost_points * (need_fluxes ? (Dim + 1) : 1) + 2);
@@ -313,18 +346,22 @@ void test(const bool all_neighbors_are_doing_dg,
     }();
     if constexpr (Dim == 3) {
       const auto direction = expected_neighbor_directions<Dim>()[1];
-      Index<Dim> slice_extents = subcell_mesh.extents();
-      slice_extents[direction.dimension()] = ghost_zone_size;
-      const auto& neighbor_element_id =
-          *element.neighbors().at(direction).begin();
-      expected_neighbor_data.at(direction) = orient_variables(
-          expected_neighbor_data.at(direction), slice_extents,
-          element.neighbors().at(direction).orientation(neighbor_element_id));
+      if (direction != dg_only_direction) {
+        Index<Dim> slice_extents = subcell_mesh.extents();
+        slice_extents[direction.dimension()] = ghost_zone_size;
+        const auto& neighbor_element_id =
+            *element.neighbors().at(direction).begin();
+        expected_neighbor_data.at(direction) = orient_variables(
+            expected_neighbor_data.at(direction), slice_extents,
+            element.neighbors().at(direction).orientation(neighbor_element_id));
+      }
     }
   }
 
-  for (const auto& direction : expected_neighbor_directions<Dim>()) {
+  CHECK(data_for_neighbors.size() == expected_directions.size());
+  for (const auto& direction : expected_directions) {
     CAPTURE(direction);
+    REQUIRE(data_for_neighbors.contains(direction));
     const auto& data_in_direction = data_for_neighbors.at(direction);
     CHECK_ITERABLE_APPROX(
         expected_neighbor_data.at(direction),
@@ -336,11 +373,15 @@ void test(const bool all_neighbors_are_doing_dg,
 }
 
 // Elements on non-hypercube blocks (excluding cartoon blocks) can never do
-// FD. Check that we send unprojected DG volume data both when a neighbor is
-// such an element and when we are one ourselves
+// FD, so their blocks are DG-only. Check that no data is sent to such a
+// neighbor and that unprojected DG volume data is sent to the others, and that
+// no data at all is sent when our own block is DG-only (because our mesh is
+// non-hypercube or because the block is listed as DG-only).
 void test_non_hypercube(const bool own_mesh_is_non_hypercube,
+                        const bool own_block_is_dg_only,
                         const ::fd::DerivativeOrder fd_derivative_order) {
   CAPTURE(own_mesh_is_non_hypercube);
+  CAPTURE(own_block_is_dg_only);
   CAPTURE(fd_derivative_order);
   constexpr size_t Dim = 3;
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
@@ -365,14 +406,22 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
   // Exactly one neighbor is on a non-hypercube block, the rest are ordinary
   // hypercube DG elements. None of them is doing FD.
   DirectionalIdMap<Dim, Mesh<Dim>> neighbor_meshes{};
-  bool already_set_non_hypercube = false;
+  std::optional<DirectionalId<Dim>> non_hypercube_neighbor{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     for (const auto& neighbor : neighbors) {
-      neighbor_meshes.insert(std::pair{
-          DirectionalId<Dim>{direction, neighbor},
-          already_set_non_hypercube ? hypercube_mesh : non_hypercube_mesh});
-      already_set_non_hypercube = true;
+      neighbor_meshes.insert(std::pair{DirectionalId<Dim>{direction, neighbor},
+                                       non_hypercube_neighbor.has_value()
+                                           ? hypercube_mesh
+                                           : non_hypercube_mesh});
+      if (not non_hypercube_neighbor.has_value()) {
+        non_hypercube_neighbor = DirectionalId<Dim>{direction, neighbor};
+      }
     }
+  }
+  std::vector<size_t> only_dg_block_ids{
+      non_hypercube_neighbor.value().id().block_id()};
+  if (own_block_is_dg_only) {
+    only_dg_block_ids.push_back(element.id().block_id());
   }
 
   Variables<tmpl::list<Var1>> vars{dg_mesh.number_of_grid_points(), 0.0};
@@ -405,12 +454,14 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
       domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::SubcellOptions<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
-      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>>(
+      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>,
+      evolution::dg::Tags::OnlyDgBlockIds<Dim>>>(
       std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh, element,
       vars,
       evolution::dg::subcell::RdmpTciData{.max_variables_values = {1.0},
                                           .min_variables_values = {-1.0}},
-      neighbor_meshes, subcell_options, Interps{}, Interps{});
+      neighbor_meshes, subcell_options, Interps{}, Interps{},
+      only_dg_block_ids);
 
   std::optional<Mesh<Dim>> ghost_data_mesh{std::nullopt};
   DirectionMap<Dim, DataVector> data_for_neighbors{};
@@ -420,6 +471,11 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
 
   // We must have taken the unprojected-DG-volume-data branch.
   CHECK(ghost_data_mesh.value() == dg_mesh);
+  if (own_block_is_dg_only) {
+    CHECK(data_for_neighbors.empty());
+    return;
+  }
+  CHECK_FALSE(data_for_neighbors.contains(non_hypercube_neighbor->direction()));
 
   Variables<tmpl::list<Var1>> expected_vars = vars;
   get(get<Var1>(expected_vars)) *= 2.0;
@@ -436,7 +492,12 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
                         static_cast<std::ptrdiff_t>(expected_vars.size())));
   }
 
+  CHECK(data_for_neighbors.size() ==
+        expected_neighbor_directions<Dim>().size() - 1);
   for (const auto& direction : expected_neighbor_directions<Dim>()) {
+    if (direction == non_hypercube_neighbor->direction()) {
+      continue;
+    }
     CAPTURE(direction);
     REQUIRE(data_for_neighbors.contains(direction));
     const auto& data_in_direction = data_for_neighbors.at(direction);
@@ -462,6 +523,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.PrepareNeighborData",
     test<1>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<2>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<3>(all_neighbors_are_doing_dg, fd_deriv_order);
-    test_non_hypercube(all_neighbors_are_doing_dg, fd_deriv_order);
+    // A neighbor in a DG-only block. In 1D the only neighbor is the one doing
+    // FD if not all neighbors are doing DG, and a neighbor in a DG-only block
+    // can't do FD.
+    if (all_neighbors_are_doing_dg) {
+      test<1>(all_neighbors_are_doing_dg, fd_deriv_order, 0);
+    }
+    test<2>(all_neighbors_are_doing_dg, fd_deriv_order, 1);
+    test<3>(all_neighbors_are_doing_dg, fd_deriv_order, 1);
+    test<3>(all_neighbors_are_doing_dg, fd_deriv_order, 2);
+  }
+  for (const auto fd_deriv_order :
+       {::fd::DerivativeOrder::Two, ::fd::DerivativeOrder::Four}) {
+    test_non_hypercube(true, true, fd_deriv_order);
+    test_non_hypercube(false, true, fd_deriv_order);
+    test_non_hypercube(false, false, fd_deriv_order);
   }
 }
