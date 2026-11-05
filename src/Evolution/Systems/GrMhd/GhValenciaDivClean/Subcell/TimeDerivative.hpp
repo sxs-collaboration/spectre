@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <optional>
 #include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -543,7 +544,7 @@ struct TimeDerivative {
                 make_not_null(&filtered_vars), *evolved_vars_ptr, ghost_data,
                 subcell_mesh, 2 * recons.ghost_zone_size(),
                 filter_options.spacetime_dissipation.value());
-            *evolved_vars_ptr = filtered_vars;
+            *evolved_vars_ptr = std::move(filtered_vars);
           },
           box,
           db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
