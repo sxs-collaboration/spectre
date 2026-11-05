@@ -45,6 +45,7 @@ spectre_target_headers(
   ContainsAllocations.hpp
   DereferenceWrapper.hpp
   EqualWithinRoundoff.hpp
+  Expected.hpp
   FileSystem.hpp
   ForceInline.hpp
   Formaline.hpp
