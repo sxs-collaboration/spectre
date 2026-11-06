@@ -127,6 +127,7 @@ ARG UBUNTU_VERSION=26.04
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 # for how TARGETARCH is defined.
 ARG TARGETARCH
+# Enable parallel builds (e.g. of yaml-cpp, Boost, and Python) in the base stage
 ARG PARALLEL_MAKE_ARG=-j4
 
 # Update trust before downloading code. Ubuntu 18.04 still needs manual removal
@@ -148,8 +149,11 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
 
 # Install add-apt-repository and basic tools
 #
-# Modern add-apt-repository scopes the PPA key to its repository and allows CI
-# to add the same PPA again. Ubuntu 18.04 needs an explicit signed-by keyring.
+# On newer Ubuntu, use add-apt-repository to add the repo for compilers
+# (ppa:ubuntu-toolchain-r/test) and only use its signing key for that repo.
+# Keep this configuration consistent with the test workflow, which also uses
+# add-apt-repository. On Ubuntu 18.04, configure the compiler repo and
+# restricting its signing key to that repo manually.
 #
 # libnss-sss is needed for getting usernames inside the container
 # on HPC systems and is a small install (300kB).
@@ -167,7 +171,8 @@ RUN apt-get update -y \
 
 # Add LLVM apt repository for newer versions of clang.
 # Then lower the priority of apt.llvm.org so packages default to Ubuntu.
-RUN wget -O /usr/share/keyrings/llvm.asc \
+# Use llvm's key only for authenticating the llvm repository.
+RUN wget -q -O /usr/share/keyrings/llvm.asc \
         https://apt.llvm.org/llvm-snapshot.gpg.key \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     LLVM_SUITE=llvm-toolchain-bionic-17; \
@@ -283,16 +288,16 @@ RUN apt-get update -y \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
     libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev \
     make \
-    && wget https://www.python.org/ftp/python/3.11.18/Python-3.11.18.tgz \
+    && wget https://www.python.org/ftp/python/3.10.22/Python-3.10.22.tgz \
     && printf '%s  %s\n' \
-        '5f62711b12470fd435f83f1451c1b1ef4a179aebc715c716874b0967567d814e' \
-        Python-3.11.18.tgz \
+        '9448b34d16f8e3db0964ac3ed9fb283197747543c2c021f283ffd2c8b7287357' \
+        Python-3.10.22.tgz \
         | sha256sum -c - \
-    && tar -xf Python-3.11.18.tgz && cd ./Python-3.11.18 \
+    && tar -xf Python-3.10.22.tgz && cd ./Python-3.10.22 \
     && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
     && make altinstall && cd ../ \
-    && rm -rf ./Python-3.11.18.tgz ./Python-3.11.18 \
-    && python3.11 -m venv "${VIRTUAL_ENV}"; \
+    && rm -rf ./Python-3.10.22.tgz ./Python-3.10.22 \
+    && python3.10 -m venv "${VIRTUAL_ENV}"; \
     else \
     apt-get install -y python3-dev python3-venv pkg-config \
     && python3 -m venv "${VIRTUAL_ENV}"; \
@@ -516,18 +521,17 @@ RUN apt-get update -y \
 # If this mirror is ever unavailable, swap to another core mirror serving the
 # live `tlnet` (see https://ctan.org/mirrors), or fall back to a frozen historic
 # snapshot under https://texlive.info/historic/systems/texlive/<year>/tlnet-final .
-COPY support/TeXLive/texlive.profile /tmp/texlive.profile
 RUN if [ ${UBUNTU_VERSION} = 26.04 ]; then \
     mkdir /sxscollaboration/texlive && cd /sxscollaboration/texlive \
     && wget https://ctan.math.illinois.edu/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
-    && install-tl-*/install-tl -profile=/tmp/texlive.profile \
+    && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
+    && install-tl-*/install-tl -profile=texlive.profile \
         -repository https://ctan.math.illinois.edu/systems/texlive/tlnet \
-    && rm -r install-tl-* install-tl.log \
+    && rm -r install-tl-* texlive.profile install-tl.log \
     && /sxscollaboration/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
-    ; fi \
-    && rm /tmp/texlive.profile
+    ; fi
 ENV PATH="${PATH}:/sxscollaboration/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
@@ -609,8 +613,9 @@ RUN if [ "$TARGETARCH" != "arm64" ] ; then \
     fi
 ENV PATH="${PATH}:/opt/paraview/bin"
 
-# Install coding agents through a scoped repository, without executing a
-# downloaded repository-setup script as root.
+# Install Node.js and npm from NodeSource, but don't run its setup script.
+# Trust it's signing key only for this repo. After installing nodejs, use npm
+# to install claude-code, codex, and copilot.
 RUN wget -O /usr/share/keyrings/nodesource.asc \
         https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
     && echo 'deb [signed-by=/usr/share/keyrings/nodesource.asc] https://deb.nodesource.com/node_24.x nodistro main' \
