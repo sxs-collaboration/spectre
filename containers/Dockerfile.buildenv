@@ -277,8 +277,7 @@ RUN apt-get update -y \
 ENV DEBIAN_FRONTEND noninteractive
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
-# Bootstrap pip using only system trust. Newer pip also trusts bundled roots
-# unless legacy-certs is selected; older pip does not recognize that option.
+# Bootstrap pip from a hash-verified wheel before upgrading packages.
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
@@ -298,11 +297,8 @@ RUN apt-get update -y \
     apt-get install -y python3-dev python3-venv pkg-config \
     && python3 -m venv "${VIRTUAL_ENV}"; \
     fi \
-    && set -- \
-    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
-        set -- --use-deprecated=legacy-certs; \
-    fi \
-    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
+    && python -m pip install "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70" \
+    && python -m pip install --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 # Install Python packages. We only install packages that are needed by the
 # build system (e.g. to compile Python bindings or build documentation) or used
@@ -666,11 +662,8 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     NODE_OPTIONS=--use-openssl-ca
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
-    && set -- \
-    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
-        set -- --use-deprecated=legacy-certs; \
-    fi \
-    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
+    && python -m pip install "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70" \
+    && python -m pip install --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 COPY . spectre/
 
@@ -761,11 +754,8 @@ RUN apt-get update \
         -e 's|^mozilla/Comodo_AAA_Services_root.crt$|!&|' \
         /etc/ca-certificates.conf \
     && update-ca-certificates --fresh \
-    && set -- \
-    && if python -m pip --use-deprecated=legacy-certs --version >/dev/null 2>&1; then \
-        set -- --use-deprecated=legacy-certs; \
-    fi \
-    && python -m pip install "$@" --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
+    && python -m pip install "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70" \
+    && python -m pip install --upgrade 'pip>=26.2.2' 'certifi>=2026.10.19'
 
 WORKDIR /sxscollaboration
 
