@@ -6,6 +6,7 @@
 #include <cmath>
 #include <exception>
 #include <limits>
+#include <numbers>
 #include <optional>
 #include <pup.h>
 
@@ -73,8 +74,7 @@ std::optional<double> scaling_factor(RootFunction&& rootfunction) {
   // Use a small nonzero number since the inverse map is singular at r==0 and
   // that case is handled separately.
   constexpr double lower_bound = std::numeric_limits<double>::min();
-  // upper_bound = sqrt(3) + tol
-  constexpr double upper_bound = 1.7320508075688772 + tol;
+  constexpr double upper_bound = std::numbers::sqrt3 + tol;
   const auto rho =
       // NOLINTNEXTLINE(clang-analyzer-core)
       RootFinder::toms748(rootfunction, lower_bound, upper_bound, tol, tol);

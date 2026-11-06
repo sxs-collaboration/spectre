@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <optional>
@@ -23,13 +24,11 @@
 namespace RootFinder {
 /// \ingroup NumericalAlgorithmsGroup
 /// Why a `RootFinder::toms748` root find failed
-enum class Toms748Failure {
-  /// `f(lower_bound) * f(upper_bound) > 0`
+enum class Toms748Failure : uint8_t {
+  /// `f(lower_bound)` and `f(upper_bound)` are nonzero and have the same sign
   RootNotBracketed,
   /// `lower_bound > upper_bound`
   LowerBoundLargerThanUpperBound,
-  /// `f(lower_bound)` and `f(upper_bound)` have the same sign
-  BoundsDoNotBracketRoot,
   /// The tolerance wasn't met after the maximum number of iterations
   MaxIterations
 };
@@ -61,11 +60,6 @@ std::ostream& operator<<(std::ostream& os, const Toms748Error<T>& error) {
     case Toms748Failure::LowerBoundLargerThanUpperBound:
       return os << "Lower bound is larger than upper bound: "
                 << error.lower_bound << " > " << error.upper_bound;
-    case Toms748Failure::BoundsDoNotBracketRoot:
-      return os << "Parameters lower and upper bounds do not bracket a root: f("
-                << error.lower_bound << ") = " << error.f_at_lower_bound
-                << ", f(" << error.upper_bound
-                << ") = " << error.f_at_upper_bound;
     case Toms748Failure::MaxIterations:
       return os << "toms748 reached max iterations without converging.\n"
                 << "Absolute tolerance: " << error.absolute_tolerance
@@ -415,15 +409,7 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
                      simd::select(fa_is_zero_mask, a, b)};
   }
 
-  // Note: unlike Boost, we can assume fa*fb doesn't overflow when possible.
-  // This speeds up the code quite a bit.
-  if (UNLIKELY(simd::any((AssumeFinite ? (fa * fb > static_cast<T>(0))
-                                       : (simd::sign(fa) * simd::sign(fb) >
-                                          static_cast<T>(0))) and
-                         (not fa_is_zero_mask) and (not fb_is_zero_mask)))) {
-    failure = Toms748Failure::BoundsDoNotBracketRoot;
-    return std::pair{ax, bx};
-  }
+  // `toms748_bracket` already checked that [a, b] brackets the root
   // dummy value for fd, e and fe:
   T fe(static_cast<T>(1e5F));
   T e(static_cast<T>(1e5F));
@@ -606,7 +592,13 @@ std::pair<T, T> toms748_bracket(std::optional<Toms748Failure>& failure,
          "The relative tolerance is too small. Got "
              << relative_tolerance << " but must be at least "
              << std::numeric_limits<simd::scalar_type_t<T>>::epsilon());
-  if (simd::any(f_at_lower_bound * f_at_upper_bound > 0.0)) {
+  // Note: unlike Boost, we can assume fa*fb doesn't overflow or underflow when
+  // possible. This speeds up the code quite a bit.
+  if (UNLIKELY(simd::any(
+          AssumeFinite
+              ? (f_at_lower_bound * f_at_upper_bound > static_cast<T>(0))
+              : (simd::sign(f_at_lower_bound) * simd::sign(f_at_upper_bound) >
+                 static_cast<T>(0))))) {
     failure = Toms748Failure::RootNotBracketed;
     return std::pair{lower_bound, upper_bound};
   }

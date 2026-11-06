@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <numbers>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
@@ -35,8 +36,9 @@ void test_simple() {
       RootFinder::toms748(f_free, lower, upper, abs_tol, rel_tol).value();
   const double root_from_functor =
       RootFinder::toms748(f_functor, lower, upper, abs_tol, rel_tol).value();
-  CHECK(std::abs(root_from_lambda - sqrt(2.0)) < abs_tol);
-  CHECK(std::abs(root_from_lambda - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+  CHECK(std::abs(root_from_lambda - std::numbers::sqrt2) < abs_tol);
+  CHECK(std::abs(root_from_lambda - std::numbers::sqrt2) / std::numbers::sqrt2 <
+        rel_tol);
   CHECK(root_from_free == root_from_lambda);
   CHECK(root_from_free == root_from_functor);
 }
@@ -46,7 +48,7 @@ void test_bounds() {
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const double upper = 2.0;
-  const double lower = sqrt(2.0) - abs_tol;  // bracket surrounds root
+  const double lower = std::numbers::sqrt2 - abs_tol;  // bracket surrounds root
   const auto f_lambda = [](double x) { return 2.0 - square(x); };
 
   const auto result =
@@ -57,8 +59,8 @@ void test_bounds() {
   const double root = result.value();
   // [double_root_find]
 
-  CHECK(std::abs(root - sqrt(2.0)) < abs_tol);
-  CHECK(std::abs(root - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+  CHECK(std::abs(root - std::numbers::sqrt2) < abs_tol);
+  CHECK(std::abs(root - std::numbers::sqrt2) / std::numbers::sqrt2 < rel_tol);
 
   // Test the overload where function values are supplied at lower
   // and upper bounds.
@@ -66,13 +68,13 @@ void test_bounds() {
       RootFinder::toms748(f_lambda, lower, upper, f_lambda(lower),
                           f_lambda(upper), abs_tol, rel_tol)
           .value();
-  CHECK(std::abs(root2 - sqrt(2.0)) < abs_tol);
-  CHECK(std::abs(root2 - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+  CHECK(std::abs(root2 - std::numbers::sqrt2) < abs_tol);
+  CHECK(std::abs(root2 - std::numbers::sqrt2) / std::numbers::sqrt2 < rel_tol);
 
   // Check that the other tight-but-correct bracket works
-  CHECK(
-      RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) + abs_tol, abs_tol, rel_tol)
-          .value() == approx(root));
+  CHECK(RootFinder::toms748(f_lambda, 0.0, std::numbers::sqrt2 + abs_tol,
+                            abs_tol, rel_tol)
+            .value() == approx(root));
 
   // Check the error for various bad bracket possibilities
   const auto check_not_bracketed = [&f_lambda, &abs_tol, &rel_tol](
@@ -92,8 +94,8 @@ void test_bounds() {
     CHECK_THROWS_WITH(failed.value(),
                       Catch::Matchers::ContainsSubstring("Root not bracketed"));
   };
-  check_not_bracketed(0.0, sqrt(2.0) - abs_tol);
-  check_not_bracketed(sqrt(2.0) + abs_tol, 2.0);
+  check_not_bracketed(0.0, std::numbers::sqrt2 - abs_tol);
+  check_not_bracketed(std::numbers::sqrt2 + abs_tol, 2.0);
   check_not_bracketed(-1.0, 1.0);
 }
 
@@ -101,8 +103,10 @@ void test_datavector() {
   // [datavector_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
-  const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
-  const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+  const DataVector upper{2.0, 3.0, -std::numbers::sqrt2 + abs_tol,
+                         -std::numbers::sqrt2};
+  const DataVector lower{std::numbers::sqrt2 - abs_tol, std::numbers::sqrt2,
+                         -2.0, -3.0};
 
   const DataVector constant{2.0, 4.0, 2.0, 4.0};
   const auto f_lambda = [&constant](const auto x, const size_t i) {
@@ -119,12 +123,14 @@ void test_datavector() {
   // [datavector_root_find]
 
   auto check_root = [&abs_tol, &rel_tol](const DataVector& root) {
-    CHECK(std::abs(root[0] - sqrt(2.0)) < abs_tol);
-    CHECK(std::abs(root[0] - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+    CHECK(std::abs(root[0] - std::numbers::sqrt2) < abs_tol);
+    CHECK(std::abs(root[0] - std::numbers::sqrt2) / std::numbers::sqrt2 <
+          rel_tol);
     CHECK(std::abs(root[1] - 2.0) < abs_tol);
     CHECK(std::abs(root[1] - 2.0) / 2.0 < rel_tol);
-    CHECK(std::abs(root[2] + sqrt(2.0)) < abs_tol);
-    CHECK(std::abs(root[2] + sqrt(2.0)) / sqrt(2.0) < rel_tol);
+    CHECK(std::abs(root[2] + std::numbers::sqrt2) < abs_tol);
+    CHECK(std::abs(root[2] + std::numbers::sqrt2) / std::numbers::sqrt2 <
+          rel_tol);
     CHECK(std::abs(root[3] + 2.0) < abs_tol);
     CHECK(std::abs(root[3] + 2.0) / 2.0 < rel_tol);
   };
@@ -194,8 +200,10 @@ void test_convergence_error_double() {
 void test_convergence_error_datavector() {
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
-  const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
-  const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+  const DataVector upper{2.0, 3.0, -std::numbers::sqrt2 + abs_tol,
+                         -std::numbers::sqrt2};
+  const DataVector lower{std::numbers::sqrt2 - abs_tol, std::numbers::sqrt2,
+                         -2.0, -3.0};
   const DataVector constant{2.0, 4.0, 2.0, 4.0};
   const auto f = [&constant](const auto x, const size_t i) {
     if constexpr (simd::is_batch<std::decay_t<decltype(x)>>::value) {
@@ -222,18 +230,15 @@ void test_other_failures() {
                     Catch::Matchers::ContainsSubstring(
                         "Lower bound is larger than upper bound: 2"));
 
-  // Function values with the same sign whose product underflows to zero, which
-  // only the core algorithm catches
+  // Function values with the same sign whose product underflows to zero
   const auto f_tiny = [](double x) { return 1.0e-200 * (1.0 + x); };
   const auto underflow =
       RootFinder::toms748(f_tiny, 0.0, 1.0, abs_tol, rel_tol);
   REQUIRE_FALSE(underflow.has_value());
   CHECK(underflow.error().failure ==
-        RootFinder::Toms748Failure::BoundsDoNotBracketRoot);
-  CHECK_THROWS_WITH(
-      underflow.value(),
-      Catch::Matchers::ContainsSubstring(
-          "Parameters lower and upper bounds do not bracket a root"));
+        RootFinder::Toms748Failure::RootNotBracketed);
+  CHECK_THROWS_WITH(underflow.value(),
+                    Catch::Matchers::ContainsSubstring("Root not bracketed"));
 }
 
 void benchmark_root_find(const bool enable) {
@@ -285,7 +290,7 @@ void benchmark_root_find(const bool enable) {
     BENCHMARK_ADVANCED(std::string("advanced ") + std::to_string(i))
     (Catch::Benchmark::Chronometer meter) { benchmark(0, meter); };
   }
-#endif // SPECTRE_USE_XSIMD
+#endif  // SPECTRE_USE_XSIMD
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
@@ -303,8 +308,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
       ([]() {
         const double abs_tol = 1e-15;
         const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
-        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
-        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+        const DataVector upper{2.0, 3.0, -std::numbers::sqrt2 + abs_tol,
+                               -std::numbers::sqrt2};
+        const DataVector lower{std::numbers::sqrt2 - abs_tol,
+                               std::numbers::sqrt2, -2.0, -3.0};
 
         const DataVector constant{2.0, 4.0, 2.0, 4.0};
         const auto f_lambda = [&constant](const auto x, const size_t i) {
@@ -324,7 +331,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
         const double abs_tol = 1e-15;
         const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
         double upper = 2.0;
-        double lower = sqrt(2.0) - abs_tol;
+        double lower = std::numbers::sqrt2 - abs_tol;
         const auto f_lambda = [](double x) { return 2.0 - square(x); };
 
         // NOLINTNEXTLINE(clang-analyzer-core)
