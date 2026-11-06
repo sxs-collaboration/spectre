@@ -16,7 +16,7 @@ target_link_libraries(TestKernel PUBLIC Kokkos::kokkos)
 set(LIBRARY "Test_Kokkos")
 
 set(LIBRARY_SOURCES
-  Test_DeviceMessageKokkos.cpp
+  Test_DevicePrintfStreamKokkos.cpp
   Test_Kokkos.cpp
   )
 

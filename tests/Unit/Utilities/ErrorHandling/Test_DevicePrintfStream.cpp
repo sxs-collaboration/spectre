@@ -10,7 +10,7 @@
 #include <limits>
 #include <vector>
 
-#include "Utilities/ErrorHandling/DeviceMessage.hpp"
+#include "Utilities/ErrorHandling/DevicePrintfStream.hpp"
 
 namespace {
 enum class Color : uint8_t { Red = 2, Green = 5 };
@@ -20,10 +20,11 @@ enum class Color : uint8_t { Red = 2, Green = 5 };
 // [[OutputRegex, Hello abc \(null\) 10 -12 345 -9223372036854775808
 // 18446744073709551615 5 \(1,-2,3\) \(\) \(\(1,2\),\(3,4\)\) a<\?>b
 // 1\.000000000000000000e\+00 -2\.500000000000000000e-01 nan -inf end]]
-SPECTRE_TEST_CASE("Unit.ErrorHandling.DeviceMessage", "[Unit][ErrorHandling]") {
+SPECTRE_TEST_CASE("Unit.ErrorHandling.DevicePrintfStream",
+                  "[Unit][ErrorHandling]") {
   OUTPUT_TEST();
   const char* const c_string = "abc";
-  DeviceMessage message{};
+  DevicePrintfStream message{};
   message << "Hello" << ' ' << c_string << ' '
           << static_cast<const char*>(nullptr) << ' ' << true << false << ' '
           << -12 << ' ' << 345U << ' ' << std::numeric_limits<long long>::min()

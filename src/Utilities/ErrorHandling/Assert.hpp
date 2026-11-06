@@ -11,7 +11,7 @@
 #include <string>
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
-#include "Utilities/ErrorHandling/DeviceMessage.hpp"
+#include "Utilities/ErrorHandling/DevicePrintfStream.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Kokkos/KokkosMacros.hpp"
 
@@ -25,8 +25,8 @@
  * nothing in production code.
  *
  * ASSERT can also be used in functions that run on a GPU (`KOKKOS_FUNCTION`s).
- * On the GPU the message is streamed into a `DeviceMessage`, which supports
- * fewer types than `std::ostream`.
+ * On the GPU the message is streamed into a `DevicePrintfStream`, which
+ * supports fewer types than `std::ostream`.
  *
  * \param a the expression that must be true
  * \param m the error message as an ostream

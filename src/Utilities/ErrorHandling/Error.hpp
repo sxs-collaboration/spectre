@@ -11,7 +11,7 @@
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 #include "Utilities/ErrorHandling/Breakpoint.hpp"
-#include "Utilities/ErrorHandling/DeviceMessage.hpp"
+#include "Utilities/ErrorHandling/DevicePrintfStream.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -55,8 +55,9 @@ template <typename ExceptionTypeToThrow, typename F>
  * `TensorExpression`s when compiling in debug mode.
  *
  * ERROR can also be used in functions that run on a GPU (`KOKKOS_FUNCTION`s).
- * On the GPU the message is streamed into a `DeviceMessage`, which supports
- * fewer types than `std::ostream`, and the program aborts with `Kokkos::abort`.
+ * On the GPU the message is streamed into a `DevicePrintfStream`, which
+ * supports fewer types than `std::ostream`, and the program aborts with
+ * `Kokkos::abort`.
  *
  * \param m an arbitrary output stream.
  */

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Utilities/ErrorHandling/DeviceMessage.hpp"
+#include "Utilities/ErrorHandling/DevicePrintfStream.hpp"
 
 #include <cstdio>
 
@@ -14,34 +14,34 @@
 // A macro instead of a function so the format strings stay literals, which
 // `-Wformat-nonliteral` requires
 #ifdef SPECTRE_KOKKOS
-#define SPECTRE_DEVICE_MESSAGE_PRINTF(...) ::Kokkos::printf(__VA_ARGS__)
+#define SPECTRE_DEVICE_PRINTF_STREAM_PRINTF(...) ::Kokkos::printf(__VA_ARGS__)
 #else
-#define SPECTRE_DEVICE_MESSAGE_PRINTF(...) std::printf(__VA_ARGS__)
+#define SPECTRE_DEVICE_PRINTF_STREAM_PRINTF(...) std::printf(__VA_ARGS__)
 #endif  // SPECTRE_KOKKOS
 
-void DeviceMessage::print_character(const char character) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF("%c", character);
+void DevicePrintfStream::print_character(const char character) {
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF("%c", character);
 }
 
-void DeviceMessage::print_string(const char* const str) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF("%s", str == nullptr ? "(null)" : str);
+void DevicePrintfStream::print_string(const char* const str) {
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF("%s", str == nullptr ? "(null)" : str);
 }
 
-void DeviceMessage::print_signed(const long long value) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF("%lld", value);
+void DevicePrintfStream::print_signed(const long long value) {
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF("%lld", value);
 }
 
-void DeviceMessage::print_unsigned(const unsigned long long value) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF("%llu", value);
+void DevicePrintfStream::print_unsigned(const unsigned long long value) {
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF("%llu", value);
 }
 
-void DeviceMessage::print_floating_point(const double value) {
+void DevicePrintfStream::print_floating_point(const double value) {
   // Same as `std::scientific` with `std::setprecision(18)`
-  SPECTRE_DEVICE_MESSAGE_PRINTF("%.18e", value);
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF("%.18e", value);
 }
 
 #ifdef SPECTRE_KOKKOS
-namespace DeviceMessage_detail {
+namespace DevicePrintfStream_detail {
 namespace {
 // The function-local statics in this file are shared by all threads of the
 // device (and, separately, of the host). They are never reset because the
@@ -73,7 +73,7 @@ void print_failure_heading(const char* const heading,
                            const char* const description,
                            const char* const file, const int line,
                            const char* const pretty_function) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF(
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF(
       "\n############ %s ON THE DEVICE ############\n%s in %s:%d\n\n%s%s",
       heading, pretty_function, file, line, description,
       *description == '\0' ? "" : "\n");
@@ -81,7 +81,7 @@ void print_failure_heading(const char* const heading,
 
 void finish_failure_message(const char* const heading,
                             const char* const abort_message) {
-  SPECTRE_DEVICE_MESSAGE_PRINTF(
+  SPECTRE_DEVICE_PRINTF_STREAM_PRINTF(
       "\n############ %s ON THE DEVICE ############\n\n", heading);
   // Make the printed message visible before waiting threads stop (on HIP)
   ::Kokkos::memory_fence();
@@ -110,5 +110,5 @@ void end_other_failing_thread(const char* const abort_message) {
 #endif
   abort_with_message(abort_message);
 }
-}  // namespace DeviceMessage_detail
+}  // namespace DevicePrintfStream_detail
 #endif  // SPECTRE_KOKKOS

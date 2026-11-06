@@ -15,7 +15,7 @@
  * \brief A minimal output stream that can be used in device code.
  *
  * Because the standard library streams can't be used on GPUs, `ASSERT` and
- * `ERROR` stream their message into a `DeviceMessage` when they fail in
+ * `ERROR` stream their message into a `DevicePrintfStream` when they fail in
  * device code, i.e. in a `KOKKOS_FUNCTION` or Kokkos kernel running on a GPU.
  * It has no buffer: each value is printed right away with `Kokkos::printf`
  * (`std::printf` in builds without Kokkos). See `SPECTRE_ABORT_ON_DEVICE` for
@@ -36,13 +36,13 @@
  * be used on the device; do not use them with this stream.
  *
  * Values of other types are printed as `<?>`. Add an overload
- * `KOKKOS_FUNCTION DeviceMessage& operator<<(DeviceMessage&, const T&)` to
- * print them on the device.
+ * `KOKKOS_FUNCTION DevicePrintfStream& operator<<(DevicePrintfStream&, const
+ * T&)` to print them on the device.
  */
-class DeviceMessage {
+class DevicePrintfStream {
  public:
   template <typename T>
-  KOKKOS_FUNCTION DeviceMessage& operator<<(const T& value) {
+  KOKKOS_FUNCTION DevicePrintfStream& operator<<(const T& value) {
     if constexpr (std::is_same_v<T, bool>) {
       print_character(value ? '1' : '0');
     } else if constexpr (std::is_same_v<T, char> or
@@ -80,7 +80,7 @@ class DeviceMessage {
   }
 
   /// Manipulators such as `std::scientific` are ignored
-  KOKKOS_FUNCTION DeviceMessage& operator<<(
+  KOKKOS_FUNCTION DevicePrintfStream& operator<<(
       std::ios_base& (* /*manipulator*/)(std::ios_base&)) {
     return *this;
   }
@@ -94,7 +94,7 @@ class DeviceMessage {
 };
 
 #ifdef SPECTRE_KOKKOS
-namespace DeviceMessage_detail {
+namespace DevicePrintfStream_detail {
 // Returns true for the first thread that fails, which prints its message
 KOKKOS_FUNCTION bool claim_failure_message();
 
@@ -110,16 +110,16 @@ KOKKOS_FUNCTION void print_failure_heading(const char* heading,
 // Ends a failing thread other than the first without printing anything
 [[noreturn]] KOKKOS_FUNCTION void end_other_failing_thread(
     const char* abort_message);
-}  // namespace DeviceMessage_detail
+}  // namespace DevicePrintfStream_detail
 
-#define SPECTRE_DEVICE_MESSAGE_STRINGIFY_IMPL(x) #x
-#define SPECTRE_DEVICE_MESSAGE_STRINGIFY(x) \
-  SPECTRE_DEVICE_MESSAGE_STRINGIFY_IMPL(x)
+#define SPECTRE_DEVICE_PRINTF_STREAM_STRINGIFY_IMPL(x) #x
+#define SPECTRE_DEVICE_PRINTF_STREAM_STRINGIFY(x) \
+  SPECTRE_DEVICE_PRINTF_STREAM_STRINGIFY_IMPL(x)
 // The message passed to `Kokkos::abort` as a string literal, so it is
 // printed even if the full message is lost
-#define SPECTRE_DEVICE_MESSAGE_ABORT_MESSAGE(HEADING, DESCRIPTION) \
-  HEADING " ON THE DEVICE in " __FILE__                            \
-          ":" SPECTRE_DEVICE_MESSAGE_STRINGIFY(__LINE__) " " DESCRIPTION
+#define SPECTRE_DEVICE_PRINTF_STREAM_ABORT_MESSAGE(HEADING, DESCRIPTION) \
+  HEADING " ON THE DEVICE in " __FILE__                                  \
+          ":" SPECTRE_DEVICE_PRINTF_STREAM_STRINGIFY(__LINE__) " " DESCRIPTION
 
 /*!
  * \ingroup ErrorHandlingGroup
@@ -128,7 +128,7 @@ KOKKOS_FUNCTION void print_failure_heading(const char* heading,
  * Used by `ASSERT` and `ERROR` in device code. `HEADING` and `DESCRIPTION`
  * must be string literals, where the `DESCRIPTION` (e.g. the failed
  * expression) can be empty. `MESSAGE` is an expression that can be streamed
- * into a `DeviceMessage`.
+ * into a `DevicePrintfStream`.
  *
  * Often many GPU threads fail at the same time. Only the first of them prints
  * the full message and then aborts the program. On CUDA devices the others end
@@ -143,19 +143,19 @@ KOKKOS_FUNCTION void print_failure_heading(const char* heading,
  * `Kokkos::abort` contains the heading, file, line and description, so these
  * are printed even if the full message is lost.
  */
-#define SPECTRE_ABORT_ON_DEVICE(HEADING, DESCRIPTION, MESSAGE)         \
-  do {                                                                 \
-    if (::DeviceMessage_detail::claim_failure_message()) {             \
-      ::DeviceMessage_detail::print_failure_heading(                   \
-          HEADING, DESCRIPTION, __FILE__, __LINE__,                    \
-          static_cast<const char*>(__PRETTY_FUNCTION__));              \
-      ::DeviceMessage device_message_ABORT_ON_DEVICE{};                \
-      device_message_ABORT_ON_DEVICE << MESSAGE; /* NOLINT */          \
-      ::DeviceMessage_detail::finish_failure_message(                  \
-          HEADING,                                                     \
-          SPECTRE_DEVICE_MESSAGE_ABORT_MESSAGE(HEADING, DESCRIPTION)); \
-    }                                                                  \
-    ::DeviceMessage_detail::end_other_failing_thread(                  \
-        SPECTRE_DEVICE_MESSAGE_ABORT_MESSAGE(HEADING, DESCRIPTION));   \
+#define SPECTRE_ABORT_ON_DEVICE(HEADING, DESCRIPTION, MESSAGE)               \
+  do {                                                                       \
+    if (::DevicePrintfStream_detail::claim_failure_message()) {              \
+      ::DevicePrintfStream_detail::print_failure_heading(                    \
+          HEADING, DESCRIPTION, __FILE__, __LINE__,                          \
+          static_cast<const char*>(__PRETTY_FUNCTION__));                    \
+      ::DevicePrintfStream device_printf_stream_ABORT_ON_DEVICE{};           \
+      device_printf_stream_ABORT_ON_DEVICE << MESSAGE; /* NOLINT */          \
+      ::DevicePrintfStream_detail::finish_failure_message(                   \
+          HEADING,                                                           \
+          SPECTRE_DEVICE_PRINTF_STREAM_ABORT_MESSAGE(HEADING, DESCRIPTION)); \
+    }                                                                        \
+    ::DevicePrintfStream_detail::end_other_failing_thread(                   \
+        SPECTRE_DEVICE_PRINTF_STREAM_ABORT_MESSAGE(HEADING, DESCRIPTION));   \
   } while (false)
 #endif  // SPECTRE_KOKKOS
