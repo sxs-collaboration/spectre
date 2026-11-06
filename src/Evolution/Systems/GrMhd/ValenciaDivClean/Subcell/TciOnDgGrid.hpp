@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <utility>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -13,6 +14,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -41,6 +43,21 @@ class Variables;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::subcell {
+namespace detail {
+// Recover the updated DG state even when a subcell TCI cannot run. Failure
+// must be reported because there is no subcell rollback path in this branch.
+// Use the same non-enforcing recovery policy as the regular DG TCI.
+template <typename RecoveryScheme>
+struct RecoverPrimitivesOnSkippedTci
+    : PrimitiveFromConservative<tmpl::list<RecoveryScheme>, true> {
+  template <typename... Args>
+  static void apply(Args&&... args) {
+    PrimitiveFromConservative<tmpl::list<RecoveryScheme>, true>::template apply<
+        false>(std::forward<Args>(args)...);
+  }
+};
+}  // namespace detail
+
 /*!
  * \brief The troubled-cell indicator run on the DG grid to check if the
  * solution is admissible.
@@ -133,6 +150,9 @@ namespace grmhd::ValenciaDivClean::subcell {
 template <typename RecoveryScheme>
 class TciOnDgGrid {
  public:
+  using mutator_on_skipped_tci =
+      detail::RecoverPrimitivesOnSkippedTci<RecoveryScheme>;
+
   using return_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
   using argument_tags = tmpl::list<

@@ -71,7 +71,12 @@ namespace evolution::dg::subcell::Actions {
  *
  * Elements that cannot use subcell (e.g. non-hypercube topology or DG-only
  * blocks) skip the TCI entirely, set the TCI decision to 0, clear ghost data,
- * and continue.
+ * and continue. If `TciMutator` provides a `mutator_on_skipped_tci` type,
+ * that mutator is applied before clearing the ghost data and continuing.
+ * It must perform any state update normally supplied by the TCI that remains
+ * necessary when subcell is unavailable, without requiring subcell projection.
+ * The mutator must return void and terminate internally on an unrecoverable
+ * failure: this branch has no rollback or error-status handling.
  *
  * Interior cells are marked as troubled if
  * `subcell_options.always_use_subcells()` is `true`, or if either the RDMP
@@ -168,6 +173,15 @@ struct TciAndRollback {
     // DG-only blocks) should skip the TCI entirely, since the TCI projects
     // to the subcell mesh which is unsupported for these elements.
     if (not subcell_allowed_in_element) {
+      if constexpr (requires { typename TciMutator::mutator_on_skipped_tci; }) {
+        using SkippedTci = typename TciMutator::mutator_on_skipped_tci;
+        static_assert(
+            std::is_void_v<decltype(db::mutate_apply<SkippedTci>(
+                make_not_null(&box)))>,
+            "The skipped-TCI mutator must return void and handle failures "
+            "internally.");
+        db::mutate_apply<SkippedTci>(make_not_null(&box));
+      }
       db::mutate<Tags::TciDecision,
                  subcell::Tags::GhostDataForReconstruction<Dim>>(
           [](const gsl::not_null<int*> tci_decision_ptr,

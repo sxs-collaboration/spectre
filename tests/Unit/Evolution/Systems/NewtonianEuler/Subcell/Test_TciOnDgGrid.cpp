@@ -158,6 +158,64 @@ void test(const TestThis test_this) {
     CHECK(std::get<0>(result));
   }
 }
+
+template <size_t Dim>
+void test_skipped_tci() {
+  using Tci = NewtonianEuler::subcell::TciOnDgGrid<Dim>;
+  if constexpr (requires { typename Tci::mutator_on_skipped_tci; }) {
+    using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
+    using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
+    using EnergyDensity = NewtonianEuler::Tags::EnergyDensity;
+    using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+    using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
+    using SpecificInternalEnergy =
+        hydro::Tags::SpecificInternalEnergy<DataVector>;
+    using Pressure = hydro::Tags::Pressure<DataVector>;
+    using ConsVars =
+        Variables<tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>;
+    using PrimVars = Variables<
+        tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>;
+    const size_t points = 5;
+    auto box = db::create<
+        db::AddSimpleTags<::Tags::Variables<typename ConsVars::tags_list>,
+                          ::Tags::Variables<typename PrimVars::tags_list>,
+                          hydro::Tags::EquationOfState<false, 2>>>(
+        ConsVars{points, 0.0}, PrimVars{points, 1.0e-7},
+        std::unique_ptr<EquationsOfState::EquationOfState<false, 2>>{
+            std::make_unique<EquationsOfState::IdealFluid<false>>(5.0 / 3.0)});
+    // Replace the conserved state while deliberately retaining old primitives.
+    // rho=2, epsilon=3, v^i=(i+1)/4 imply p=4 and E=6+sum_i(v^i)^2.
+    db::mutate<::Tags::Variables<typename ConsVars::tags_list>>(
+        [](const auto vars) {
+          get(get<MassDensityCons>(*vars)) = 2.0;
+          get(get<EnergyDensity>(*vars)) = 6.0;
+          for (size_t i = 0; i < Dim; ++i) {
+            const double velocity = 0.25 * static_cast<double>(i + 1);
+            get<MomentumDensity>(*vars).get(i) = 2.0 * velocity;
+            get(get<EnergyDensity>(*vars)) += velocity * velocity;
+          }
+        },
+        make_not_null(&box));
+    const auto conservatives =
+        db::get<::Tags::Variables<typename ConsVars::tags_list>>(box);
+    // This DataBox has no DG or FD mesh: recovery must not project.
+    db::mutate_apply<typename Tci::mutator_on_skipped_tci>(make_not_null(&box));
+    CHECK_ITERABLE_APPROX(get(db::get<MassDensity>(box)),
+                          DataVector(points, 2.0));
+    CHECK_ITERABLE_APPROX(get(db::get<SpecificInternalEnergy>(box)),
+                          DataVector(points, 3.0));
+    CHECK_ITERABLE_APPROX(get(db::get<Pressure>(box)), DataVector(points, 4.0));
+    for (size_t i = 0; i < Dim; ++i) {
+      CHECK_ITERABLE_APPROX(
+          db::get<Velocity>(box).get(i),
+          DataVector(points, 0.25 * static_cast<double>(i + 1)));
+    }
+    CHECK(db::get<::Tags::Variables<typename ConsVars::tags_list>>(box) ==
+          conservatives);
+  } else {
+    FAIL_CHECK("The TCI must recover primitives when skipped.");
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Subcell.TciOnDgGrid",
@@ -170,4 +228,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Subcell.TciOnDgGrid",
     test<2>(test_this);
     test<3>(test_this);
   }
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.NewtonianEuler.Subcell.SkippedTciRecovery",
+    "[Unit][Evolution]") {
+  test_skipped_tci<1>();
+  test_skipped_tci<2>();
+  test_skipped_tci<3>();
 }

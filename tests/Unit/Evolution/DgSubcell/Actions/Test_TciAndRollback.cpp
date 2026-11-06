@@ -82,6 +82,24 @@ struct PrimVar1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct SkippedTciCalls : db::SimpleTag {
+  using type = size_t;
+};
+
+struct CountSkippedTci {
+  using return_tags = tmpl::list<SkippedTciCalls>;
+  using argument_tags = tmpl::list<>;
+  static void apply(const gsl::not_null<size_t*> calls) { ++*calls; }
+};
+
+template <bool Enabled>
+struct OptionalSkippedTciHook {};
+
+template <>
+struct OptionalSkippedTciHook<true> {
+  using mutator_on_skipped_tci = CountSkippedTci;
+};
+
 template <size_t Dim, bool HasPrims>
 struct System {
   static constexpr size_t volume_dim = Dim;
@@ -113,7 +131,8 @@ struct component {
           ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<::Tags::Variables<tmpl::list<Var1>>>,
           evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-          evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>,
+          evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>,
+          SkippedTciCalls>,
       tmpl::conditional_t<
           Metavariables::has_prims,
           tmpl::list<::Tags::Variables<tmpl::list<PrimVar1>>,
@@ -166,7 +185,7 @@ struct Metavariables {
     };
   };
 
-  struct TciOnDgGrid {
+  struct TciOnDgGrid : OptionalSkippedTciHook<HasPrims> {
     using return_tags = tmpl::list<>;
     using argument_tags =
         tmpl::list<::Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
@@ -271,7 +290,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
                const bool always_use_subcell, const bool self_starting,
                const bool with_neighbors, const bool use_halo,
                const bool neighbor_is_troubled,
-               const bool disable_subcell_in_block) {
+               const bool disable_subcell_in_block,
+               const bool self_dg_only = false,
+               const bool non_hypercube = false) {
   CAPTURE(Dim);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
@@ -281,6 +302,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(use_halo);
   CAPTURE(neighbor_is_troubled);
   CAPTURE(disable_subcell_in_block);
+  CAPTURE(self_dg_only);
+  CAPTURE(non_hypercube);
 
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using metavars = Metavariables<Dim, HasPrims>;
@@ -304,12 +327,15 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       1,
       1,
       1};
+  std::optional<std::vector<std::string>> only_dg_block_names{};
+  if (self_dg_only) {
+    only_dg_block_names = std::vector<std::string>{"Block0"};
+  } else if (disable_subcell_in_block) {
+    only_dg_block_names = std::vector<std::string>{"Block1"};
+  }
   const std::vector<size_t> only_dg_block_ids =
-      evolution::dg::compute_only_dg_block_ids(
-          disable_subcell_in_block
-              ? std::optional{std::vector<std::string>{"Block1"}}
-              : std::optional<std::vector<std::string>>{},
-          TestCreator<Dim>{});
+      evolution::dg::compute_only_dg_block_ids(only_dg_block_names,
+                                               TestCreator<Dim>{});
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{subcell_options, only_dg_block_ids}};
@@ -317,10 +343,39 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const TimeStepId time_step_id{false, self_starting ? -1 : 1,
                                 Slab{1.0, 2.0}.end()};
   const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};
-  const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> dg_mesh = [non_hypercube]() {
+    (void)non_hypercube;
+    if constexpr (Dim == 3) {
+      if (non_hypercube) {
+        return Mesh<3>{
+            {{5, 5, 9}},
+            {Spectral::Basis::ZernikeB3, Spectral::Basis::ZernikeB3,
+             Spectral::Basis::ZernikeB3},
+            {Spectral::Quadrature::GaussRadauUpper, Spectral::Quadrature::Gauss,
+             Spectral::Quadrature::Equiangular}};
+      }
+    }
+    return Mesh<Dim>{5, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  }();
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
-  const Element<Dim> element = create_element<Dim>(with_neighbors);
+  const Element<Dim> element = [non_hypercube, with_neighbors]() {
+    (void)non_hypercube;
+    if constexpr (Dim == 3) {
+      if (non_hypercube) {
+        REQUIRE_FALSE(with_neighbors);
+        return Element<3>{
+            ElementId<3>{0, {}}, {}, domain::topologies::full_sphere};
+      }
+    }
+    return create_element<Dim>(with_neighbors);
+  }();
+  if (non_hypercube) {
+    // A projection would try to use this deliberately unavailable FD mesh.
+    CHECK_FALSE(evolution::dg::subcell::fd::dg_mesh_supports_subcell(dg_mesh));
+    CHECK(subcell_mesh == Mesh<Dim>{0_st, Spectral::Basis::Uninitialized,
+                                    Spectral::Quadrature::Uninitialized});
+  }
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Dg;
 
@@ -353,18 +408,19 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     }
   }
   // test FD/DG element neighbor disable_subcell_in_block
-  const bool bordering_dg_block = alg::any_of(
-      element.neighbors(),
-      [&only_dg_block_ids](const auto& direction_and_neighbor) {
-        const size_t first_block_id =
-            direction_and_neighbor.second.ids().begin()->block_id();
-        return alg::found(only_dg_block_ids, first_block_id);
-      });
+  const bool bordering_dg_block =
+      alg::any_of(element.neighbors(),
+                  [&only_dg_block_ids](const auto& direction_and_neighbor) {
+                    const size_t first_block_id =
+                        direction_and_neighbor.second.ids().begin()->block_id();
+                    return alg::found(only_dg_block_ids, first_block_id);
+                  });
 
   const bool self_block_dg_only =
       alg::found(only_dg_block_ids, element.id().block_id());
 
   const bool subcell_allowed_in_element =
+      evolution::dg::subcell::fd::dg_mesh_supports_subcell(dg_mesh) and
       not self_block_dg_only and not bordering_dg_block;
 
   // When subcell is not allowed, the TCI is skipped entirely (early return),
@@ -441,7 +497,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
          subcell_mesh, element, active_grid, did_rollback, ghost_data,
          tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
          time_stepper_history, initial_value_evolved_vars, neighbor_decisions,
-         Interps{}, prim_vars, initial_value_prim_vars});
+         Interps{}, size_t{0}, prim_vars, initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
@@ -451,7 +507,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
          subcell_mesh, element, active_grid, did_rollback, ghost_data,
          tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
          time_stepper_history, initial_value_evolved_vars, neighbor_decisions,
-         Interps{}});
+         Interps{}, size_t{0}});
   }
 
   // Invoke the TciAndRollback action on the runner
@@ -482,7 +538,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const bool expected_rollback =
       with_neighbors and ((always_use_subcell or rdmp_fails or tci_fails or
                            (use_halo and neighbor_is_troubled)) and
-                          not disable_subcell_in_block);
+                          subcell_allowed_in_element);
 
   if (expected_rollback) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
@@ -624,6 +680,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const int expected_tci_decision =
       subcell_allowed_in_element ? (rdmp_fails ? 10 : (tci_fails ? 5 : 0)) : 0;
   CHECK(metavars::tci_invoked == subcell_allowed_in_element);
+  // The optional hook runs exactly once on bypass, never alongside the TCI.
+  // HasPrims=false also exercises an unchanged TCI with no optional alias.
+  CHECK(ActionTesting::get_databox_tag<comp, SkippedTciCalls>(runner, 0) ==
+        (HasPrims and not subcell_allowed_in_element ? size_t{1} : size_t{0}));
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::TciDecision>(
@@ -666,5 +726,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndRollback",
   test<1>();
   test<2>();
   test<3>();
+
+  // DG-only self block, no reliance on a DG-only neighbor.
+  test_impl<3, true>(false, false, false, false, false, false, false, false,
+                     true);
+  test_impl<3, false>(false, false, false, false, false, false, false, false,
+                      true);
+  // Neighbor DG-only; check the hook independently of the self-block case.
+  test_impl<3, true>(false, false, false, false, true, false, false, true);
+  test_impl<3, false>(false, false, false, false, true, false, false, true);
+  // Full-sphere mesh: must update via the hook without any FD projection.
+  test_impl<3, true>(false, false, false, false, false, false, false, false,
+                     false, true);
+  test_impl<3, false>(false, false, false, false, false, false, false, false,
+                      false, true);
 }
 }  // namespace
