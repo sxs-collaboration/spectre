@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -22,7 +26,11 @@
 #include "Options/String.hpp"
 #include "Parallel/CharmMain.tpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/BuildMatrix.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -34,6 +42,114 @@ namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
+
+// Factor by which the linear operator is scaled, so we can change the operator
+// between solves
+struct OperatorScale : db::SimpleTag {
+  using type = double;
+};
+
+// Counts the direct solves completed so far
+struct NumSolves : db::SimpleTag {
+  using type = size_t;
+};
+
+struct InitializeScaling {
+  using simple_tags = tmpl::list<OperatorScale, NumSolves>;
+  using compute_tags = tmpl::list<>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box), 1., 0_st);
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+struct ScaleOperatorAppliedToOperand {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    db::mutate<db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+                                  helpers_distributed::fields_tag>>(
+        [](const auto operator_applied_to_operand, const double scale) {
+          *operator_applied_to_operand *= scale;
+        },
+        make_not_null(&box), db::get<OperatorScale>(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+// Check the solution of the direct solve and prepare the next one. Each solve
+// tests a different code path of the direct solver:
+// 1. Solve Ax=b. Builds and factorizes the matrix.
+// 2. Solve Ax=2b. Reuses the factorization.
+// 3. Solve 2Ax=2b. Rebuilds the matrix and factorizes it again. Reusing the
+//    factorization would give the wrong solution.
+// The matrix can only be observed once, so only the first solve runs if the
+// matrix is written to disk.
+struct CheckSolutionAndPrepareNextSolve {
+  using const_global_cache_tags =
+      tmpl::list<helpers_distributed::ExpectedResult>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    db::mutate<NumSolves>(
+        [](const gsl::not_null<size_t*> num_solves) { ++(*num_solves); },
+        make_not_null(&box));
+    const size_t num_solves = db::get<NumSolves>(box);
+    const double expected_factor = num_solves == 2 ? 2. : 1.;
+    const auto& expected_result =
+        gsl::at(get<helpers_distributed::ExpectedResult>(box),
+                helpers_distributed::get_index(element_id));
+    const auto& result = get(db::get<helpers_distributed::ScalarFieldTag>(box));
+    for (size_t i = 0; i < expected_result.size(); i++) {
+      SPECTRE_PARALLEL_REQUIRE(result[i] ==
+                               approx(expected_factor * expected_result[i]));
+    }
+    if (num_solves == 3 or
+        db::get<LinearSolver::Tags::MatrixSubfileName>(box).has_value()) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+    // Double the source for the second solve, and the operator for the third
+    db::mutate<db::add_tag_prefix<::Tags::FixedSource,
+                                  helpers_distributed::fields_tag>,
+               OperatorScale>(
+        [&num_solves](const auto fixed_sources,
+                      const gsl::not_null<double*> scale) {
+          if (num_solves == 1) {
+            *fixed_sources *= 2.;
+          } else {
+            *scale = 2.;
+          }
+        },
+        make_not_null(&box));
+    // Jump back to the reset actions at the start of the action list. Skip the
+    // reset for the second solve, so the factorization is reused.
+    const size_t next_action_index =
+        num_solves == 1
+            ? tmpl::size<
+                  typename Metavariables::build_matrix::reset_actions>::value
+            : 0;
+    return {Parallel::AlgorithmExecution::Continue, next_action_index};
+  }
+};
 
 struct TestResult {
   using const_global_cache_tags =
@@ -47,13 +163,23 @@ struct TestResult {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    // Check the solution
+    const size_t element_index = helpers_distributed::get_index(element_id);
+    const auto& expected_result =
+        gsl::at(get<helpers_distributed::ExpectedResult>(box), element_index);
+    const auto& result = get(db::get<helpers_distributed::ScalarFieldTag>(box));
+    for (size_t i = 0; i < expected_result.size(); i++) {
+      SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
+    }
+    if (not db::get<LinearSolver::Tags::MatrixSubfileName>(box).has_value()) {
+      return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+    }
     // Read the matrix from the file
     h5::H5File<h5::AccessType::ReadOnly> h5file("Test_BuildMatrix_Volume0.h5");
     const auto matrix_data =
         h5file.get<h5::VolumeData>("/Matrix").get_data_by_element(
             std::nullopt, std::nullopt, {{"Variable_0"}});
     // Check the columns of the matrix corresponding to this element
-    const size_t element_index = helpers_distributed::get_index(element_id);
     const auto& linear_operator =
         gsl::at(get<helpers_distributed::LinearOperator>(box), element_index);
     const size_t num_points = linear_operator.columns();
@@ -88,13 +214,6 @@ struct TestResult {
         }
       }
     }
-    // Check solution
-    const auto& expected_result =
-        gsl::at(get<helpers_distributed::ExpectedResult>(box), element_index);
-    const auto& result = db::get<helpers_distributed::fields_tag>(box);
-    for (size_t i = 0; i < expected_result.size(); i++) {
-      SPECTRE_PARALLEL_REQUIRE(result.data()[i] == approx(expected_result[i]));
-    }
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
@@ -122,31 +241,35 @@ struct Metavariables {
       domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>;
 
   using build_matrix_actions = typename build_matrix::template actions<
-      helpers_distributed::ComputeOperatorAction<
-          helpers_distributed::fields_tag>>;
+      tmpl::list<helpers_distributed::ComputeOperatorAction<
+                     helpers_distributed::fields_tag>,
+                 ScaleOperatorAppliedToOperand>>;
 
   using element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<Parallel::PhaseActions<
-                     Parallel::Phase::Initialization,
-                     tmpl::list<helpers_distributed::InitializeElement,
-                                Parallel::Actions::TerminatePhase>>,
-                 Parallel::PhaseActions<
-                     Parallel::Phase::Register,
-                     tmpl::push_back<build_matrix::register_actions,
-                                     Parallel::Actions::TerminatePhase>>,
-                 Parallel::PhaseActions<
-                     Parallel::Phase::BuildMatrix,
-                     tmpl::push_back<build_matrix_actions,
-                                     Parallel::Actions::TerminatePhase>>,
-                 Parallel::PhaseActions<Parallel::Phase::Testing,
-                                        tmpl::list<TestResult>>>>;
+      tmpl::list<
+          Parallel::PhaseActions<
+              Parallel::Phase::Initialization,
+              tmpl::list<helpers_distributed::InitializeElement,
+                         InitializeScaling, Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Register,
+              tmpl::push_back<build_matrix::register_actions,
+                              Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::BuildMatrix,
+              tmpl::flatten<tmpl::list<typename build_matrix::reset_actions,
+                                       build_matrix_actions,
+                                       CheckSolutionAndPrepareNextSolve,
+                                       Parallel::Actions::TerminatePhase>>>,
+          Parallel::PhaseActions<Parallel::Phase::Testing,
+                                 tmpl::list<TestResult>>>>;
 
   using component_list = tmpl::flatten<tmpl::list<
       element_array, typename build_matrix::component_list<Metavariables>,
       observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>,
-      helpers::OutputCleaner<Metavariables, false, true>>>;
+      helpers::OutputCleaner<Metavariables, false, false>>>;
   using observed_reduction_data_tags = tmpl::list<>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
   static constexpr std::array<Parallel::Phase, 6> default_phase_order{
