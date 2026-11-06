@@ -25,9 +25,6 @@
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
 /// \cond
-namespace control_system::OptionTags {
-struct WriteDataToDisk;
-}  // namespace control_system::OptionTags
 class FastFlow;
 namespace ylm {
 template <typename Frame>
@@ -276,15 +273,6 @@ struct ObservationTimeCompute : ObservationTime<Index>, db::ComputeTag {
   }
 };
 /// @}
-
-/// Simple tag for whether to write the centers of the horizons to disk.
-struct ObserveCenters : db::SimpleTag {
-  using type = bool;
-  using option_tags = tmpl::list<control_system::OptionTags::WriteDataToDisk>;
-
-  static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) { return option; }
-};
 
 /// \ingroup DataBoxTagsGroup
 /// DataBox tag that holds the maximum L for horizon resolution and output.

@@ -23,7 +23,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -61,8 +60,6 @@ struct WriteDataToDisk : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& option) { return option; }
 };
-
-using ObserveCenters = ah::Tags::ObserveCenters;
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup

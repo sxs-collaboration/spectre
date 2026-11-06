@@ -56,7 +56,7 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
                 ah_centers = [
                     to_dataframe(
                         open_reductions_file[
-                            f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat"
+                            f"ApparentHorizons/ObservationAh{ab}_Centers.dat"
                         ],
                         slice=np.s_[-1:],
                     ).iloc[-1]

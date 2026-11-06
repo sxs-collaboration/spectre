@@ -3,7 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <memory>
+#include <optional>
 #include <typeinfo>
 
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
@@ -11,7 +13,10 @@
 #include "ControlSystem/Measurements/CharSpeed.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -23,13 +28,20 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
+#include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Strahlkorper.hpp"
+#include "NumericalAlgorithms/Strahlkorper/StrahlkorperFunctions.hpp"
+#include "NumericalAlgorithms/Strahlkorper/Tags.hpp"
+#include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -110,6 +122,62 @@ static_assert(
         Horizon::event<example_list>::factory_creatable);
 
 namespace {
+template <typename Callback>
+struct ObserveCentersMetavars {
+  using const_global_cache_tags = typename Callback::const_global_cache_tags;
+  using component_list = tmpl::list<
+      TestHelpers::observers::MockObserverWriter<ObserveCentersMetavars>>;
+};
+
+template <domain::ObjectLabel Object>
+void test_observe_centers(const bool write_data_to_disk) {
+  using horizon_metavars =
+      control_system::measurements::BothHorizons::FindHorizon<
+          Object>::template horizon_metavars<example_list>;
+  using callback =
+      tmpl::back<typename horizon_metavars::horizon_find_callbacks>;
+  using metavars = ObserveCentersMetavars<callback>;
+  using observer_writer = TestHelpers::observers::MockObserverWriter<metavars>;
+  ActionTesting::MockRuntimeSystem<metavars> runner{{write_data_to_disk}};
+  ActionTesting::emplace_nodegroup_component_and_initialize<observer_writer>(
+      make_not_null(&runner), {});
+  auto& cache = ActionTesting::cache<observer_writer>(runner, 0);
+
+  const ylm::Strahlkorper<Frame::Distorted> horizon{2, 1.0, {1.0, 2.0, 3.0}};
+  const ylm::Strahlkorper<Frame::Inertial> inertial_horizon{
+      2, 1.0, {4.0, 5.0, 6.0}};
+  auto box = db::create<db::AddSimpleTags<
+      ah::Tags::CurrentTime, ylm::Tags::Strahlkorper<Frame::Distorted>,
+      ylm::Tags::CartesianCoords<Frame::Inertial>,
+      ylm::Tags::EuclideanAreaElement<Frame::Distorted>>>(
+      std::optional{
+          LinkedMessageId<double>{.id = 1.0, .previous = std::nullopt}},
+      horizon, ylm::cartesian_coords(inertial_horizon),
+      Scalar<DataVector>{
+          DataVector(horizon.ylm_spherepack().physical_size(), 1.0)});
+
+  callback::apply(box, cache, FastFlow::Status::AbsTol);
+  CHECK(ActionTesting::number_of_queued_threaded_actions<observer_writer>(
+            runner, 0) == (write_data_to_disk ? 1 : 0));
+  if (write_data_to_disk) {
+    ActionTesting::invoke_queued_threaded_action<observer_writer>(
+        make_not_null(&runner), 0);
+    const auto& h5_file = ActionTesting::get_databox_tag<
+        observer_writer, TestHelpers::observers::MockReductionFileTag>(runner,
+                                                                       0);
+    const Matrix data = h5_file
+                            .get_dat("/ApparentHorizons/" +
+                                     horizon_metavars::name() + "_Centers")
+                            .get_data();
+    REQUIRE(data.rows() == 1);
+    REQUIRE(data.columns() == 7);
+    const std::array expected{1.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    for (size_t i = 0; i < expected.size(); ++i) {
+      CHECK(data(0, i) == approx(gsl::at(expected, i)));
+    }
+  }
+}
+
 void test_serialization() {
   using EventPtr = std::unique_ptr<::Event>;
   using non_factory_creatable_event =
@@ -388,5 +456,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   for (size_t i = 0; i < 2; i++) {
     ActionTesting::invoke_queued_threaded_action<obs_writer>(
         make_not_null(&runner), 0);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.BothHorizons.ObserveCenters",
+                  "[ControlSystem][Unit]") {
+  for (const bool write_data_to_disk : {false, true}) {
+    test_observe_centers<domain::ObjectLabel::A>(write_data_to_disk);
+    test_observe_centers<domain::ObjectLabel::B>(write_data_to_disk);
   }
 }
