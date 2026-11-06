@@ -289,8 +289,6 @@ def inspiral_parameters(
             }
         )
     else:
-        id_shape_A = id_domain_creator["TimeDependentMaps"]["ShapeMapA"]
-        id_shape_B = id_domain_creator["TimeDependentMaps"]["ShapeMapB"]
         id_binary = id_input_file["Background"]["Binary"]
         horizons_filename = (
             Path(id_horizons_path)
@@ -305,14 +303,6 @@ def inspiral_parameters(
                 "HorizonsFile": str(horizons_filename.resolve()),
                 "AhASubfileName": "AhA/Coefficients",
                 "AhBSubfileName": "AhB/Coefficients",
-                "ExcisionAShapeMass": id_shape_A["InitialValues"]["Mass"],
-                "ExcisionAShapeSpin_x": id_shape_A["InitialValues"]["Spin"][0],
-                "ExcisionAShapeSpin_y": id_shape_A["InitialValues"]["Spin"][1],
-                "ExcisionAShapeSpin_z": id_shape_A["InitialValues"]["Spin"][2],
-                "ExcisionBShapeMass": id_shape_B["InitialValues"]["Mass"],
-                "ExcisionBShapeSpin_x": id_shape_B["InitialValues"]["Spin"][0],
-                "ExcisionBShapeSpin_y": id_shape_B["InitialValues"]["Spin"][1],
-                "ExcisionBShapeSpin_z": id_shape_B["InitialValues"]["Spin"][2],
             }
         )
 
