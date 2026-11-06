@@ -1380,6 +1380,9 @@ constexpr bool DataBox<tmpl::list<Tags...>>::tag_depends_on() {
  * prevent changes to the retrieved item from affecting any other tags
  * in the DataBox, so it can safely be modified without causing
  * internal inconsistencies.
+ *
+ * This function is safe to call in parallel with other DataBox
+ * modification and access.
  */
 template <typename Tag, typename TagList>
 SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
