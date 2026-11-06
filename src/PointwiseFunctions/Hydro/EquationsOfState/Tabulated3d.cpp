@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace EquationsOfState {
 
@@ -450,24 +451,36 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
       return log_eps - interpolated_values[0];
     };
 
+    const double log_T_lower = table_log_temperature_.front();
+    const double log_T_upper =
+        log(upper_bound_tolerance_) + table_log_temperature_.back();
+    const double f_lower = f(log_T_lower);
+    const double f_upper = f(log_T_upper);
+
     bool need_root_finding = true;
     double root_from_lambda = table_log_temperature_.front();
-    if (fabs(f(table_log_temperature_.front())) <= 1.0e-14) {
+    if (fabs(f_lower) <= 1.0e-14) {
       need_root_finding = false;
     }
 
-    if (fabs(f(upper_bound_tolerance_ * table_log_temperature_.back())) <=
-        1.0e-14) {
-      root_from_lambda = table_log_temperature_.back();
+    if (fabs(f_upper) <= 1.0e-14) {
+      root_from_lambda = log_T_upper;
       need_root_finding = false;
     }
 
     if (need_root_finding) {
-      root_from_lambda = RootFinder::toms748(f, table_log_temperature_.front(),
-                                             upper_bound_tolerance_ *
-                                                 table_log_temperature_.back(),
-                                             1.0e-14, 1.0e-15)
-                             .value();
+      const auto root = RootFinder::toms748(f, log_T_lower, log_T_upper,
+                                            f_lower, f_upper, 1.0e-14, 1.0e-15);
+      if (root.has_value()) {
+        root_from_lambda = root.value();
+      } else if (root.error().failure ==
+                 RootFinder::Toms748Failure::RootNotBracketed) {
+        // The clamped energy is at an end of the bracket up to roundoff
+        root_from_lambda =
+            fabs(f_lower) < fabs(f_upper) ? log_T_lower : log_T_upper;
+      } else {
+        ERROR(root.error());
+      }
     }
 
     get(temperature) = exp(root_from_lambda);
@@ -489,24 +502,35 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
       };
 
       // Check bounds to avoid error in TOMS748 if bracket is zero
+      const double log_T_lower = table_log_temperature_.front();
+      const double log_T_upper =
+          log(upper_bound_tolerance_) + table_log_temperature_.back();
+      const double f_lower = f(log_T_lower);
+      const double f_upper = f(log_T_upper);
+
       bool need_root_finding = true;
       double root_from_lambda = table_log_temperature_.front();
-      if (fabs(f(table_log_temperature_.front())) <= 1.0e-14) {
+      if (fabs(f_lower) <= 1.0e-14) {
         need_root_finding = false;
       }
 
-      if (fabs(f(upper_bound_tolerance_ * table_log_temperature_.back())) <=
-          1.0e-14) {
-        root_from_lambda = table_log_temperature_.back();
+      if (fabs(f_upper) <= 1.0e-14) {
+        root_from_lambda = log_T_upper;
         need_root_finding = false;
       }
       if (need_root_finding) {
-        root_from_lambda =
-            RootFinder::toms748(
-                f, table_log_temperature_.front(),
-                upper_bound_tolerance_ * table_log_temperature_.back(), 1.0e-14,
-                1.0e-15)
-                .value();
+        const auto root = RootFinder::toms748(
+            f, log_T_lower, log_T_upper, f_lower, f_upper, 1.0e-14, 1.0e-15);
+        if (root.has_value()) {
+          root_from_lambda = root.value();
+        } else if (root.error().failure ==
+                   RootFinder::Toms748Failure::RootNotBracketed) {
+          // The clamped energy is at an end of the bracket up to roundoff
+          root_from_lambda =
+              fabs(f_lower) < fabs(f_upper) ? log_T_lower : log_T_upper;
+        } else {
+          ERROR(root.error());
+        }
       }
 
       get(temperature)[s] = exp(root_from_lambda);
