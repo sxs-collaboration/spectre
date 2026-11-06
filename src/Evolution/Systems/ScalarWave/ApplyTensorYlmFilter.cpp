@@ -49,6 +49,7 @@ void fill_tensor_ylm_filters<filter_detail::sw_vars_list<Frame::Inertial>>(
     const std::optional<size_t> half_power,
     const CoefficientNormalization coefficient_normalization) {
   const bool parameters_match =
+      matrix->ell_max == ell_max and
       matrix->number_of_ell_modes_to_kill == number_of_ell_modes_to_kill and
       matrix->half_power == half_power and
       matrix->coefficient_normalization == coefficient_normalization;
@@ -65,6 +66,7 @@ void fill_tensor_ylm_filters<filter_detail::sw_vars_list<Frame::Inertial>>(
         half_power, coefficient_normalization);
   }
 
+  matrix->ell_max = ell_max;
   matrix->number_of_ell_modes_to_kill = number_of_ell_modes_to_kill;
   matrix->half_power = half_power;
   matrix->coefficient_normalization = coefficient_normalization;

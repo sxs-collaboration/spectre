@@ -37,6 +37,20 @@ void test_simple_sparse_matrix() {
     }
   }
 
+  // Equality compares the stored elements.
+  {
+    SimpleSparseMatrix B;
+    B.fill(elements);
+    CHECK(A == B);
+    CHECK_FALSE(A != B);
+    auto perturbed_elements = elements;
+    perturbed_elements[3].value = 2.0;
+    SimpleSparseMatrix C;
+    C.fill(perturbed_elements);
+    CHECK(A != C);
+    CHECK(SimpleSparseMatrix{} != A);
+  }
+
   // Create vector x
   const std::vector<double> x{2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
 
