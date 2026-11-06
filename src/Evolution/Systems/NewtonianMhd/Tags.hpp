@@ -1,0 +1,166 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <cstddef>
+#include <string>
+
+#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianMhd/Sources/Source.hpp"
+#include "Evolution/Systems/NewtonianMhd/TagsDeclarations.hpp"
+#include "Evolution/Tags.hpp"
+#include "Options/String.hpp"
+
+/// \cond
+class DataVector;
+/// \endcond
+
+/// %OptionTags for the conservative formulation of the Newtonian Euler system
+namespace NewtonianMhd::OptionTags {
+template <size_t Dim>
+struct SourceTerm {
+  using type = std::unique_ptr<NewtonianMhd::Sources::Source<Dim>>;
+  static constexpr Options::String help = "The source term to be used.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
+
+struct DivergenceCleaningSpeed {
+  using type = double;
+  static constexpr Options::String help =
+      "Propagation speed of the hyperbolic divergence-cleaning waves.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
+
+struct DampingParameter {
+  using type = double;
+  static constexpr Options::String help =
+      "Constraint damping parameter for divergence cleaning.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
+}  // namespace NewtonianMhd::OptionTags
+
+/// %Tags for the conservative formulation of the Newtonian Euler system
+namespace NewtonianMhd::Tags {
+/// The mass density of the fluid (as a conservative variable).
+struct MassDensityCons : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// The momentum density of the fluid.
+template <size_t Dim, typename Fr>
+struct MomentumDensity : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim, Fr>;
+  static std::string name() { return Frame::prefix<Fr>() + "MomentumDensity"; }
+};
+
+/// The energy density of the fluid.
+struct EnergyDensity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// The magnetic field \f$B^i\f$ as a conservative variable.
+///
+/// Only present when the system is instantiated with
+/// `EvolveMagneticField == true`.
+template <typename Fr>
+struct MagneticFieldCons : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3, Fr>;
+  static std::string name() {
+    return Frame::prefix<Fr>() + "MagneticFieldCons";
+  }
+};
+
+/// The GLM divergence-cleaning field \f$\psi\f$ as a conservative variable.
+struct DivergenceCleaningFieldCons : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// The GLM cleaning propagation speed \f$c_h\f$.
+struct DivergenceCleaningSpeed : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::DivergenceCleaningSpeed>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double value) { return value; }
+};
+
+/// The constraint damping parameter for divergence cleaning.
+struct ConstraintDampingParameter : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::DampingParameter>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double value) { return value; }
+};
+
+/// The sound speed.
+template <typename DataType>
+struct SoundSpeed : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The characteristic speeds.
+template <size_t Dim>
+struct CharacteristicSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, Dim + 2>;
+};
+
+/// @{
+/// The characteristic fields of the NewtonianMhd system.
+struct VMinus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+template <size_t Dim>
+struct VMomentum : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim>;
+};
+struct VPlus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+/// @}
+
+/// The internal energy density.
+template <typename DataType>
+struct InternalEnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The kinetic energy density.
+template <typename DataType>
+struct KineticEnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The local Mach number of the flow
+template <typename DataType>
+struct MachNumber : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The ram pressure of the fluid.
+template <typename DataType, size_t Dim, typename Fr>
+struct RamPressure : db::SimpleTag {
+  using type = tnsr::II<DataType, Dim, Fr>;
+  static std::string name() { return Frame::prefix<Fr>() + "RamPressure"; }
+};
+
+/// The specific kinetic energy.
+template <typename DataType>
+struct SpecificKineticEnergy : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The source term in the evolution equations
+template <size_t Dim>
+struct SourceTerm : db::SimpleTag {
+  using type = std::unique_ptr<NewtonianMhd::Sources::Source<Dim>>;
+
+  using option_tags = tmpl::list<OptionTags::SourceTerm<Dim>>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& source_term) {
+    return source_term->get_clone();
+  }
+};
+
+}  // namespace NewtonianMhd::Tags

@@ -117,7 +117,7 @@ size_t make_element_seed(
  * \note Nesting `WithNoise` inside `WithNoise` is not supported.
  *
  * \note Systems with primitive and conservative variables (e.g.
- * ValenciaDivClean, NewtonianEuler) are not yet supported and trigger a
+ * ValenciaDivClean, NewtonianMhd) are not yet supported and trigger a
  * `static_assert` in `evolution::Initialization::Actions::SetVariables`.
  *
  * \note **GeneralizedHarmonic systems**: the initialization phase
