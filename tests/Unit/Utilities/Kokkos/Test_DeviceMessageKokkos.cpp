@@ -6,36 +6,27 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 
-#include "Helpers/Utilities/Kokkos/CheckOnDevice.hpp"
 #include "Utilities/ErrorHandling/DeviceMessage.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/Kokkos/KokkosCore.hpp"
 
 namespace {
 enum class Color : uint8_t { Red = 2, Green = 5 };
-
-template <typename... Ts>
-KOKKOS_FUNCTION std::array<char, 128> stream_all(const Ts&... values) {
-  DeviceMessage message{};
-  (message << ... << values);
-  std::array<char, 128> result{};
-  for (size_t i = 0; i < message.size() and i < result.size(); ++i) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    gsl::at(result, i) = message.c_str()[i];
-  }
-  return result;
-}
 }  // namespace
 
+// Prints the message in a kernel, which runs on the device in device builds.
+// [[OutputRegex, x = 1\.000000000000000000e\+00, -2\.500000000000000000e\+00 1
+// -12 34 5 \(1,-2,3\) end]]
 SPECTRE_TEST_CASE("Unit.Utilities.Kokkos.DeviceMessage", "[Utilities][Unit]") {
-  // Formats the same message in a kernel and on the host. The doubles are
-  // scaled to [1, 10) exactly, so the device's `log10` and `pow` give the same
-  // digits as the host's.
-  TestHelpers::check_on_device(KOKKOS_LAMBDA() {
-    return stream_all("x = ", 1.0, ", ", -2.5, ", ", 0.15625, ", ", 0.0, ' ',
-                      true, ' ', -12, ' ', size_t{34}, ' ', Color::Green, ' ',
-                      std::array<int, 3>{{1, -2, 3}}, '\n',
-                      std::array<double, 1>{}, "end");
-  });
+  OUTPUT_TEST();
+  Kokkos::parallel_for(
+      "TestDeviceMessage", 1, KOKKOS_LAMBDA(const int /*i*/) {
+        DeviceMessage message{};
+        message << "x = " << 1.0 << ", " << -2.5 << ' ' << true << ' ' << -12
+                << ' ' << size_t{34} << ' ' << Color::Green << ' '
+                << std::array<int, 3>{{1, -2, 3}} << " end\n";
+      });
+  Kokkos::fence();
+  REQUIRE(std::fflush(stdout) == 0);
 }

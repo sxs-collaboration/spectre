@@ -31,14 +31,16 @@ extern "C" [[noreturn]] void exit_on_error_abort(const int /*signal*/) {
 }  // namespace
 
 // Only built with a device backend, see CMakeLists.txt.
-// [[OutputRegex, Can't invert 0.0000000000000000e.00 at index 7 of .3,4.]]
+// Many threads fail, but only one prints its message.
+// [[OutputRegex, Can't invert 0\.000000000000000000e\+00 at index [0-9]+ of
+// \(3,4\)]]
 SPECTRE_TEST_CASE("Unit.Utilities.Kokkos.ErrorOnDevice", "[Utilities][Unit]") {
   OUTPUT_TEST();
   // `std::_Exit` doesn't flush output, so don't buffer it
   REQUIRE(std::setvbuf(stdout, nullptr, _IONBF, 0) == 0);
   REQUIRE(std::signal(SIGABRT, exit_on_error_abort) != SIG_ERR);
   Kokkos::parallel_for(
-      "TestErrorOnDevice", 1,
-      KOKKOS_LAMBDA(const int /*i*/) { static_cast<void>(inverse(0.0, 7)); });
+      "TestErrorOnDevice", 100000,
+      KOKKOS_LAMBDA(const size_t i) { static_cast<void>(inverse(0.0, i)); });
   Kokkos::fence();
 }

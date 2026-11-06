@@ -73,11 +73,12 @@
 // Kokkos compiles only one of the branches for the host and the GPU,
 // respectively.
 #ifdef SPECTRE_DEBUG
-#define ASSERT(a, m)                                                        \
-  do {                                                                      \
-    KOKKOS_IF_ON_HOST((SPECTRE_ASSERT_ON_HOST(a, m);))                      \
-    KOKKOS_IF_ON_DEVICE(                                                    \
-        (if (not(a)) { SPECTRE_ABORT_ON_DEVICE("ASSERT FAILED", #a, m); })) \
+#define ASSERT(a, m)                                                     \
+  do {                                                                   \
+    KOKKOS_IF_ON_HOST((SPECTRE_ASSERT_ON_HOST(a, m);))                   \
+    KOKKOS_IF_ON_DEVICE((if (not(a)) {                                   \
+      SPECTRE_ABORT_ON_DEVICE("ASSERT FAILED", "'" #a "' violated!", m); \
+    }))                                                                  \
   } while (false)
 #else
 #define ASSERT(a, m)                                   \

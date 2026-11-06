@@ -86,10 +86,10 @@ template <typename ExceptionTypeToThrow, typename F>
 #ifdef SPECTRE_KOKKOS
 // Kokkos compiles only one of the branches for the host and the GPU,
 // respectively.
-#define ERROR(m)                                                         \
-  do {                                                                   \
-    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(SpectreError, m);))         \
-    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+#define ERROR(m)                                                    \
+  do {                                                              \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(SpectreError, m);))    \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", "", m);)) \
   } while (false)
 #else
 #define ERROR(m) SPECTRE_ERROR_ON_HOST(SpectreError, m)
@@ -104,10 +104,10 @@ template <typename ExceptionTypeToThrow, typename F>
  * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
  */
 #ifdef SPECTRE_KOKKOS
-#define ERROR_AS(m, EXCEPTION_TYPE)                                      \
-  do {                                                                   \
-    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m);))       \
-    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+#define ERROR_AS(m, EXCEPTION_TYPE)                                 \
+  do {                                                              \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m);))  \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", "", m);)) \
   } while (false)
 #else
 #define ERROR_AS(m, EXCEPTION_TYPE) SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m)
@@ -131,10 +131,10 @@ template <typename ExceptionTypeToThrow, typename F>
   } while (false)
 
 #ifdef SPECTRE_KOKKOS
-#define ERROR_NO_TRACE(m)                                                \
-  do {                                                                   \
-    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_NO_TRACE_ON_HOST(m);))              \
-    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+#define ERROR_NO_TRACE(m)                                           \
+  do {                                                              \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_NO_TRACE_ON_HOST(m);))         \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", "", m);)) \
   } while (false)
 #else
 #define ERROR_NO_TRACE(m) SPECTRE_ERROR_NO_TRACE_ON_HOST(m)

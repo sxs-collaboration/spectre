@@ -11,6 +11,7 @@ spectre_target_sources(
   AbortWithErrorMessage.cpp
   Breakpoint.cpp
   CaptureForError.cpp
+  DeviceMessage.cpp
   FloatingPointExceptions.cpp
   FormatStacktrace.cpp
   SegfaultHandler.cpp
@@ -25,8 +26,8 @@ spectre_target_headers(
   AbortWithErrorMessage.hpp
   Assert.hpp
   Breakpoint.hpp
-  DeviceMessage.hpp
   CaptureForError.hpp
+  DeviceMessage.hpp
   Error.hpp
   Exceptions.hpp
   ExpectsAndEnsures.hpp
