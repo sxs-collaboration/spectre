@@ -20,7 +20,10 @@
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/ZCurve.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -47,6 +50,55 @@ void test_uniform_cost_function() {
   for (const auto& element_id_and_cost : costs) {
     CHECK(element_id_and_cost.second == 1.0);
   }
+}
+
+// Test that `domain::get_element_costs` uses the extents override only for the
+// overridden elements
+void test_extents_override() {
+  const auto domain_creator = domain::creators::AlignedLattice<2>(
+      {{{{0.0, 1.0, 2.0}}, {{0.0, 1.0}}}}, {{{}, {}}}, {{{}, {}}}, {{1, 1}},
+      {{3, 4}}, {}, {}, {});
+  const auto domain = domain_creator.create_domain();
+  const auto& blocks = domain.blocks();
+  const auto& initial_refinement_levels =
+      domain_creator.initial_refinement_levels();
+  const auto& initial_extents = domain_creator.initial_extents();
+
+  const ElementId<2> overridden_id{1, {{{1, 1}, {1, 0}}}};
+  const std::unordered_map<ElementId<2>, std::array<size_t, 2>>
+      extents_override{{overridden_id, {{5, 7}}}};
+
+  const auto costs = domain::get_element_costs(
+      blocks, initial_refinement_levels, initial_extents,
+      domain::ElementWeight::NumGridPoints, std::nullopt, std::nullopt,
+      extents_override);
+  CHECK(costs.size() == 8);
+  for (const auto& [element_id, cost] : costs) {
+    CHECK(cost == (element_id == overridden_id ? 35.0 : 12.0));
+  }
+
+  // Uniform weights ignore the extents, including the overridden ones
+  const auto uniform_costs =
+      domain::get_element_costs(blocks, initial_refinement_levels,
+                                initial_extents, domain::ElementWeight::Uniform,
+                                std::nullopt, std::nullopt, extents_override);
+  CHECK(uniform_costs.size() == 8);
+  for (const auto& element_id_and_cost : uniform_costs) {
+    CHECK(element_id_and_cost.second == 1.0);
+  }
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      domain::get_element_costs(
+          blocks, initial_refinement_levels, initial_extents,
+          domain::ElementWeight::NumGridPointsAndGridSpacing,
+          Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto,
+          extents_override),
+      Catch::Matchers::ContainsSubstring(
+          "Since element_weight is "
+          "ElementWeight::NumGridPointsAndGridSpacing, extents_override must "
+          "be empty"));
+#endif  // SPECTRE_DEBUG
 }
 
 // Test the weighting done by `domain::get_element_costs` for weighted cost
@@ -545,6 +597,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementDistribution", "[Domain][Unit]") {
   test_weighted_cost_function(domain::ElementWeight::NumGridPoints);
   test_weighted_cost_function(
       domain::ElementWeight::NumGridPointsAndGridSpacing);
+  test_extents_override();
 
   // Inputs for testing `BlockZCurveProcDistribution`
 

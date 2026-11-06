@@ -97,13 +97,7 @@ struct SetInterpolators {
     // bordering a DG-only block, or on a non-subcell-compatible mesh.
     if (not fd::dg_mesh_supports_subcell(my_dg_mesh) or
         alg::found(only_dg_block_ids, element.id().block_id()) or
-        alg::any_of(
-            element.neighbors(),
-            [&only_dg_block_ids](const auto& direction_and_neighbors) {
-              return alg::found(
-                  only_dg_block_ids,
-                  direction_and_neighbors.second.ids().begin()->block_id());
-            })) {
+        evolution::dg::borders_only_dg_block(element, only_dg_block_ids)) {
       return;
     }
     const bool enable_extension_directions =

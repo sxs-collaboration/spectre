@@ -39,11 +39,13 @@ struct UseSubcellGridPointsForDistribution {
   static constexpr Options::String help = {
       "If true, the element weight used for the ElementDistribution is "
       "computed using the number of finite-difference subcell grid points "
-      "instead of the number of DG grid points for elements that are "
-      "subcell-capable. This better reflects the higher computational cost "
-      "of running the FD scheme on an element compared to running DG on it. "
-      "Requires ElementDistribution to be NumGridPoints. This option is only "
-      "available for executables with DG-subcell support."};
+      "instead of the number of DG grid points for elements that start on "
+      "the subcell grid, i.e. that are in subcell-capable blocks and that "
+      "neither border a DG-only block nor are on an external boundary where "
+      "subcell is disabled. This better reflects the higher computational "
+      "cost of running the FD scheme on an element compared to running DG on "
+      "it. Requires ElementDistribution to be NumGridPoints. This option is "
+      "only available for executables with DG-subcell support."};
   using group = Parallel::OptionTags::Parallelization;
 };
 }  // namespace evolution::dg::OptionTags

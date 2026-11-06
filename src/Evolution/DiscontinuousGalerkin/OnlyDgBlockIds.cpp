@@ -14,6 +14,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockGroups.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/BlockSupportsSubcell.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -53,6 +55,20 @@ std::vector<size_t> compute_only_dg_block_ids(
       domain_creator.block_groups(), domain.blocks());
 }
 
+template <size_t Dim>
+bool borders_only_dg_block(const Element<Dim>& element,
+                           const std::vector<size_t>& only_dg_block_ids) {
+  return alg::any_of(
+      element.neighbors(),
+      [&only_dg_block_ids](const auto& direction_and_neighbors) {
+        return alg::any_of(
+            direction_and_neighbors.second.ids(),
+            [&only_dg_block_ids](const ElementId<Dim>& neighbor_id) {
+              return alg::found(only_dg_block_ids, neighbor_id.block_id());
+            });
+      });
+}
+
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                \
@@ -66,7 +82,10 @@ std::vector<size_t> compute_only_dg_block_ids(
   template std::vector<size_t> compute_only_dg_block_ids(                     \
       const std::optional<std::vector<std::string>>&                          \
           only_dg_block_and_group_names,                                      \
-      const DomainCreator<GET_DIM(data)>& domain_creator);
+      const DomainCreator<GET_DIM(data)>& domain_creator);                    \
+  template bool borders_only_dg_block(                                        \
+      const Element<GET_DIM(data)>& element,                                  \
+      const std::vector<size_t>& only_dg_block_ids);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -58,6 +58,13 @@ std::ostream& operator<<(std::ostream& os, ElementWeight weight);
 /// `i1_quadrature` if the value for `element_weight` is
 /// `ElementWeight::NumGridPointsAndGridSpacing`. Otherwise, the argument isn't
 /// needed and will have no effect if it does have a value.
+///
+/// The `extents_override` gives, for individual `Element`s, the extents to use
+/// in place of their block's `initial_extents` when computing their cost (e.g.
+/// to weight an element that runs a finite-difference scheme by its
+/// finite-difference grid). It is ignored for `ElementWeight::Uniform` and must
+/// be empty for `ElementWeight::NumGridPointsAndGridSpacing`, since that weight
+/// builds a DG mesh from the extents.
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<Block<Dim>>& blocks,
@@ -65,7 +72,9 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     ElementWeight element_weight,
     const std::optional<Spectral::Basis>& i1_basis,
-    const std::optional<Spectral::Quadrature>& i1_quadrature);
+    const std::optional<Spectral::Quadrature>& i1_quadrature,
+    const std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>&
+        extents_override = {});
 
 /*!
  * \brief Distribution strategy for assigning elements to CPUs using a
