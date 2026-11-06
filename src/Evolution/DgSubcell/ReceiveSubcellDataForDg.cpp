@@ -7,10 +7,12 @@
 #include <cstddef>
 #include <iterator>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -18,8 +20,11 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -36,6 +41,24 @@ void receive_subcell_data_for_dg(
     return;
   }
 
+  // Neighbors don't send ghost data to elements that can never use subcell,
+  // i.e. that are in or border a DG-only block (see `prepare_neighbor_data`).
+  if (not received_mortar_data.ghost_cell_data.has_value()) {
+    const auto& element = db::get<::domain::Tags::Element<VolumeDim>>(*box);
+    const std::vector<size_t>& only_dg_block_ids =
+        db::get<evolution::dg::Tags::OnlyDgBlockIds<VolumeDim>>(*box);
+    if (not(alg::found(only_dg_block_ids, element.id().block_id()) or
+            evolution::dg::borders_only_dg_block(element, only_dg_block_ids))) {
+      ERROR("Element " << element.id()
+                       << " can use subcell but received no ghost data from "
+                          "its neighbor "
+                       << mortar_id
+                       << ". Neighbors only skip sending ghost data to "
+                          "elements in or bordering a DG-only block.");
+    }
+    return;
+  }
+
   db::mutate<subcell::Tags::MeshForGhostData<VolumeDim>,
              subcell::Tags::GhostDataForReconstruction<VolumeDim>,
              subcell::Tags::DataForRdmpTci>(
@@ -43,9 +66,6 @@ void receive_subcell_data_for_dg(
           const auto rdmp_tci_data_ptr) {
         const size_t number_of_evolved_vars =
             rdmp_tci_data_ptr->max_variables_values.size();
-        ASSERT(received_mortar_data.ghost_cell_data.has_value(),
-               "The subcell mortar data was not sent with mortar id "
-                   << mortar_id);
         mesh_for_ghost_data_ptr->insert_or_assign(
             mortar_id,
             received_mortar_data.volume_mesh_ghost_cell_data.value());

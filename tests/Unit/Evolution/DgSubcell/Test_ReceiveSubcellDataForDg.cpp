@@ -6,13 +6,19 @@
 #include <cstddef>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -21,6 +27,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -163,6 +170,76 @@ void test_nonhypercube_mesh() {
   CHECK(db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box) ==
         initial_rdmp);
 }
+
+// Neighbors don't send ghost data to elements that are in or border a DG-only
+// block. Check that such elements accept a message without ghost data, and
+// that an element that can use subcell refuses it
+template <size_t Dim>
+void test_missing_ghost_data(const std::vector<size_t>& only_dg_block_ids,
+                             const bool expect_error) {
+  CAPTURE(Dim);
+  CAPTURE(only_dg_block_ids);
+
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
+  rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
+  rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
+  const auto initial_rdmp = rdmp_tci_data;
+
+  const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+  // The neighbor in the upper xi direction is in block 1
+  DirectionMap<Dim, Neighbors<Dim>> neighbors{};
+  neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{
+      {ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()};
+  const Element<Dim> element{ElementId<Dim>{0}, std::move(neighbors),
+                             domain::topologies::hypercube<Dim>};
+
+  auto box = db::create<
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>,
+                 evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      dg_volume_mesh, element, only_dg_block_ids,
+      DirectionalIdMap<Dim, Mesh<Dim>>{}, GhostDataMap<Dim>{},
+      std::move(rdmp_tci_data));
+
+  const DirectionalId<Dim> did{Direction<Dim>::upper_xi(), ElementId<Dim>{1}};
+  const BoundaryData<Dim> data_without_ghost_cells{dg_volume_mesh,
+                                                   dg_volume_mesh,
+                                                   std::nullopt,
+                                                   std::nullopt,
+                                                   DataVector{2 * Dim + 1},
+                                                   {},
+                                                   1};
+  if (expect_error) {
+    CHECK_THROWS_WITH(evolution::dg::subcell::receive_subcell_data_for_dg<Dim>(
+                          make_not_null(&box), did, data_without_ghost_cells),
+                      Catch::Matchers::ContainsSubstring(
+                          "can use subcell but received no ghost data"));
+    return;
+  }
+  evolution::dg::subcell::receive_subcell_data_for_dg<Dim>(
+      make_not_null(&box), did, data_without_ghost_cells);
+
+  CHECK(db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box)
+            .empty());
+  CHECK(db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            box)
+            .empty());
+  CHECK(db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box) ==
+        initial_rdmp);
+}
+
+template <size_t Dim>
+void test_missing_ghost_data() {
+  // The neighbor's block is DG-only, so we border a DG-only block
+  test_missing_ghost_data<Dim>({1}, false);
+  // Our own block is DG-only
+  test_missing_ghost_data<Dim>({0}, false);
+  // We can use subcell, so we must always receive ghost data
+  test_missing_ghost_data<Dim>({}, true);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.ReceiveSubcellDataForDg",
@@ -173,4 +250,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.ReceiveSubcellDataForDg",
   test_nonhypercube_mesh<1>();
   test_nonhypercube_mesh<2>();
   test_nonhypercube_mesh<3>();
+  test_missing_ghost_data<1>();
+  test_missing_ghost_data<2>();
+  test_missing_ghost_data<3>();
 }

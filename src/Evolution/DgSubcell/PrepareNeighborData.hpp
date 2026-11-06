@@ -6,7 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <optional>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -30,6 +32,7 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -59,6 +62,12 @@ namespace evolution::dg::subcell {
  * vs. just projecting to the ghost cells. Another optimization is to always
  * send DG volume data to neighbors that we think are doing DG, so that we can
  * elide any slicing or projection cost in that direction.
+ *
+ * No data is prepared for neighbors that can never use subcell. If our own
+ * block is DG-only (see `evolution::dg::Tags::OnlyDgBlockIds`), all of our
+ * neighbors border a DG-only block and so never use subcell, and
+ * `all_neighbor_data_for_reconstruction` is left empty. Otherwise, directions
+ * in which all neighbors are in DG-only blocks are skipped.
  */
 template <typename Metavariables, typename DbTagsList, size_t Dim>
 void prepare_neighbor_data(
@@ -73,9 +82,31 @@ void prepare_neighbor_data(
   const Mesh<Dim>& subcell_mesh =
       db::get<::evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
   const auto& element = db::get<::domain::Tags::Element<Dim>>(*box);
+  const std::vector<size_t>& only_dg_block_ids =
+      db::get<evolution::dg::Tags::OnlyDgBlockIds<Dim>>(*box);
 
-  const std::unordered_set<Direction<Dim>>& directions_to_slice =
-      element.internal_boundaries();
+  all_neighbor_data_for_reconstruction->clear();
+  *ghost_data_mesh = dg_mesh;
+  // Ghost data is only used to fill the ghost cells of neighbors doing FD, and
+  // elements in or bordering a DG-only block never use subcell (see
+  // `subcell::Actions::Initialize`). So if our block is DG-only none of our
+  // neighbors needs ghost data, and otherwise we skip the directions in which
+  // all neighbors are in DG-only blocks.
+  if (alg::found(only_dg_block_ids, element.id().block_id())) {
+    return;
+  }
+  std::unordered_set<Direction<Dim>> directions_to_slice{};
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    if (not alg::all_of(neighbors.ids(), [&only_dg_block_ids](
+                                             const ElementId<Dim>& neighbor) {
+          return alg::found(only_dg_block_ids, neighbor.block_id());
+        })) {
+      directions_to_slice.insert(direction);
+    }
+  }
+  if (directions_to_slice.empty()) {
+    return;
+  }
 
   const auto& neighbor_meshes = db::get<domain::Tags::NeighborMesh<Dim>>(*box);
   const subcell::RdmpTciData& rdmp_data =
@@ -166,6 +197,10 @@ void prepare_neighbor_data(
       ASSERT(interpolator.has_value(),
              "All interpolators must have values. The std::optional is used "
              "for some local optimizations.");
+      if (not directions_to_slice.contains(
+              directional_element_id.direction())) {
+        continue;
+      }
       DataVector& data_in_direction = all_neighbor_data_for_reconstruction->at(
           directional_element_id.direction());
       gsl::span result_in_direction{data_in_direction.data(),
@@ -179,12 +214,11 @@ void prepare_neighbor_data(
   // Note: The RDMP TCI data must be filled by the TCIs before getting to this
   // call. That means once in the initial data and then in both the DG and FD
   // TCIs.
-  for (const auto& [direction, neighbors] : element.neighbors()) {
+  for (auto& [direction, neighbor_data] :
+       *all_neighbor_data_for_reconstruction) {
     // Add the RDMP TCI data to what we will be sending.
     // Note that this is added _after_ the reconstruction data has been
     // re-oriented (in the case where we have neighbors doing FD).
-    DataVector& neighbor_data =
-        all_neighbor_data_for_reconstruction->at(direction);
     std::copy(rdmp_data.max_variables_values.begin(),
               rdmp_data.max_variables_values.end(),
               std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)));

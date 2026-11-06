@@ -64,6 +64,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -796,9 +797,17 @@ struct ReceiveDataForReconstruction {
                    "Found neighbor already inserted in direction "
                        << directional_element_id.direction()
                        << " with ElementId " << directional_element_id.id());
-            ASSERT(boundary_data.ghost_cell_data.has_value(),
-                   "Received subcell data message that does not contain any "
-                   "actual subcell data for reconstruction.");
+            // Neighbors skip sending ghost data only to elements that can
+            // never use subcell (see `prepare_neighbor_data`), so an element
+            // doing FD must always receive it.
+            if (UNLIKELY(not boundary_data.ghost_cell_data.has_value())) {
+              ERROR("Element "
+                    << element.id()
+                    << " received a subcell data message from its neighbor "
+                    << directional_element_id
+                    << " that does not contain any actual subcell data for "
+                       "reconstruction.");
+            }
             // Collect the max/min of u(t^n) for the RDMP as we receive data.
             // This reduces the memory footprint.
 
