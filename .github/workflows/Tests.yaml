@@ -967,9 +967,11 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           cmake -D SPECTRE_ROOT=$GITHUB_WORKSPACE/build \
             $GITHUB_WORKSPACE/tests/Unit/IO/Exporter/BundledExporter
           make -j${NUMBER_OF_CORES}
-          ./TestSpectreExporter \
-            $GITHUB_WORKSPACE/tests/Unit/Visualization/Python/VolTestData0.h5 \
-            element_data 0 Psi 0 0 0 -0.07059806932542323
+          for EXPORTER_TEST in TestSpectreExporter TestSpectreExporterC; do
+            ./$EXPORTER_TEST \
+              $GITHUB_WORKSPACE/tests/Unit/Visualization/Python/VolTestData0.h5 \
+              element_data 0 Psi 0 0 0 -0.07059806932542323
+          done
           cd .. && rm -r build-test-exporter
       - name: Diagnose ccache
         run: |

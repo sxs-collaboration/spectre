@@ -69,6 +69,11 @@ auto make_tagged_tuple(std::vector<DataType> interpolated_data) {
  * names. Here is an example of how to use this function:
  *
  * \snippet Test_Exporter.cpp interpolate_tensors_to_points_example
+ *
+ * The overload that takes the `result` as an argument resizes it to the number
+ * of tensor components and target points. If it already has the correct size,
+ * the data is written into it directly, so its components can be non-owning
+ * `DataVector`s that reference external memory.
  */
 template <typename ResultDataType, size_t Dim, typename Frame>
 void interpolate_to_points(
