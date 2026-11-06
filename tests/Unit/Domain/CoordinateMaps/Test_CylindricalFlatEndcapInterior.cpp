@@ -5,11 +5,14 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
+#include <limits>
 #include <random>
 
 #include "Domain/CoordinateMaps/CylindricalFlatEndcapInterior.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace domain {
 namespace {
@@ -189,6 +192,53 @@ void test_cylindrical_flat_endcap_interior_large_dist_proj() {
   test_suite_for_map_on_cylinder(map, 0.0, 1.0);
 }
 
+void test_inverse_near_boundaries() {
+  INFO("CylindricalFlatEndcapInterior: inverse near the boundaries");
+  // The flat disk has radius 0.4
+  const std::array<double, 3> center_two = {0.0, 0.0, 0.0};
+  const std::array<double, 3> center_one = {0.0, 0.0, -0.3};
+  const std::array<double, 3> proj_center = {0.0, 0.0, 0.0};
+  const double radius_two = 1.0;
+  const double z_sphere_extent = -0.6;
+  const CoordinateMaps::CylindricalFlatEndcapInterior map(
+      center_one, center_two, proj_center, z_sphere_extent, radius_two);
+
+  const Approx local_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  const auto check_near_boundary = [&map, &local_approx](
+                                       const std::array<double, 3>& source,
+                                       const std::array<double, 3>& offset) {
+    CAPTURE(source);
+    CAPTURE(offset);
+    auto target = map(source);
+    for (size_t i = 0; i < 3; ++i) {
+      gsl::at(target, i) += gsl::at(offset, i);
+    }
+    const auto inverse = map.inverse(target);
+    REQUIRE(inverse.has_value());
+    CHECK_ITERABLE_CUSTOM_APPROX(*inverse, source, local_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(map(*inverse), target, local_approx);
+  };
+  const double eps = 8.0 * std::numeric_limits<double>::epsilon() * radius_two;
+  for (const double rho : {0.0, 0.3, 0.7, 1.0}) {
+    for (const double phi : {0.0, 1.3, 4.0}) {
+      const double xbar = rho * std::cos(phi);
+      const double ybar = rho * std::sin(phi);
+      for (const double sign : {-1.0, 1.0}) {
+        // Flat face (zbar = +1)
+        check_near_boundary({xbar, ybar, 1.0}, {0.0, 0.0, sign * eps});
+        // Spherical face (zbar = -1)
+        const auto on_sphere = map(std::array{xbar, ybar, -1.0});
+        const double r = std::sqrt(square(on_sphere[0]) + square(on_sphere[1]) +
+                                   square(on_sphere[2]));
+        check_near_boundary(
+            {xbar, ybar, -1.0},
+            {sign * eps * on_sphere[0] / r, sign * eps * on_sphere[1] / r,
+             sign * eps * on_sphere[2] / r});
+      }
+    }
+  }
+}
+
 #ifdef SPECTRE_DEBUG
 void test_assert_proj_center_inside_sphere() {
   INFO("FocallyLiftedMap asserts proj_center inside sphere");
@@ -211,6 +261,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.CylindricalFlatEndcapInterior",
   test_cylindrical_flat_endcap_interior_offset();
   test_cylindrical_flat_endcap_interior_large_ratio();
   test_cylindrical_flat_endcap_interior_large_dist_proj();
+  test_inverse_near_boundaries();
 #ifdef SPECTRE_DEBUG
   test_assert_proj_center_inside_sphere();
 #endif

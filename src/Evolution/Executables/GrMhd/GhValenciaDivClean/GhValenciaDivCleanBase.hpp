@@ -23,6 +23,7 @@
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/BinaryNeutronStars.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
@@ -613,11 +614,12 @@ struct GhValenciaDivCleanTemplateBase<
                                 control_system::control_system_triggers<
                                     control_systems>>>,
         tmpl::pair<DomainCreator<volume_dim>,
-                   // Currently control systems can only be used with BCO
-                   // domains
+                   // Currently control systems can only be used with BCO or
+                   // BinaryNeutronStars domains
                    tmpl::conditional_t<
                        use_control_systems,
-                       tmpl::list<::domain::creators::BinaryCompactObject>,
+                       tmpl::list<::domain::creators::BinaryCompactObject,
+                                  ::domain::creators::BinaryNeutronStars>,
                        domain_creators<volume_dim>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<

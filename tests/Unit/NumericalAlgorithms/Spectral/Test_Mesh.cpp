@@ -216,8 +216,9 @@ void test_interface_mesh() {
                 std::array{Spectral::Quadrature::Equiangular,
                            Spectral::Quadrature::GaussLobatto}));
 
-  // B2 cylinder (reoriented: radial is last dim). Arises in Pill blocks where
-  // the cylinder axis is not aligned with the block's first logical direction.
+  // B2 cylinder (reoriented: radial is last dim). Arises in BinaryNeutronStars
+  // domain blocks where the cylinder axis is not aligned with the block's first
+  // logical direction.
   const Mesh<3> b2_cyl_rev_mesh{
       {{5, 7, 3}},
       {{Spectral::Basis::Legendre, Spectral::Basis::ZernikeB2,
