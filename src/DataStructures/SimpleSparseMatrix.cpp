@@ -4,13 +4,62 @@
 #include "DataStructures/SimpleSparseMatrix.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/MakeArray.hpp"
+
+namespace {
+// Kernel for SimpleSparseMatrix::increment_multiply_on_right_all_offsets.
+// Three implementation details are needed for the compiler:
+//
+// - The number of offsets, Stride, is a template parameter, so the partial
+//   sums of a row are a fixed-size array that fits in registers. With a
+//   runtime stride the sums would live in memory and be updated one at a
+//   time.
+//
+// - The fold expression writes the Stride updates for a matrix entry out
+//   one by one. A loop would do the same, but GCC stops unrolling loops
+//   beyond a fixed trip count, and once the sums are no longer separate
+//   variables the vector instructions are lost.
+//
+// - The arrays are passed as plain pointers instead of the std::vectors and
+//   gsl::spans that own them. Through the containers, the compiler re-read
+//   their data pointers in every iteration of the inner loop; with plain
+//   pointers the base addresses stay in registers.
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+template <size_t Stride>
+void increment_multiply_all_offsets(double* const dest_data,
+                                    const double* const source_data,
+                                    const double* const matrix_data,
+                                    const size_t* const column_indices,
+                                    const size_t* const row_indices,
+                                    const size_t* const row_columns,
+                                    const size_t number_of_rows) {
+  size_t entry = 0;
+  for (size_t row = 0; row < number_of_rows; ++row) {
+    auto sum = make_array<Stride>(0.0);
+    for (size_t column = 0; column < row_columns[row]; ++column, ++entry) {
+      const double value = matrix_data[entry];
+      const double* const src = source_data + column_indices[entry] * Stride;
+      [&]<size_t... Offsets>(std::index_sequence<Offsets...> /*meta*/) {
+        ((sum[Offsets] += value * src[Offsets]), ...);
+      }(std::make_index_sequence<Stride>{});
+    }
+    double* const dest = dest_data + row_indices[row] * Stride;
+    for (size_t k = 0; k < Stride; ++k) {
+      dest[k] += gsl::at(sum, k);
+    }
+  }
+}
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+}  // namespace
 
 double SimpleSparseMatrix::operator()(const size_t row_dest_index,
                                       const size_t column_src_index) const {
@@ -135,6 +184,35 @@ void SimpleSparseMatrix::increment_multiply_on_right(
     (*a)[a_offset + (*dest_ind) * a_stride] += sum;
     std::advance(dest_ind, 1);
   }
+}
+
+void SimpleSparseMatrix::increment_multiply_on_right_all_offsets(
+    const gsl::not_null<gsl::span<double>*> a, const gsl::span<double>& b,
+    const size_t stride) const {
+  if (matrix_elements_.empty() or stride == 0) {
+    return;
+  }
+
+  // A kernel is compiled for every stride up to max_fused_stride. Larger
+  // strides use the plain per-offset multiply. The spherical-harmonic filter
+  // checks at compile time that its radial extent never exceeds the cap, so
+  // it never takes this path.
+  if (stride > max_fused_stride) {
+    for (size_t offset = 0; offset < stride; ++offset) {
+      increment_multiply_on_right(a, offset, stride, b, offset, stride);
+    }
+    return;
+  }
+
+  // Table of compiled kernels, indexed by stride - 1.
+  static constexpr auto dispatch =
+      []<size_t... Indices>(std::index_sequence<Indices...>) {
+        return std::array{&increment_multiply_all_offsets<Indices + 1>...};
+      }(std::make_index_sequence<max_fused_stride>{});
+  gsl::at(dispatch, stride - 1)(
+      a->data(), b.data(), matrix_elements_.data(), column_src_indices_.data(),
+      row_dest_indices_.data(), num_columns_per_row_.data(),
+      row_dest_indices_.size());
 }
 
 // Explicit instantiations

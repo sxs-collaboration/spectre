@@ -7,9 +7,13 @@
 #include <cstring>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "NumericalAlgorithms/TensorYlm/Filter.hpp"
@@ -340,51 +344,66 @@ void apply_tensor_ylm_filter(
         gsl::span<double> dest(
             get<Tag>(dest_tensor)[0].data(),
             num_independent_components * dest_tensor.number_of_grid_points());
-        // If the mesh is 3-dimensional (i.e. radial_extents>1), then
-        // we need to loop over offsets.  If not, then there's only
-        // one loop iteration.
+        // Apply the sparse matrix to all radial points together. The radial
+        // extent of a DG mesh is bounded by Spectral::limits, so the fused
+        // kernel must cover every allowed extent of the radial bases of
+        // shells (Legendre or Chebyshev) and filled spheres (ZernikeB3). If
+        // this check fails, raise SimpleSparseMatrix::max_fused_stride.
+        static_assert(
+            Spectral::maximum_number_of_points<
+                    Spectral::Basis::Legendre,
+                    Spectral::Quadrature::GaussLobatto> <=
+                    SimpleSparseMatrix::max_fused_stride and
+                Spectral::maximum_number_of_points<
+                    Spectral::Basis::Chebyshev,
+                    Spectral::Quadrature::GaussLobatto> <=
+                    SimpleSparseMatrix::max_fused_stride and
+                Spectral::maximum_number_of_points<
+                    Spectral::Basis::ZernikeB3,
+                    Spectral::Quadrature::GaussRadauUpper> <=
+                    SimpleSparseMatrix::max_fused_stride,
+            "SimpleSparseMatrix::max_fused_stride must cover the largest "
+            "allowed radial extent, so that the sparse filter multiply never "
+            "falls back to the slower per-offset path.");
         const size_t stride = radial_extents;
-        for (size_t offset = 0; offset < stride; ++offset) {
-          // Each type of tensor gets a different filter matrix.
-          if constexpr (std::is_same_v<typename Tag::type::structure::symmetry,
-                                       Symmetry<1>>) {
-            ASSERT(filter_matrices.i.has_value(),
-                   "Filter matrix for 'i' not set in FilterMatrixHolder for "
-                   "TensorYlm filtering.");
-            filter_matrices.i->increment_multiply_on_right(
-                make_not_null(&dest), offset, stride, src, offset, stride);
-          } else if constexpr (std::is_same_v<
-                                   typename Tag::type::structure::symmetry,
-                                   Symmetry<1, 1>>) {
-            ASSERT(filter_matrices.ii.has_value(),
-                   "Filter matrix for 'ii' not set in FilterMatrixHolder for "
-                   "TensorYlm filtering.");
-            filter_matrices.ii->increment_multiply_on_right(
-                make_not_null(&dest), offset, stride, src, offset, stride);
-          } else if constexpr (std::is_same_v<
-                                   typename Tag::type::structure::symmetry,
-                                   Symmetry<2, 1>>) {
-            ASSERT(filter_matrices.ij.has_value(),
-                   "Filter matrix for 'ij' not set in FilterMatrixHolder for "
-                   "TensorYlm filtering.");
-            filter_matrices.ij->increment_multiply_on_right(
-                make_not_null(&dest), offset, stride, src, offset, stride);
-          } else if constexpr (std::is_same_v<
-                                   typename Tag::type::structure::symmetry,
-                                   Symmetry<2, 1, 1>>) {
-            ASSERT(filter_matrices.kii.has_value(),
-                   "Filter matrix for 'kii' not set in FilterMatrixHolder for "
-                   "TensorYlm filtering.");
-            filter_matrices.kii->increment_multiply_on_right(
-                make_not_null(&dest), offset, stride, src, offset, stride);
-          } else {
-            ASSERT(
-                filter_matrices.scalar.has_value(),
-                "Filter matrix for 'scalar' not set in FilterMatrixHolder for "
-                "TensorYlm filtering.");
-            filter_matrices.scalar->increment_multiply_on_right(
-                make_not_null(&dest), offset, stride, src, offset, stride);
-          }
+        // Each type of tensor gets a different filter matrix.
+        if constexpr (std::is_same_v<typename Tag::type::structure::symmetry,
+                                     Symmetry<1>>) {
+          ASSERT(filter_matrices.i.has_value(),
+                 "Filter matrix for 'i' not set in FilterMatrixHolder for "
+                 "TensorYlm filtering.");
+          filter_matrices.i->increment_multiply_on_right_all_offsets(
+              make_not_null(&dest), src, stride);
+        } else if constexpr (std::is_same_v<
+                                 typename Tag::type::structure::symmetry,
+                                 Symmetry<1, 1>>) {
+          ASSERT(filter_matrices.ii.has_value(),
+                 "Filter matrix for 'ii' not set in FilterMatrixHolder for "
+                 "TensorYlm filtering.");
+          filter_matrices.ii->increment_multiply_on_right_all_offsets(
+              make_not_null(&dest), src, stride);
+        } else if constexpr (std::is_same_v<
+                                 typename Tag::type::structure::symmetry,
+                                 Symmetry<2, 1>>) {
+          ASSERT(filter_matrices.ij.has_value(),
+                 "Filter matrix for 'ij' not set in FilterMatrixHolder for "
+                 "TensorYlm filtering.");
+          filter_matrices.ij->increment_multiply_on_right_all_offsets(
+              make_not_null(&dest), src, stride);
+        } else if constexpr (std::is_same_v<
+                                 typename Tag::type::structure::symmetry,
+                                 Symmetry<2, 1, 1>>) {
+          ASSERT(filter_matrices.kii.has_value(),
+                 "Filter matrix for 'kii' not set in FilterMatrixHolder for "
+                 "TensorYlm filtering.");
+          filter_matrices.kii->increment_multiply_on_right_all_offsets(
+              make_not_null(&dest), src, stride);
+        } else {
+          ASSERT(filter_matrices.scalar.has_value(),
+                 "Filter matrix for 'scalar' not set in FilterMatrixHolder for "
+                 "TensorYlm filtering.");
+          filter_matrices.scalar->increment_multiply_on_right_all_offsets(
+              make_not_null(&dest), src, stride);
         }
         // Copy the result for this tensor back into gh_spatial_spectral_vars.
         get<Tag>(gh_spatial_spectral_vars) = get<Tag>(dest_tensor);
