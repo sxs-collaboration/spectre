@@ -387,10 +387,11 @@ bool FixToAtmosphere<Dim>::apply_kappa_limit(
       }
       if (temp - min_temperature > 1.0e-13) {
         temp = RootFinder::toms748(
-            [&get_pressure, &p_max](const double local_temperature) {
-              return get_pressure(local_temperature) - p_max;
-            },
-            min_temperature, temp, 1e-50, 1.0e-13);
+                   [&get_pressure, &p_max](const double local_temperature) {
+                     return get_pressure(local_temperature) - p_max;
+                   },
+                   min_temperature, temp, 1e-50, 1.0e-13)
+                   .value();
       } else {
         temp = 0.5 * (temp + min_temperature);
       }

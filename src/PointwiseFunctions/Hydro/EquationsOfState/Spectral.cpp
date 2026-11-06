@@ -305,8 +305,10 @@ double Spectral::rest_mass_density_from_enthalpy(
     const auto f = [this, &specific_enthalpy](const double density) {
       return this->specific_enthalpy_from_density(density) - specific_enthalpy;
     };
-    const auto root_from_lambda = RootFinder::toms748(
-        f, reference_density_, upper_density, 1.0e-14, 1.0e-15);
+    const auto root_from_lambda =
+        RootFinder::toms748(f, reference_density_, upper_density, 1.0e-14,
+                            1.0e-15)
+            .value();
     return root_from_lambda;
   }
 }

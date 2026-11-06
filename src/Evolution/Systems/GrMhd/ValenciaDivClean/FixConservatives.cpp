@@ -476,11 +476,10 @@ bool FixConservatives::operator()(
                                     f_at_candidate_upper_bound, f_at_upper);
         }
 
-        try {
-          excess_lorentz_factor = RootFinder::toms748<true>(
-              f_of_lorentz_factor, SimdType{0.0}, upper_bound, f_at_lower,
-              f_at_upper, 1.e-14, 1.e-14, 100, not tilde_s_mask);
-        } catch (std::exception& exception) {
+        const auto root = RootFinder::toms748<true>(
+            f_of_lorentz_factor, SimdType{0.0}, upper_bound, f_at_lower,
+            f_at_upper, 1.e-14, 1.e-14, 100, not tilde_s_mask);
+        if (not root.has_value()) {
           // clang-format makes the streamed text hard to read in code...
           // clang-format off
         ERROR(
@@ -505,11 +504,11 @@ bool FixConservatives::operator()(
             << extract_point(spatial_metric, grid_index)
             << "\n  inv_spatial_metric =\n"
             << extract_point(inv_spatial_metric, grid_index) << "\n"
-            << "The message of the exception thrown by the root finder "
-               "is:\n"
-            << exception.what());
+            << "The error of the root finder is:\n"
+            << root.error());
           // clang-format on
         }
+        excess_lorentz_factor = root.value();
       }
 
       const auto rescaling_factor = simd::select(

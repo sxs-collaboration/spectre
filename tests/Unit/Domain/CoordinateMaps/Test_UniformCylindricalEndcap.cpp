@@ -39,17 +39,12 @@ double maximum_rho_for_invertibility(double rho_max_so_far, double center_one_z,
     return rho_max_so_far;
   }
 
-  try {
-    rho_max_so_far =
-        // NOLINTNEXTLINE(clang-analyzer-core)
-        RootFinder::toms748(is_invertible, 0.0, rho_max_so_far,
-                            invertible_at_zero, invertible_at_max, 1.e-4,
-                            1.e-4);
-    rho_max_so_far = std::max(0.0, rho_max_so_far - 1.e-4);
-  } catch (std::exception&) {
-    CHECK(false);
-  }
-  return rho_max_so_far;
+  const auto root =
+      // NOLINTNEXTLINE(clang-analyzer-core)
+      RootFinder::toms748(is_invertible, 0.0, rho_max_so_far,
+                          invertible_at_zero, invertible_at_max, 1.e-4, 1.e-4);
+  REQUIRE(root.has_value());
+  return std::max(0.0, root.value() - 1.e-4);
 }
 
 void test_uniform_cylindrical_endcap() {

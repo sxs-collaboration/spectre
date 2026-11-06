@@ -81,14 +81,16 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
         for (const auto collocation_point : collocation) {
-          auto rootfind = RootFinder::toms748(
-              [&collocation_point, &variation_amplitude](const double x) {
-                return collocation_point.phi -
-                       (x + 1.0e-2 * variation_amplitude * cos(x) *
-                                sin(collocation_point.theta));
-              },
-              collocation_point.phi - 2.0e-2, collocation_point.phi + 2.0e-2,
-              1.0e-15, 1.0e-15);
+          auto rootfind =
+              RootFinder::toms748(
+                  [&collocation_point, &variation_amplitude](const double x) {
+                    return collocation_point.phi -
+                           (x + 1.0e-2 * variation_amplitude * cos(x) *
+                                    sin(collocation_point.theta));
+                  },
+                  collocation_point.phi - 2.0e-2,
+                  collocation_point.phi + 2.0e-2, 1.0e-15, 1.0e-15)
+                  .value();
           get<1>(inverse_cauchy_angular_coordinates)[collocation_point.offset] =
               rootfind;
           get<0>(inverse_cauchy_angular_coordinates)[collocation_point.offset] =
@@ -123,15 +125,17 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
         for (const auto& collocation_point : collocation) {
-          auto rootfind = RootFinder::toms748(
-              [&collocation_point,
-               &variation_amplitude_inertial](const double x) {
-                return collocation_point.phi -
-                       (x + 1.0e-2 * variation_amplitude_inertial * cos(x) *
-                                sin(collocation_point.theta));
-              },
-              collocation_point.phi - 2.0e-2, collocation_point.phi + 2.0e-2,
-              1.0e-15, 1.0e-15);
+          auto rootfind =
+              RootFinder::toms748(
+                  [&collocation_point,
+                   &variation_amplitude_inertial](const double x) {
+                    return collocation_point.phi -
+                           (x + 1.0e-2 * variation_amplitude_inertial * cos(x) *
+                                    sin(collocation_point.theta));
+                  },
+                  collocation_point.phi - 2.0e-2,
+                  collocation_point.phi + 2.0e-2, 1.0e-15, 1.0e-15)
+                  .value();
           get<1>(
               inverse_inertial_angular_coordinates)[collocation_point.offset] =
               rootfind;

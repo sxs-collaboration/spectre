@@ -6,10 +6,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.hpp"
 
 #include <cmath>
-#include <exception>
 #include <limits>
 #include <optional>
-#include <stdexcept>
 #include <utility>
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
@@ -74,7 +72,8 @@ class FunctionOfZ {
     }
   }
 
-  std::pair<double, double> root_bracket() const;
+  // Returns `std::nullopt` if no bracket can be found
+  std::optional<std::pair<double, double>> root_bracket() const;
 
   Primitives primitives(double z) const;
 
@@ -92,7 +91,7 @@ class FunctionOfZ {
 };
 
 template <typename EosType, bool EnforcePhysicality>
-std::pair<double, double>
+std::optional<std::pair<double, double>>
 FunctionOfZ<EosType, EnforcePhysicality>::root_bracket() const {
   const auto k = r_ / (q_ + 1.);
 
@@ -102,7 +101,7 @@ FunctionOfZ<EosType, EnforcePhysicality>::root_bracket() const {
   // for atmosphere is smaller than the minizm density of the EOS, i.e. this
   // point should have been flagged as atmosphere
   if (rest_mass_density_times_lorentz_factor_ < rho_min) {
-    throw std::runtime_error("Density too small for EOS");
+    return std::nullopt;
   }
 
   // Compute bounds (C23)
@@ -111,7 +110,7 @@ FunctionOfZ<EosType, EnforcePhysicality>::root_bracket() const {
   // Empirically, an offset of 1.e-8 has worked well.
   const double upper_bound = 1.e-8 + k / std::sqrt(std::abs(1. - k * k));
 
-  return {lower_bound, upper_bound};
+  return std::pair{lower_bound, upper_bound};
 }
 
 template <typename EosType, bool EnforcePhysicality>
@@ -207,24 +206,24 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     return std::nullopt;
   };
 
-  // z is W * v  (Lorentz factor * velocity)
-  double z = std::numeric_limits<double>::signaling_NaN();
-  try {
-    // Bracket for master function
-    const auto [lower_bound, upper_bound] = f_of_z.root_bracket();
-
-    // Try to recover primitves
-    z =
-        // NOLINTNEXTLINE(clang-analyzer-core)
-        RootFinder::toms748(f_of_z, lower_bound, upper_bound,
-                            absolute_tolerance_, relative_tolerance_,
-                            max_iterations_);
-  } catch (std::exception& exception) {
+  // Bracket for master function
+  const auto bracket = f_of_z.root_bracket();
+  if (not bracket.has_value()) {
     return std::nullopt;
   }
 
+  // Try to recover primitves
+  // NOLINTNEXTLINE(clang-analyzer-core)
+  const auto root = RootFinder::toms748(f_of_z, bracket->first,
+                                        bracket->second, absolute_tolerance_,
+                                        relative_tolerance_, max_iterations_);
+  if (not root.has_value()) {
+    return std::nullopt;
+  }
+
+  // z is W * v  (Lorentz factor * velocity)
   const auto [rest_mass_density, lorentz_factor, pressure,
-              specific_internal_energy] = f_of_z.primitives(z);
+              specific_internal_energy] = f_of_z.primitives(root.value());
 
   return PrimitiveRecoveryData{
       rest_mass_density,
