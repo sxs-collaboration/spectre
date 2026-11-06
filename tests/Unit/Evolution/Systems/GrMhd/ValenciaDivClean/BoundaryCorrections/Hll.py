@@ -60,12 +60,18 @@ def dg_package_data(
                 ),
                 1.0,
             )
-            velocity_dot_normal = min(
-                max(np.einsum("i,i->", spatial_velocity, normal_covector), 0.0),
-                1.0 - 1.0e-8,
+            # As in the C++: v^2 is clamped, v.n is not.
+            velocity_dot_normal = np.einsum(
+                "i,i->", spatial_velocity, normal_covector
             )
-            velocity_squared = np.einsum(
-                "i,i->", spatial_velocity, spatial_velocity_one_form
+            velocity_squared = min(
+                max(
+                    np.einsum(
+                        "i,i->", spatial_velocity, spatial_velocity_one_form
+                    ),
+                    0.0,
+                ),
+                1.0 - 1.0e-8,
             )
             one_over_lorentz_factor_squared = 1.0 - velocity_squared
             d = np.sqrt(

@@ -75,13 +75,20 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
-  // Test hydro
+  // Test the hydro speeds: the magnetic field is below
+  // MagneticFieldMagnitudeForHydro, the density above the light speed cutoff
+  // and the velocities are subluminal
   const tuples::TaggedTuple<
       helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
       helpers::Tags::Range<gr::Tags::Shift<DataVector, 3>>,
-      helpers::Tags::Range<grmhd::ValenciaDivClean::Tags::TildeB<>>>
-      ranges_hydro{std::array{0.3, 1.0}, std::array{0.01, 0.02},
-                   std::array{1.0e-25, 1.0e-20}};
+      helpers::Tags::Range<grmhd::ValenciaDivClean::Tags::TildeB<>>,
+      helpers::Tags::Range<hydro::Tags::RestMassDensity<DataVector>>,
+      helpers::Tags::Range<hydro::Tags::SpatialVelocity<DataVector, 3>>,
+      helpers::Tags::Range<
+          hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>>
+      ranges_hydro{std::array{0.3, 1.0},         std::array{0.01, 0.02},
+                   std::array{1.0e-35, 1.0e-32}, std::array{0.5, 1.5},
+                   std::array{-0.5, 0.5},        std::array{-0.5, 0.5}};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       system, tmpl::list<ConvertPolytropic>>(
       make_not_null(&gen), "Hll", "dg_package_data", "dg_boundary_terms",
