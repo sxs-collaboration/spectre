@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AbortWithErrorMessage.cpp
   Test_AssertAndError.cpp
   Test_CaptureForError.cpp
+  Test_DevicePrintfStream.cpp
   Test_Error.cpp
   Test_FloatingPointExceptions.cpp
   Test_SegfaultHandler.cpp

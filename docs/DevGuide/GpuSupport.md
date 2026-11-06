@@ -75,3 +75,11 @@ following configuration options:
   that needs it, e.g. `exec.fence()`.
 - Test device code by comparing against its host counterpart. The tests run on
   the host backend in CI, which has no GPUs.
+- `ASSERT` and `ERROR` work in device code. On the device the message is
+  streamed into a `DevicePrintfStream`
+  (`Utilities/ErrorHandling/DevicePrintfStream.hpp`), which prints it with
+  `Kokkos::printf` before the program aborts. Only the first failing GPU thread
+  prints its message. `DevicePrintfStream` supports strings, characters,
+  integers, floating-point numbers, enums and `std::array`s of these, and prints
+  values of other types as `<?>`.
+
