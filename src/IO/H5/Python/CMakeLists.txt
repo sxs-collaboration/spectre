@@ -26,6 +26,7 @@ spectre_python_add_module(
   InterpolateToMesh.py
   IterElements.py
   OpenVolfiles.py
+  Profile.py
   ReadH5.py
   TransformVolumeData.py
   MODULE_PATH "IO"

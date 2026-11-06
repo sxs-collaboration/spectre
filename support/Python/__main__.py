@@ -36,6 +36,7 @@ class Cli(click.Group):
             "interpolate-to-mesh",
             "interpolate-to-points",
             "plot",
+            "profile",
             "render-1d",
             "render-3d",
             "resubmit",
@@ -128,6 +129,10 @@ class Cli(click.Group):
             from spectre.Visualization import plot_command
 
             return plot_command
+        elif name == "profile":
+            from spectre.IO.H5.Profile import profile_command
+
+            return profile_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
 
