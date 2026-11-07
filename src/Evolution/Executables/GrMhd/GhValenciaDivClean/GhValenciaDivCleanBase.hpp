@@ -791,7 +791,8 @@ struct GhValenciaDivCleanTemplateBase<
               tmpl::list<
                   grmhd::GhValenciaDivClean::subcell::
                       FixConservativesAndComputePrims<
-                          ordered_list_of_primitive_recovery_schemes, system>>>,
+                          ordered_list_of_primitive_recovery_schemes, system,
+                          domain::Tags::Coordinates<3, Frame::Inertial>>>>,
           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,

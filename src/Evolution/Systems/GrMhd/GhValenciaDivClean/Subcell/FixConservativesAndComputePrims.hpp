@@ -36,28 +36,32 @@ namespace grmhd::GhValenciaDivClean::subcell {
  *
  * Sets `ValenciaDivClean::Tags::VariablesNeededFixing` to `true` if the
  * conservative variables needed fixing, otherwise sets the tag to `false`.
+ *
+ * `CoordinatesTag` holds the inertial coordinates of the grid the variables
+ * are on. They are only printed if an error occurs. The default is the subcell
+ * grid; use `domain::Tags::Coordinates<3, Frame::Inertial>` when the variables
+ * are on the DG grid.
  */
-template <typename OrderedListOfRecoverySchemes,
-          typename System>
+template <typename OrderedListOfRecoverySchemes, typename System,
+          typename CoordinatesTag =
+              evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>>
 struct FixConservativesAndComputePrims {
   using return_tags = tmpl::list<
       ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag,
       typename System::primitive_variables_tag>;
   using argument_tags = tmpl::list<
-      evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
+      CoordinatesTag,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
       hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
   static void apply(
       gsl::not_null<bool*> needed_fixing,
-      gsl::not_null<
-          typename System::variables_tag::type*>
-          conserved_vars_ptr,
+      gsl::not_null<typename System::variables_tag::type*> conserved_vars_ptr,
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
           primitive_vars_ptr,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
       const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
       const EquationsOfState::EquationOfState<true, 3>& eos,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&

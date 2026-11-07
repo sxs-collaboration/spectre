@@ -9,6 +9,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
@@ -30,7 +32,8 @@
 
 namespace {
 
-template <typename NeutrinoTransportSystem, typename EquationOfStateType>
+template <typename NeutrinoTransportSystem, typename CoordinatesTag,
+          typename EquationOfStateType>
 void test(const EquationOfStateType& eos) {
   using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
 
@@ -38,7 +41,7 @@ void test(const EquationOfStateType& eos) {
   // fixed. We're really only testing that the mutator calls the correct
   // functions.
   const size_t num_pts = 1;
-  tnsr::I<DataVector, 3, Frame::Inertial> subcell_coords{num_pts, 0.0};
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords{num_pts, 0.0};
   tnsr::aa<DataVector, 3, Frame::Inertial> spacetime_metric{num_pts, 0.0};
   get<0, 0>(spacetime_metric) = -1.0;
   for (size_t i = 1; i < 4; ++i) {
@@ -74,13 +77,12 @@ void test(const EquationOfStateType& eos) {
                                           kastaun_max_lorentz);
 
   auto box = db::create<db::AddSimpleTags<
-      evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
-      grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
+      CoordinatesTag, grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag, typename System::primitive_variables_tag,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
       hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
-      subcell_coords, false, cons_vars,
+      inertial_coords, false, cons_vars,
       typename System::primitive_variables_tag::type{num_pts, 1.0e-4},
       variable_fixer,
       std::unique_ptr<
@@ -92,7 +94,7 @@ void test(const EquationOfStateType& eos) {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>;
   db::mutate_apply<
       grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
-          recovery_schemes, System>>(make_not_null(&box));
+          recovery_schemes, System, CoordinatesTag>>(make_not_null(&box));
 
   // Verify that the conserved variables were fixed
   CHECK(db::get<grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(box));
@@ -138,6 +140,11 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
 
-  test<NeutrinoTransportSystem>(EquationsOfState::Barotropic3D(
-      EquationsOfState::PolytropicFluid<true>(100.0, 2.0)));
+  const EquationsOfState::Barotropic3D eos(
+      EquationsOfState::PolytropicFluid<true>(100.0, 2.0));
+  // The FD grid (default) and DG-only elements use different coordinates.
+  test<NeutrinoTransportSystem,
+       evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>>(eos);
+  test<NeutrinoTransportSystem, domain::Tags::Coordinates<3, Frame::Inertial>>(
+      eos);
 }
