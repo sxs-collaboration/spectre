@@ -426,10 +426,15 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       tmpl::conditional_t<
           use_dg_subcell,
-          // Note: The primitive variables are computed as part of the TCI.
+          // Note: The primitive variables are computed as part of the TCI, or
+          // by the DG-only mutators on elements that can't use subcell.
           evolution::dg::subcell::Actions::TciAndRollback<
               grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
-                  tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
+                  tmpl::front<ordered_list_of_primitive_recovery_schemes>>,
+              tmpl::list<
+                  grmhd::ValenciaDivClean::subcell::
+                      FixConservativesAndComputePrims<
+                          ordered_list_of_primitive_recovery_schemes>>>,
           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
