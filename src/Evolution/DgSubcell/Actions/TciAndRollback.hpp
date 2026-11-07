@@ -55,6 +55,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 namespace Tags {
@@ -70,8 +71,12 @@ namespace evolution::dg::subcell::Actions {
  * the time step rollback if needed.
  *
  * Elements that cannot use subcell (e.g. non-hypercube topology or DG-only
- * blocks) skip the TCI entirely, set the TCI decision to 0, clear ghost data,
- * and continue.
+ * blocks) skip the TCI entirely, apply the `DgOnlyMutators` instead, set the
+ * TCI decision to 0, clear ghost data, and continue. The `DgOnlyMutators` are
+ * a `tmpl::list` of mutators (applied in order with `db::mutate_apply`) that
+ * do the work the TCI would otherwise do as a side effect. In particular, if
+ * the `TciMutator` computes the primitive variables, the `DgOnlyMutators` must
+ * compute them too, since these elements are evolved with DG only.
  *
  * Interior cells are marked as troubled if
  * `subcell_options.always_use_subcells()` is `true`, or if either the RDMP
@@ -93,8 +98,10 @@ namespace evolution::dg::subcell::Actions {
  * actions know if a rollback was done because the local mortar data would
  * already be computed.
  */
-template <typename TciMutator>
+template <typename TciMutator, typename DgOnlyMutators>
 struct TciAndRollback {
+  static_assert(tt::is_a_v<tmpl::list, DgOnlyMutators>,
+                "DgOnlyMutators must be a tmpl::list of mutators.");
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent, size_t Dim = Metavariables::volume_dim>
@@ -166,8 +173,14 @@ struct TciAndRollback {
 
     // Elements that can never use subcell (e.g. non-hypercube topology or
     // DG-only blocks) should skip the TCI entirely, since the TCI projects
-    // to the subcell mesh which is unsupported for these elements.
+    // to the subcell mesh which is unsupported for these elements. The
+    // DgOnlyMutators do what the TCI does as a side effect, e.g. computing
+    // the primitive variables.
     if (not subcell_allowed_in_element) {
+      tmpl::for_each<DgOnlyMutators>(
+          [&box]<typename Mutator>(tmpl::type_<Mutator> /*meta*/) {
+            db::mutate_apply<Mutator>(make_not_null(&box));
+          });
       db::mutate<Tags::TciDecision,
                  subcell::Tags::GhostDataForReconstruction<Dim>>(
           [](const gsl::not_null<int*> tci_decision_ptr,
