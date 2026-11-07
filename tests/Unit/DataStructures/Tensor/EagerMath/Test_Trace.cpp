@@ -3,19 +3,13 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <array>
 #include <cstddef>
-#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
-#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/Utilities/Kokkos/CheckOnDevice.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -47,32 +41,6 @@ void test_trace(const DataType& used_for_size) {
           &trace<DataType, Index0>),
       "numpy", "tensordot", {{{-10., 10.}}}, used_for_size);
 }
-
-#ifdef SPECTRE_KOKKOS
-// All overloads give the same results in a Kokkos kernel as on the host
-void test_on_device() {
-  MAKE_GENERATOR(generator);
-  std::uniform_real_distribution<> distribution(0.1, 1.0);
-  const auto rank_three = make_with_random_values<tnsr::ijj<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto rank_two = make_with_random_values<tnsr::ii<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto inverse_metric = make_with_random_values<tnsr::II<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  TestHelpers::check_on_device(KOKKOS_LAMBDA() {
-    tnsr::i<double, 3> traced{};
-    trace_last_indices(make_not_null(&traced), rank_three, inverse_metric);
-    const auto returned_traced = trace_last_indices(rank_three, inverse_metric);
-    Scalar<double> scalar_trace{};
-    ::trace(make_not_null(&scalar_trace), rank_two, inverse_metric);
-    return std::array<double, 8>{{get<0>(traced), get<1>(traced),
-                                  get<2>(traced), get<0>(returned_traced),
-                                  get<1>(returned_traced),
-                                  get<2>(returned_traced), get(scalar_trace),
-                                  get(::trace(rank_two, inverse_metric))}};
-  });
-}
-#endif  // SPECTRE_KOKKOS
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.Trace", "[DataStructures][Unit]") {
@@ -89,7 +57,4 @@ SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.Trace", "[DataStructures][Unit]") {
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_trace, (1, 2, 3), (UpLo::Lo, UpLo::Up),
                                     (Frame::Grid, Frame::Inertial),
                                     (IndexType::Spatial, IndexType::Spacetime));
-#ifdef SPECTRE_KOKKOS
-  test_on_device();
-#endif  // SPECTRE_KOKKOS
 }

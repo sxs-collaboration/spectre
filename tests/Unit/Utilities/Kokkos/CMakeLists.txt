@@ -16,6 +16,7 @@ target_link_libraries(TestKernel PUBLIC Kokkos::kokkos)
 set(LIBRARY "Test_Kokkos")
 
 set(LIBRARY_SOURCES
+  Test_DeviceMessageKokkos.cpp
   Test_Kokkos.cpp
   )
 
@@ -23,6 +24,14 @@ set(LIBRARY_SOURCES
 # (Kokkos' SYCL abort doesn't terminate the program yet)
 if (SPECTRE_DEBUG AND (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP))
   list(APPEND LIBRARY_SOURCES Test_KokkosAssertOnDevice.cpp)
+endif()
+# Same for `ERROR` and `ASSERT_DEVICE_CAPABLE`, which abort on the device also
+# in release builds
+if (Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP)
+  list(APPEND LIBRARY_SOURCES
+    Test_AssertDeviceCapableOnDevice.cpp
+    Test_KokkosErrorOnDevice.cpp
+    )
 endif()
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

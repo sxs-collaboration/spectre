@@ -25,6 +25,7 @@ spectre_target_headers(
   AbortWithErrorMessage.hpp
   Assert.hpp
   Breakpoint.hpp
+  DeviceMessage.hpp
   CaptureForError.hpp
   Error.hpp
   Exceptions.hpp

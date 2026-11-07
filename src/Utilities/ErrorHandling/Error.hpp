@@ -11,9 +11,11 @@
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 #include "Utilities/ErrorHandling/Breakpoint.hpp"
+#include "Utilities/ErrorHandling/DeviceMessage.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Kokkos/KokkosMacros.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/System/Abort.hpp"
@@ -52,6 +54,10 @@ template <typename ExceptionTypeToThrow, typename F>
  * slightly increase the compile time and memory usage of large
  * `TensorExpression`s when compiling in debug mode.
  *
+ * ERROR can also be used in functions that run on a GPU (`KOKKOS_FUNCTION`s).
+ * On the GPU the message is streamed into a `DeviceMessage`, which supports
+ * fewer types than `std::ostream`, and the program aborts with `Kokkos::abort`.
+ *
  * \param m an arbitrary output stream.
  */
 // isocpp.org recommends using an `if (true)` instead of a `do
@@ -63,52 +69,7 @@ template <typename ExceptionTypeToThrow, typename F>
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#ifdef __CUDA_ARCH__
-#if defined(__clang__) && defined(__CUDA__)
-#define ERROR(m)                                              \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __builtin_trap();
-#else
-#define ERROR(m)                                              \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __trap();
-#endif
-#else
-#define ERROR(m)                                                             \
-  do {                                                                       \
-    if (__builtin_is_constant_evaluated()) {                                 \
-      throw std::runtime_error("Failed");                                    \
-    } else {                                                                 \
-      Error_detail::abort_without_fpes<SpectreError>(                        \
-          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
-          [&]() -> std::string {                                             \
-            return MakeString{} << std::setprecision(18) << std::scientific  \
-                                << m;                                        \
-          });                                                                \
-    }                                                                        \
-  } while (false)
-#endif
-
-/*!
- * \ingroup ErrorHandlingGroup
- * \brief Same as ERROR but will throw `EXCEPTION_TYPE` instead of
- * `SpectreError`.
- *
- * \note Any exception types used must have an associated explicit
- * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
- */
-#ifdef __CUDA_ARCH__
-#if defined(__clang__) && defined(__CUDA__)
-#define ERROR_AS(m, EXCEPTION_TYPE)                           \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __builtin_trap();
-#else
-#define ERROR_AS(m, EXCEPTION_TYPE)                           \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __trap();
-#endif
-#else
-#define ERROR_AS(m, EXCEPTION_TYPE)                                          \
+#define SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m)                             \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
       throw std::runtime_error("Failed");                                    \
@@ -121,6 +82,35 @@ template <typename ExceptionTypeToThrow, typename F>
           });                                                                \
     }                                                                        \
   } while (false)
+
+#ifdef SPECTRE_KOKKOS
+// Kokkos compiles only one of the branches for the host and the GPU,
+// respectively.
+#define ERROR(m)                                                         \
+  do {                                                                   \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(SpectreError, m);))         \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+  } while (false)
+#else
+#define ERROR(m) SPECTRE_ERROR_ON_HOST(SpectreError, m)
+#endif
+
+/*!
+ * \ingroup ErrorHandlingGroup
+ * \brief Same as ERROR but will throw `EXCEPTION_TYPE` instead of
+ * `SpectreError`.
+ *
+ * \note Any exception types used must have an associated explicit
+ * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
+ */
+#ifdef SPECTRE_KOKKOS
+#define ERROR_AS(m, EXCEPTION_TYPE)                                      \
+  do {                                                                   \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m);))       \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+  } while (false)
+#else
+#define ERROR_AS(m, EXCEPTION_TYPE) SPECTRE_ERROR_ON_HOST(EXCEPTION_TYPE, m)
 #endif
 
 /*!
@@ -128,18 +118,7 @@ template <typename ExceptionTypeToThrow, typename F>
  * \brief Same as ERROR but does not print a backtrace. Intended to be used for
  * user errors, such as incorrect values in an input file.
  */
-#ifdef __CUDA_ARCH__
-#if defined(__clang__) && defined(__CUDA__)
-#define ERROR_NO_TRACE(m)                                     \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __builtin_trap();
-#else
-#define ERROR_NO_TRACE(m)                                     \
-  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
-  __trap();
-#endif
-#else
-#define ERROR_NO_TRACE(m)                                                    \
+#define SPECTRE_ERROR_NO_TRACE_ON_HOST(m)                                    \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
       throw std::runtime_error("Failed");                                    \
@@ -150,4 +129,13 @@ template <typename ExceptionTypeToThrow, typename F>
           MakeString{} << std::setprecision(18) << std::scientific << m);    \
     }                                                                        \
   } while (false)
+
+#ifdef SPECTRE_KOKKOS
+#define ERROR_NO_TRACE(m)                                                \
+  do {                                                                   \
+    KOKKOS_IF_ON_HOST((SPECTRE_ERROR_NO_TRACE_ON_HOST(m);))              \
+    KOKKOS_IF_ON_DEVICE((SPECTRE_ABORT_ON_DEVICE("ERROR", nullptr, m);)) \
+  } while (false)
+#else
+#define ERROR_NO_TRACE(m) SPECTRE_ERROR_NO_TRACE_ON_HOST(m)
 #endif
