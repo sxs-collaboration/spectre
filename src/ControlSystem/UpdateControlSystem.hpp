@@ -74,9 +74,9 @@ namespace control_system {
  *    control_system::Systems::Size size \endlink control, an extra step happens
  *    after we calculate the control error, but before we update the averager.
  *    See `control_system::size::update_averager` for this step.
- * 4. If the `control_system::Tags::WriteDataToDisk` tag is set to `true`, write
- *    the time, function of time values, and the control error and its
- *    derivative to disk.
+ * 4. If the name of this control system is in the
+ *    `control_system::Tags::WriteDataToDisk` tag, write the time, function of
+ *    time values, and the control error and its derivative to disk.
  * 5. Determine if we need to update. We only want to update when the current
  *    measurement is equal to the number of measurements per update. If it's not
  *    time to update, exit now. Once we determine that it is time to update, set
@@ -189,7 +189,8 @@ struct UpdateControlSystem {
       q_and_dtq[1] = (*opt_avg_values)[1];
     }
 
-    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
+    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache).contains(
+            function_of_time_name)) {
       // LCOV_EXCL_START
       write_components_to_disk<ControlSystem>(time, cache, function_of_time,
                                               q_and_dtq, current_timescale);

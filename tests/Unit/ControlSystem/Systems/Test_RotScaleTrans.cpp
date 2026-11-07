@@ -9,6 +9,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -162,7 +163,8 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true,
+       std::unordered_set<std::string>{}, ::Verbosity::Silent,
        std::move(is_active_map),
        tnsr::I<double, 3, Frame::Grid>{{0.5 * initial_separation, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{{-0.5 * initial_separation, 0.0, 0.0}},
