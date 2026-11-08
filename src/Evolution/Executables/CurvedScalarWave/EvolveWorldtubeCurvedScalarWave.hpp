@@ -65,6 +65,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
@@ -75,6 +76,7 @@
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -210,6 +212,7 @@ struct EvolutionMetavars {
             Event,
             tmpl::flatten<tmpl::list<
                 Events::time_events<system>, Events::Completion,
+                Events::ObserveSimpleProfiler,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     volume_dim, Spheres, interpolator_source_vars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
@@ -366,6 +369,7 @@ struct EvolutionMetavars {
   }
 
   using component_list = tmpl::flatten<tmpl::list<
+      profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, Spheres>,

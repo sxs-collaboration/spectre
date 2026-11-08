@@ -90,6 +90,7 @@
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -302,6 +303,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
           Event,
           tmpl::flatten<tmpl::list<
               Events::Completion, Events::MonitorMemory<volume_dim>,
+              Events::ObserveSimpleProfiler,
               typename detail::ObserverTags<volume_dim>::field_observations,
               Events::time_events<system>,
               dg::Events::ObserveTimeStepVolume<system>,
