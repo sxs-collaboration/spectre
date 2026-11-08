@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_ObserveFields.cpp
   Test_ObserveGridStats.cpp
   Test_ObserveNorms.cpp
+  Test_ObserveSimpleProfiler.cpp
   Test_ObserveTimeStep.cpp
   Test_ObserveTimeStepVolume.cpp
   Test_ReductionScope.cpp
@@ -31,6 +32,7 @@ target_link_libraries(
   H5
   Interpolation
   Observer
+  ObserverHelpers
   Spectral
   Time
   Utilities
