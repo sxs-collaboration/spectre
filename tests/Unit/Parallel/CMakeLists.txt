@@ -175,6 +175,7 @@ set(LIBRARY_SOURCES
   Test_OutputInbox.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
+  Test_ParallelSimpleProfilerData.cpp
   Test_Phase.cpp
   Test_ResourceInfo.cpp
   Test_StaticSpscQueue.cpp
