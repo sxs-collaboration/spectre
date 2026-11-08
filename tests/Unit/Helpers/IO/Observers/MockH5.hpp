@@ -8,6 +8,7 @@
 #include <pup_stl.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -54,6 +55,8 @@ struct MockH5File {
   const MockDat& get_dat(const std::string& subfile_path) const;
 
   MockDat& try_insert(const std::string& subfile_path);
+
+  std::unordered_set<std::string> list_dats() const;
 
   void pup(PUP::er& p) { p | subfiles_; }  // NOLINT
 

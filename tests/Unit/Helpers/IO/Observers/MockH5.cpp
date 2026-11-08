@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -65,6 +66,14 @@ MockDat& MockH5File::try_insert(const std::string& subfile_path) {
   subfiles_.try_emplace(subfile_path);
 
   return subfiles_.at(subfile_path);
+}
+
+std::unordered_set<std::string> MockH5File::list_dats() const {
+  std::unordered_set<std::string> result{};
+  for (const auto& [path, data] : subfiles_) {
+    result.emplace(path);
+  }
+  return result;
 }
 
 void MockH5File::check_subfile(const std::string& subfile_path) const {
