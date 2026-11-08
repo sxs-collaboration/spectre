@@ -307,6 +307,8 @@ EventsAndTriggersAtSlabs:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
+      - ObserveSimpleProfiler:
+          SubfileName: Profiling
   - Trigger:
       TimeCompares:
         Comparison: GreaterThanOrEqualTo

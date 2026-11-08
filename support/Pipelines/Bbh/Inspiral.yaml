@@ -576,6 +576,8 @@ EventsAndTriggersAtSlabs:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
+      - ObserveSimpleProfiler:
+          SubfileName: Profiling
 # Trigger to find common horizon and gather volume data needed for ringdown.
   - Trigger:
       SeparationLessThan:
