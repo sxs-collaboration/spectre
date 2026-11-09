@@ -3,10 +3,21 @@
 
 Executable: SolveGrSelfForce
 Testing:
-  Check: parse
+  Check: parse;execute_check_output
+  Timeout: 20
 ExpectedOutput:
   - GrSelfForceReductions.h5
   - GrSelfForceVolume0.h5
+OutputFileChecks:
+  - Label: EnergyFlux
+    Subfile: Flux.dat
+    FileGlob: GrSelfForceReductions.h5
+    ExpectedData:
+      # ObservationValue | NumberOfPoints | EnergyFlux | SurfaceArea
+      - [0, 528, 0., 2.]
+      - [1, 528, 6.8211e-5, 2.]
+    AbsoluteTolerance: 1.e-9
+    RelativeTolerance: 0.
 
 ---
 
@@ -149,7 +160,7 @@ Amr:
       ErrorBeyondLimits: True
     AllowCoarsening: True
   MaxCoarseLevels: Auto
-  Iterations: 2
+  Iterations: 1
 
 PhaseChangeAndTriggers:
   # Run AMR in every iteration, but not on the initial guess
@@ -186,14 +197,14 @@ LinearSolver:
     Iterations: 1
     InitialCoarseLevels: 0
     PreSmoothing: True
-    UseBottomSolver: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: False
 
   SchwarzSmoother:
     Iterations: 2
-    MaxOverlap: Auto
+    MaxOverlap: 1
     Verbosity: Silent
     SubdomainSolver:
       ExplicitInverse:
@@ -205,6 +216,7 @@ LinearSolver:
 EventsAndTriggersAtIterations:
   - Trigger: Always
     Events:
+      - ObserveFlux
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
