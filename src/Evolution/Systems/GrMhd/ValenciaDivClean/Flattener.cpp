@@ -69,7 +69,7 @@ void Flattener<RecoverySchemesList>::operator()(
   auto mean_tilde_s =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
   const Scalar<DataVector> det_logical_to_inertial_jacobian{
-      DataVector{get(det_logical_to_inertial_inv_jacobian)}};
+      DataVector{1.0 / get(det_logical_to_inertial_inv_jacobian)}};
   bool already_computed_means = false;
 
   const auto compute_means = [
