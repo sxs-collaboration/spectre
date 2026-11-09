@@ -75,6 +75,15 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  *
  * which correspond to the divergence cleaning field.
  *
+ * The divergence cleaning pair \f$(\tilde{\Phi}, n_i \tilde{B}^i)\f$
+ * decouples from the rest of the system, and only it uses these speeds. All
+ * other variables use the fast speeds \f$\lambda_2\f$ and \f$\lambda_8\f$ of
+ * `grmhd::ValenciaDivClean::characteristic_speeds()`, computed on each side.
+ * These approximate the fast speed in every direction by the one perpendicular
+ * to the magnetic field \cite Gammie2003, which bounds the exact fast speeds
+ * from above. The magnetic field is split along the average of the two sides'
+ * unit normals, which keeps the correction antisymmetric.
+ *
  * \note
  * - In the strong form the `dg_boundary_terms` function returns
  *   \f$G - F_\text{int}\f$
@@ -83,9 +92,6 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  *   correction reduces to pure upwinding.
  * - Some references use \f$S\f$ instead of \f$\lambda\f$ for the
  *   signal/characteristic speeds
- * - It may be possible to use the slower speeds for the magnetic field and
- *   fluid part of the system in order to make the flux less dissipative for
- *   those variables.
  */
 class Hll final : public evolution::BoundaryCorrection {
  public:
@@ -95,6 +101,26 @@ class Hll final : public evolution::BoundaryCorrection {
   struct LargestIngoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
+  /// @{
+  /// The fast-magnetosonic speeds of this side, used for all variables but
+  /// the divergence cleaning pair.
+  struct FastOutgoingCharSpeed : db::SimpleTag {
+    using type = Scalar<DataVector>;
+  };
+  struct FastIngoingCharSpeed : db::SimpleTag {
+    using type = Scalar<DataVector>;
+  };
+  /// @}
+  /// @{
+  /// The unit normal covector and vector of this side; `dg_boundary_terms`
+  /// splits the magnetic field along the average of the two sides' normals.
+  struct InterfaceUnitNormal : db::SimpleTag {
+    using type = tnsr::i<DataVector, 3, Frame::Inertial>;
+  };
+  struct InterfaceUnitNormalVector : db::SimpleTag {
+    using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+  };
+  /// @}
 
   struct MagneticFieldMagnitudeForHydro {
     static constexpr Options::String help = {
@@ -141,7 +167,9 @@ class Hll final : public evolution::BoundaryCorrection {
                  ::Tags::NormalDotFlux<Tags::TildeS<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildeB<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildePhi>,
-                 LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
+                 LargestOutgoingCharSpeed, LargestIngoingCharSpeed,
+                 FastOutgoingCharSpeed, FastIngoingCharSpeed,
+                 InterfaceUnitNormal, InterfaceUnitNormalVector>;
   using dg_package_data_temporary_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
       hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
@@ -153,7 +181,7 @@ class Hll final : public evolution::BoundaryCorrection {
                  hydro::Tags::SpatialVelocity<DataVector, 3>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::GrmhdEquationOfState>;
-    using dg_boundary_terms_volume_tags = tmpl::list<>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_d,
@@ -172,6 +200,12 @@ class Hll final : public evolution::BoundaryCorrection {
       gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_tilde_phi,
       gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed,
       gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_fast_outgoing_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_fast_ingoing_char_speed,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+          packaged_interface_unit_normal,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          packaged_interface_unit_normal_vector,
 
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
       const Scalar<DataVector>& tilde_tau,
@@ -189,7 +223,7 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& /*spatial_metric*/,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
 
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& electron_fraction,
@@ -229,6 +263,11 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& normal_dot_flux_tilde_phi_int,
       const Scalar<DataVector>& largest_outgoing_char_speed_int,
       const Scalar<DataVector>& largest_ingoing_char_speed_int,
+      const Scalar<DataVector>& fast_outgoing_char_speed_int,
+      const Scalar<DataVector>& fast_ingoing_char_speed_int,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& interface_unit_normal_int,
+      const tnsr::I<DataVector, 3, Frame::Inertial>&
+          interface_unit_normal_vector_int,
       const Scalar<DataVector>& tilde_d_ext,
       const Scalar<DataVector>& tilde_ye_ext,
       const Scalar<DataVector>& tilde_tau_ext,
@@ -245,6 +284,11 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& normal_dot_flux_tilde_phi_ext,
       const Scalar<DataVector>& largest_outgoing_char_speed_ext,
       const Scalar<DataVector>& largest_ingoing_char_speed_ext,
+      const Scalar<DataVector>& fast_outgoing_char_speed_ext,
+      const Scalar<DataVector>& fast_ingoing_char_speed_ext,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& interface_unit_normal_ext,
+      const tnsr::I<DataVector, 3, Frame::Inertial>&
+          interface_unit_normal_vector_ext,
       dg::Formulation dg_formulation);
 
  private:
