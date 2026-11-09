@@ -43,9 +43,11 @@ void test_kerr_schild_boyer_lindquist() {
   const auto kerr_schild_boyer_lindquist = TestHelpers::test_creation<
       domain::creators::time_dependent_options::KerrSchildFromBoyerLindquist>(
       "Mass: 1.7\n"
-      "Spin: [0.45, 0.12, 0.34]");
+      "Spin: [0.45, 0.12, 0.34]\n"
+      "Velocity: [0.2, 0.1, -0.1]");
   CHECK(kerr_schild_boyer_lindquist.mass == 1.7);
   CHECK(kerr_schild_boyer_lindquist.spin == std::array{0.45, 0.12, 0.34});
+  CHECK(kerr_schild_boyer_lindquist.velocity == std::array{0.2, 0.1, -0.1});
 }
 
 void test_ylms_from_file() {
@@ -116,6 +118,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
         "InitialValues:\n"
         "  Mass: 1.0\n"
         "  Spin: [0.0, 0.0, 0.0]\n"
+        "  Velocity: [0.0, 0.0, 0.0]\n"
         "SizeInitialValues: [0.5, 1.0, 2.4]");
 
     REQUIRE(shape_map_options.has_value());
@@ -129,11 +132,13 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
     CHECK(shape_and_size.at("Shape")->time_bounds() == std::array{0.1, 0.8});
     CHECK(shape_and_size.at("Size")->time_bounds() == std::array{0.1, 0.9});
 
-    CHECK(shape_and_size.at("Shape")->func_and_2_derivs(0.1) ==
-          make_array<3>(
-              DataVector{ylm::Spherepack::spectral_size(l_max, l_max), 0.0}));
-    CHECK(shape_and_size.at("Size")->func_and_2_derivs(0.1) ==
-          std::array{DataVector{0.5}, DataVector{1.0}, DataVector{2.4}});
+    CHECK_ITERABLE_APPROX(
+        shape_and_size.at("Shape")->func_and_2_derivs(0.1),
+        make_array<3>(
+            DataVector{ylm::Spherepack::spectral_size(l_max, l_max), 0.0}));
+    CHECK_ITERABLE_APPROX(
+        shape_and_size.at("Size")->func_and_2_derivs(0.1),
+        (std::array{DataVector{0.5}, DataVector{1.0}, DataVector{2.4}}));
   }
   {
     const std::string test_filename{"TotalEclipseOfTheHeart.h5"};

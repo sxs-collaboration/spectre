@@ -40,8 +40,13 @@ struct KerrSchildFromBoyerLindquist {
     static constexpr Options::String help = {
         "The dim'less spin of the Kerr BH."};
   };
+  /// \brief The velocity of the Kerr black hole.
+  struct Velocity {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {"The velocity of the Kerr BH."};
+  };
 
-  using options = tmpl::list<Mass, Spin>;
+  using options = tmpl::list<Mass, Spin, Velocity>;
 
   static constexpr Options::String help = {
       "Conform to an ellipsoid of constant Boyer-Lindquist radius in "
@@ -50,12 +55,16 @@ struct KerrSchildFromBoyerLindquist {
       "choose an 'InnerRadius' of r_+ = M + sqrt(M^2-a^2)."};
 
   KerrSchildFromBoyerLindquist();
-  KerrSchildFromBoyerLindquist(double mass_in, std::array<double, 3> spin_in);
+  KerrSchildFromBoyerLindquist(double mass_in, std::array<double, 3> spin_in,
+                               std::array<double, 3> velocity_in);
 
   double mass{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> spin{std::numeric_limits<double>::signaling_NaN(),
                              std::numeric_limits<double>::signaling_NaN(),
                              std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 3> velocity{std::numeric_limits<double>::signaling_NaN(),
+                                 std::numeric_limits<double>::signaling_NaN(),
+                                 std::numeric_limits<double>::signaling_NaN()};
 };
 
 /// Label for shape map options
