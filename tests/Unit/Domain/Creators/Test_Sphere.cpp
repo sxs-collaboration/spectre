@@ -935,12 +935,13 @@ void test_shape_distortion() {
   const double time = 0.7;
   const double mass = 0.8;
   const std::array<double, 3> spin{{0.0, 0.0, 0.9}};
+  const std::array<double, 3> velocity{{0.0, 0.0, 0.0}};
   const double r_plus = mass * (1. + sqrt(1. - dot(spin, spin)));
   const double inner_radius = r_plus;
 
   const DataVector radius =
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius, theta_phi, mass, spin));
+          inner_radius, theta_phi, mass, spin, velocity));
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
   tnsr::I<DataVector, 3> x{};
   get<0>(x) = radius * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
@@ -955,8 +956,8 @@ void test_shape_distortion() {
     // Time dependence
     time_dependent_options = std::make_unique<
         domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
-        time, l_max, mass, spin, std::array<double, 3>{{0., 0., 0.}}, 0.0,
-        inner_radius, 4.);
+        time, l_max, mass, spin, velocity, std::array<double, 3>{{0., 0., 0.}},
+        0.0, inner_radius, 4.);
 
     test_shape_distortion_general(time, std::move(time_dependent_options),
                                   inner_radius, false, x);
@@ -969,8 +970,9 @@ void test_shape_distortion() {
               time,
               domain::creators::time_dependent_options::ShapeMapOptions<
                   false, domain::ObjectLabel::None>{
-                  l_max, domain::creators::time_dependent_options::
-                             KerrSchildFromBoyerLindquist{mass, spin}},
+                  l_max,
+                  domain::creators::time_dependent_options::
+                      KerrSchildFromBoyerLindquist{mass, spin, velocity}},
               std::nullopt,
               std::nullopt,
               std::nullopt,

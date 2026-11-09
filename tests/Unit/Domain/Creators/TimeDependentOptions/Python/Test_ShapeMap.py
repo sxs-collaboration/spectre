@@ -12,16 +12,28 @@ from spectre.Domain.Creators.TimeDependentOptions import (
 class TestShapeMap(unittest.TestCase):
     def test_construction(self):
         shape_map_A = ShapeMapOptions["A"](
-            10, KerrSchildFromBoyerLindquist(1.0, [0.0, 0.0, 0.99])
+            10,
+            KerrSchildFromBoyerLindquist(
+                1.0, [0.0, 0.0, 0.99], [0.0, 0.0, 0.0]
+            ),
         )
         shape_map_B = ShapeMapOptions["B"](
-            10, KerrSchildFromBoyerLindquist(1.0, [0.0, 0.0, 0.99])
+            10,
+            KerrSchildFromBoyerLindquist(
+                1.0, [0.0, 0.0, 0.99], [0.0, 0.0, 0.0]
+            ),
         )
         shape_map_C = ShapeMapOptions["C"](
-            10, KerrSchildFromBoyerLindquist(1.0, [0.0, 0.0, 0.99])
+            10,
+            KerrSchildFromBoyerLindquist(
+                1.0, [0.0, 0.0, 0.99], [0.0, 0.0, 0.0]
+            ),
         )
         shape_map_no_object = ShapeMapOptions["None"](
-            10, KerrSchildFromBoyerLindquist(1.0, [0.0, 0.0, 0.99])
+            10,
+            KerrSchildFromBoyerLindquist(
+                1.0, [0.0, 0.0, 0.99], [0.0, 0.0, 0.0]
+            ),
         )
         self.assertNotEqual(shape_map_A, None)
         self.assertNotEqual(shape_map_B, None)

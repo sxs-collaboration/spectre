@@ -56,7 +56,8 @@ void test_strahlkorper_in_different_frame() {
         std::make_unique<domain::creators::time_dependence::Shape<
             domain::ObjectLabel::None>>(
             0.0, l_max, 1.0, std::array<double, 3>{{0.1, 0.2, 0.3}},
-            strahlkorper_src_center, 0., 2.0, 12.0)));
+            std::array<double, 3>{{0., 0., 0.}}, strahlkorper_src_center, 0.,
+            2.0, 12.0)));
   } else {
     domain_creator.reset(new domain::creators::Sphere(
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,

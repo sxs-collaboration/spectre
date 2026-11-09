@@ -40,6 +40,7 @@ using SphereTransition =
 template <domain::ObjectLabel Label>
 Shape<Label>::Shape(const double initial_time, const size_t l_max,
                     const double mass, const std::array<double, 3> spin,
+                    const std::array<double, 3> velocity,
                     const std::array<double, 3> center,
                     const double coefficient_truncation_limit,
                     const double inner_radius, const double outer_radius,
@@ -48,6 +49,7 @@ Shape<Label>::Shape(const double initial_time, const size_t l_max,
       l_max_(l_max),
       mass_(mass),
       spin_(spin),
+      velocity_(velocity),
       center_(center),
       coefficient_truncation_limit_(coefficient_truncation_limit),
       inner_radius_(inner_radius),
@@ -79,9 +81,9 @@ Shape<Label>::Shape(const double initial_time, const size_t l_max,
 template <domain::ObjectLabel Label>
 std::unique_ptr<TimeDependence<Shape<Label>::mesh_dim>>
 Shape<Label>::get_clone() const {
-  return std::make_unique<Shape<Label>>(initial_time_, l_max_, mass_, spin_,
-                                        center_, coefficient_truncation_limit_,
-                                        inner_radius_, outer_radius_);
+  return std::make_unique<Shape<Label>>(
+      initial_time_, l_max_, mass_, spin_, velocity_, center_,
+      coefficient_truncation_limit_, inner_radius_, outer_radius_);
 }
 
 template <domain::ObjectLabel Label>
@@ -161,7 +163,7 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
   const DataVector radial_distortion =
       inner_radius_ -
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius_, ylm.theta_phi_points(), mass_, spin_));
+          inner_radius_, ylm.theta_phi_points(), mass_, spin_, velocity_));
   const auto radial_distortion_coefs = ylm.phys_to_spec(radial_distortion);
   const DataVector zeros =
       make_with_value<DataVector>(radial_distortion_coefs, 0.0);
@@ -218,7 +220,7 @@ template <domain::ObjectLabel Label>
 bool operator==(const Shape<Label>& lhs, const Shape<Label>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and lhs.l_max_ == rhs.l_max_ and
          lhs.mass_ == rhs.mass_ and lhs.spin_ == rhs.spin_ and
-         lhs.center_ == rhs.center_ and
+         lhs.velocity_ == rhs.velocity_ and lhs.center_ == rhs.center_ and
          lhs.coefficient_truncation_limit_ ==
              rhs.coefficient_truncation_limit_ and
          lhs.inner_radius_ == rhs.inner_radius_ and

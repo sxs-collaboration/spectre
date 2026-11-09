@@ -130,6 +130,11 @@ class Shape final : public TimeDependence<3> {
     static constexpr Options::String help = {
         "The dim'less spin of the Kerr BH."};
   };
+  /// \brief The velocity of the Kerr black hole.
+  struct Velocity {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {"The velocity of the Kerr BH."};
+  };
   /// \brief Center for the Shape map
   struct Center {
     using type = std::array<double, 3>;
@@ -160,7 +165,7 @@ class Shape final : public TimeDependence<3> {
   };
 
   using options =
-      tmpl::list<InitialTime, LMax, Mass, Spin, Center,
+      tmpl::list<InitialTime, LMax, Mass, Spin, Velocity, Center,
                  CoefficientTruncationLimit, InnerRadius, OuterRadius>;
 
   static constexpr Options::String help = {
@@ -175,9 +180,10 @@ class Shape final : public TimeDependence<3> {
   Shape& operator=(Shape&&) = default;
 
   Shape(double initial_time, size_t l_max, double mass,
-        std::array<double, 3> spin, std::array<double, 3> center,
-        double coefficient_truncation_limit, double inner_radius,
-        double outer_radius, const Options::Context& context = {});
+        std::array<double, 3> spin, std::array<double, 3> velocity,
+        std::array<double, 3> center, double coefficient_truncation_limit,
+        double inner_radius, double outer_radius,
+        const Options::Context& context = {});
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
@@ -216,6 +222,8 @@ class Shape final : public TimeDependence<3> {
   size_t l_max_{2};
   double mass_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> spin_{
+      make_array<3>(std::numeric_limits<double>::signaling_NaN())};
+  std::array<double, 3> velocity_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   std::array<double, 3> center_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
