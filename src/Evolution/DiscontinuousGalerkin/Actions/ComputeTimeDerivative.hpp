@@ -42,6 +42,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -819,14 +820,37 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
     tci_decision = evolution::dg::subcell::get_tci_decision(*box);
   }
 
+  // Neighbors in DG-only blocks never use subcell, so they don't need the
+  // ghost data. See `evolution::dg::subcell::prepare_neighbor_data`.
+  [[maybe_unused]] const auto neighbor_needs_ghost_data =
+      [&box](const ElementId<Dim>& neighbor) {
+        if constexpr (using_subcell_v<Metavariables>) {
+          return not alg::found(
+              db::get<evolution::dg::Tags::OnlyDgBlockIds<Dim>>(*box),
+              neighbor.block_id());
+        } else {
+          (void)box;
+          (void)neighbor;
+          return false;
+        }
+      };
+
   for (const auto& [direction, neighbors] : element.neighbors()) {
     std::optional<DataVector> ghost_and_subcell_data = std::nullopt;
+    // The number of neighbors in this direction to send the ghost data to;
+    // the last of them gets the data moved instead of copied
+    size_t number_of_ghost_data_receivers = 0;
     if constexpr (using_subcell_v<Metavariables>) {
       ASSERT(all_neighbor_data_for_reconstruction.has_value(),
              "Trying to do DG-subcell but the ghost and subcell data for the "
              "neighbor has not been set.");
-      ghost_and_subcell_data =
-          std::move(all_neighbor_data_for_reconstruction.value()[direction]);
+      // No ghost data is prepared in directions in which no neighbor needs it
+      if (all_neighbor_data_for_reconstruction->contains(direction)) {
+        ghost_and_subcell_data =
+            std::move(all_neighbor_data_for_reconstruction->at(direction));
+        number_of_ghost_data_receivers = static_cast<size_t>(
+            alg::count_if(neighbors.ids(), neighbor_needs_ghost_data));
+      }
     }
 
     const size_t total_neighbors = neighbors.size();
@@ -836,7 +860,7 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
     // sense to have multiple mortars between non-conforming Elements.
     const bool has_multiple_non_conforming_neighbors =
         total_neighbors > 1 and not neighbors.are_conforming();
-    size_t neighbor_count = 1;
+    size_t ghost_data_receiver_count = 0;
     for (const auto& neighbor : neighbors) {
       const auto& orientation = neighbors.orientation(neighbor);
       const auto direction_from_neighbor = orientation(direction.opposite());
@@ -892,30 +916,29 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
       const TimeStepId& next_time_step_id =
           db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
 
-      using SendData = evolution::dg::BoundaryData<Dim>;
-      SendData data{};
-
-      if (neighbor_count == total_neighbors) {
-        data = SendData{volume_mesh_for_neighbor,
-                        ghost_data_mesh,
-                        mortar_mesh_for_neighbor,
-                        std::move(ghost_and_subcell_data),
-                        {std::move(neighbor_boundary_data_on_mortar)},
-                        next_time_step_id,
-                        tci_decision,
-                        integration_order,
-                        interpolated_boundary_data};
-      } else {
-        data = SendData{volume_mesh_for_neighbor,
-                        ghost_data_mesh,
-                        mortar_mesh_for_neighbor,
-                        ghost_and_subcell_data,
-                        {std::move(neighbor_boundary_data_on_mortar)},
-                        next_time_step_id,
-                        tci_decision,
-                        integration_order,
-                        interpolated_boundary_data};
+      std::optional<DataVector> ghost_data_for_neighbor = std::nullopt;
+      if constexpr (using_subcell_v<Metavariables>) {
+        if (ghost_and_subcell_data.has_value() and
+            neighbor_needs_ghost_data(neighbor)) {
+          ++ghost_data_receiver_count;
+          if (ghost_data_receiver_count == number_of_ghost_data_receivers) {
+            ghost_data_for_neighbor = std::move(ghost_and_subcell_data);
+          } else {
+            ghost_data_for_neighbor = ghost_and_subcell_data;
+          }
+        }
       }
+
+      using SendData = evolution::dg::BoundaryData<Dim>;
+      SendData data{volume_mesh_for_neighbor,
+                    ghost_data_mesh,
+                    mortar_mesh_for_neighbor,
+                    std::move(ghost_data_for_neighbor),
+                    {std::move(neighbor_boundary_data_on_mortar)},
+                    next_time_step_id,
+                    tci_decision,
+                    integration_order,
+                    interpolated_boundary_data};
 
       // Send mortar data (the `std::tuple` named `data`) to neighbor
       if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
@@ -935,7 +958,6 @@ void ComputeTimeDerivative_detail::Impl<Dim, EvolutionSystem, DgStepChoosers,
             std::make_pair(DirectionalId{direction_from_neighbor, element.id()},
                            std::move(data)));
       }
-      ++neighbor_count;
     }
   }
 
