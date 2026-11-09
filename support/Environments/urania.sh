@@ -10,13 +10,13 @@ spectre_load_modules() {
     module load gsl/1.16
     module load cmake/3.26
     module load hdf5-serial/1.12.2
-    module load anaconda/3/2021.11
+    module load anaconda/3/2023.03
     module load paraview/5.10
     # Load Spack environment
     source /u/guilara/repos/spack/share/spack/setup-env.sh
     spack env activate env5_spectre
     # Load python environment
-    source /u/guilara/envs/spectre_env/bin/activate
+    source /u/guilara/envs/env/bin/activate
     # Define Charm paths
     export CHARM_ROOT=/u/guilara/charm_impi_3/mpi-linux-x86_64-smp
     export PATH=$PATH:/u/guilara/charm_impi_3/mpi-linux-x86_64-smp/bin
@@ -29,7 +29,7 @@ spectre_unload_modules() {
     module unload gsl/1.16
     module unload cmake/3.26
     module unload hdf5-serial/1.12.2
-    module unload anaconda/3/2021.11
+    module unload anaconda/3/2023.03
     module unload paraview/5.10
     # Unload Spack environment
     spack env deactivate
