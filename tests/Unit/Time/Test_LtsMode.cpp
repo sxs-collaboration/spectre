@@ -21,6 +21,7 @@ SPECTRE_TEST_CASE("Unit.Time.LtsMode", "[Unit][Time]") {
 #define TEST_LTS_MODE(mode) test_mode(LtsMode::mode, #mode)
   TEST_LTS_MODE(Off);
   TEST_LTS_MODE(Conservative);
+  CHECK(get_output(LtsMode::Extrapolated) == "Extrapolated");
 #undef TEST_LTS_MODE
 
   CHECK_THROWS_WITH(TestHelpers::test_creation<LtsMode>("Bad"),
