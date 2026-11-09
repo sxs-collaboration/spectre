@@ -275,6 +275,7 @@ DomainCreator:
             - {{ ExcisionAShapeSpin_x }}
             - {{ ExcisionAShapeSpin_y }}
             - {{ ExcisionAShapeSpin_z }}
+          Velocity: [0., 0., 0.]
       {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
       {% if not UseCylindricalDomain %}
@@ -292,6 +293,7 @@ DomainCreator:
             - {{ ExcisionBShapeSpin_x }}
             - {{ ExcisionBShapeSpin_y }}
             - {{ ExcisionBShapeSpin_z }}
+          Velocity: [0., 0., 0.]
       {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
       {% if not UseCylindricalDomain %}

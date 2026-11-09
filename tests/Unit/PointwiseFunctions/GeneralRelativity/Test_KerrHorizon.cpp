@@ -48,6 +48,32 @@ void test_kerr_horizon(const DataType& used_for_size) {
                                       {0.0, 2.0 * M_PI}}},
                                     used_for_size);
 }
+
+template <typename DataType>
+Scalar<DataType> lorentz_contraction_factor(
+    const DataType& theta, const DataType& phi,
+    const std::array<double, 3>& boost_velocity) {
+  const double gamma = 1.0 / sqrt(1.0 - square(magnitude(boost_velocity)));
+  tnsr::I<DataVector, 3> unit_vector =
+      make_with_value<tnsr::I<DataVector, 3>>(theta, 0.0);
+  unit_vector.get(0) = sin(theta) * cos(phi);
+  unit_vector.get(1) = sin(theta) * sin(phi);
+  unit_vector.get(2) = cos(theta);
+  Scalar<DataType> unit_vector_dot_boost_velocity =
+      make_with_value<Scalar<DataType>>(theta, 0.0);
+  get(unit_vector_dot_boost_velocity) =
+      unit_vector.get(0) * gsl::at(boost_velocity, 0);
+  for (size_t i = 1; i < 3; i++) {
+    get(unit_vector_dot_boost_velocity) +=
+        unit_vector.get(i) * gsl::at(boost_velocity, i);
+  }
+  Scalar<DataType> result = make_with_value<Scalar<DataType>>(theta, 0.0);
+  get(result) =
+      1.0 /
+      sqrt(1.0 + square(gamma) * square(get(unit_vector_dot_boost_velocity)));
+
+  return result;
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
@@ -59,8 +85,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
   test_kerr_horizon(0.0);
 
   // Test for Schwarzschild (mass=2) at randomly-chosen point
-  CHECK(4.0 == get(kerr_horizon_radius<double>({{1.12345, 2.2222}}, 2.0,
-                                               {{0.0, 0.0, 0.0}})));
+  CHECK(approx(4.0) == get(kerr_horizon_radius<double>({{1.12345, 2.2222}}, 2.0,
+                                                       {{0.0, 0.0, 0.0}})));
 
   // Test for Kerr (mass=2) along pole, for spin not in z direction.
   CHECK(approx(2.0 * (1.0 + sqrt(0.86))) ==
@@ -98,14 +124,41 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
   {
     const double mass = 0.45;
     const std::array<double, 3> dimless_spin{{0., 0.3, 0.5}};
+    const std::array<double, 3> boost_velocity{{0., 0., 0.}};
     const double r_plus =
         mass * (1. + sqrt(1. - dot(dimless_spin, dimless_spin)));
     const DataVector theta{0., M_PI_4 * 0.34, M_PI_4, M_PI_2 * 0.67, M_PI_2};
     const DataVector phi{M_PI_2 * 0.4, M_PI * 0.55, M_PI_4, M_PI_4 * 1.2, M_PI};
     const std::array<DataVector, 2> theta_phi{{theta, phi}};
-    CHECK_ITERABLE_APPROX(kerr_schild_radius_from_boyer_lindquist(
-                              r_plus, theta_phi, mass, dimless_spin),
-                          kerr_horizon_radius(theta_phi, mass, dimless_spin));
+    CHECK_ITERABLE_APPROX(
+        kerr_schild_radius_from_boyer_lindquist(r_plus, theta_phi, mass,
+                                                dimless_spin, boost_velocity),
+        kerr_horizon_radius(theta_phi, mass, dimless_spin));
+  }
+
+  {
+    // Test Lorentz contraction
+    // This test may only make sense for spin orthogonal to the boost
+    const double mass = 1.0;
+    const std::array<double, 3> dimless_spin{{0., 0.0, 0.8}};
+    const std::array<double, 3> boost_velocity{
+        {0.998 * 0.5, 0.998 * sqrt(3.0) / 2.0, 0.}};
+    const double r_plus =
+        mass * (1. + sqrt(1. - dot(dimless_spin, dimless_spin)));
+    const DataVector theta{M_PI_2, M_PI_2, 0., M_PI_2};
+    const DataVector phi{0., M_PI_2, M_PI_2, M_PI_4};
+    const DataVector contraction_factor =
+        get(lorentz_contraction_factor<DataVector>(theta, phi, boost_velocity));
+    const std::array<DataVector, 2> theta_phi{{theta, phi}};
+    const Scalar<DataVector> schw_horizon =
+        kerr_schild_radius_from_boyer_lindquist(r_plus, theta_phi, mass,
+                                                dimless_spin, boost_velocity);
+    Scalar<DataVector> expected_horizon =
+        make_with_value<Scalar<DataVector>>(theta_phi, 0.);
+    get(expected_horizon) =
+        contraction_factor *
+        get(kerr_horizon_radius(theta_phi, mass, dimless_spin));
+    CHECK_ITERABLE_APPROX(schw_horizon, expected_horizon);
   }
 }
 }  // namespace gr::Solutions
