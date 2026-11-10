@@ -55,7 +55,7 @@ template <size_t Dim>
 DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
     const db::Access& box,
     const std::vector<DirectionalId<Dim>>& mortars_to_reconstruct_to) {
-  using system = NewtonianMhd::System<Dim>;
+  using system = NewtonianMhd::System<Dim, false>;
   using evolved_vars_tag = typename system::variables_tag;
   using evolved_vars_tags = typename evolved_vars_tag::tags_list;
   using prim_tags = typename system::primitive_variables_tag::tags_list;

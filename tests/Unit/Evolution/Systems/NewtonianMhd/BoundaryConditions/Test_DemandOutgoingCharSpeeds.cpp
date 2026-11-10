@@ -96,7 +96,7 @@ void test(EosType& eos) {
   helpers::test_boundary_condition_with_python<
       NewtonianMhd::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       NewtonianMhd::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianMhd::System<Dim>,
+      NewtonianMhd::System<Dim, false>,
       tmpl::list<NewtonianMhd::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<tmpl::conditional_t<
           std::is_same_v<EosType, EquationsOfState::IdealFluid<false>>,

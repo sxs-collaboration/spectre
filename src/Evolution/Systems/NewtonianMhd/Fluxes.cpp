@@ -56,7 +56,7 @@ void ComputeFluxes<Dim>::apply(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
-  template void NewtonianMhd::detail::fluxes_impl<DIM(data)>(                \
+  template void NewtonianMhd::detail::fluxes_impl<DIM(data)>(              \
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*> mass_density_cons_flux, \
       gsl::not_null<tnsr::IJ<DataVector, DIM(data)>*> momentum_density_flux, \
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*> energy_density_flux,    \

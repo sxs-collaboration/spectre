@@ -559,20 +559,20 @@ std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template void NewtonianMhd::characteristic_speeds(                           \
+  template void NewtonianMhd::characteristic_speeds(                         \
       const gsl::not_null<std::array<DataVector, DIM(data) + 2>*> char_speeds, \
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
       const tnsr::i<DataVector, DIM(data)>& normal);                           \
   template std::array<DataVector, DIM(data) + 2>                               \
-  NewtonianMhd::characteristic_speeds(                                         \
+  NewtonianMhd::characteristic_speeds(                                       \
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
       const tnsr::i<DataVector, DIM(data)>& normal);                           \
-  template struct NewtonianMhd::Tags::ComputeLargestCharacteristicSpeed<DIM(   \
+  template struct NewtonianMhd::Tags::ComputeLargestCharacteristicSpeed<DIM( \
       data)>;                                                                  \
   template std::pair<DataVector, std::pair<Matrix, Matrix>>                    \
-  NewtonianMhd::numerical_eigensystem(                                         \
+  NewtonianMhd::numerical_eigensystem(                                       \
       const tnsr::I<double, DIM(data)>&, const Scalar<double>&,                \
       const Scalar<double>&, const Scalar<double>&,                            \
       const tnsr::i<double, DIM(data)>&);

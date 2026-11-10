@@ -7,8 +7,9 @@
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data) \
-  template class Events::ObserveTimeStep<NewtonianMhd::System<DIM(data)>>;
+#define INSTANTIATION(r, data)            \
+  template class Events::ObserveTimeStep< \
+      NewtonianMhd::System<DIM(data), false>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

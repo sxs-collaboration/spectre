@@ -68,14 +68,15 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       ranges{std::array<double, 2>{{1.0e-30, 1.0}},
              std::array<double, 2>{{1.0e-30, 1.0}}};
 
-  helpers::test_boundary_correction_conservation<NewtonianMhd::System<Dim>>(
+  helpers::test_boundary_correction_conservation<
+      NewtonianMhd::System<Dim, false>>(
       gen, NewtonianMhd::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
-  helpers::test_boundary_correction_with_python<NewtonianMhd::System<Dim>,
-                                                tmpl::list<ConvertIdeal>>(
+  helpers::test_boundary_correction_with_python<
+      NewtonianMhd::System<Dim, false>, tmpl::list<ConvertIdeal>>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       NewtonianMhd::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
@@ -86,8 +87,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       evolution::BoundaryCorrection,
       NewtonianMhd::BoundaryCorrections::Rusanov<Dim>>("Rusanov:");
 
-  helpers::test_boundary_correction_with_python<NewtonianMhd::System<Dim>,
-                                                tmpl::list<ConvertIdeal>>(
+  helpers::test_boundary_correction_with_python<
+      NewtonianMhd::System<Dim, false>, tmpl::list<ConvertIdeal>>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const NewtonianMhd::BoundaryCorrections::Rusanov<Dim>&>(
           *rusanov),

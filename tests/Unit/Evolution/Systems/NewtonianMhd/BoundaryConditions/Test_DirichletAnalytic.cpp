@@ -134,7 +134,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       NewtonianMhd::BoundaryConditions::DirichletAnalytic<Dim>,
       NewtonianMhd::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianMhd::System<Dim>,
+      NewtonianMhd::System<Dim, false>,
       tmpl::list<NewtonianMhd::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertSmoothFlow<Dim>>, tmpl::list<>, Metavariables<Dim>>(
       make_not_null(&gen),
@@ -195,7 +195,7 @@ void test() {
     helpers::test_boundary_condition_with_python<
         NewtonianMhd::BoundaryConditions::DirichletAnalytic<Dim>,
         NewtonianMhd::BoundaryConditions::BoundaryCondition<Dim>,
-        NewtonianMhd::System<Dim>,
+        NewtonianMhd::System<Dim, false>,
         tmpl::list<NewtonianMhd::BoundaryCorrections::Rusanov<Dim>>,
         tmpl::list<ConvertKhInstability<Dim>>, tmpl::list<>,
         Metavariables<Dim>>(

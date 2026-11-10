@@ -30,7 +30,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       NewtonianMhd::BoundaryConditions::Reflection<Dim>,
       NewtonianMhd::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianMhd::System<Dim>,
+      NewtonianMhd::System<Dim, false>,
       tmpl::list<NewtonianMhd::BoundaryCorrections::Rusanov<Dim>>>(
       make_not_null(&gen),
       "Evolution.Systems.NewtonianMhd.BoundaryConditions.Reflection",
