@@ -590,8 +590,16 @@ void test_cartoon_fd_time_derivative() {
   // residual z-dependence (e.g. BondiMichel depends on r = sqrt(x^2+y^2+z^2)
   // rather than the cylindrical radius), so the 3D flux divergence picks up
   // O(z^2/r^2) corrections relative to the cartoon, which evaluates everything
-  // at z=0 exactly
-  const Approx local_approx = Approx::custom().epsilon(0.01).scale(1e-10);
+  // at z=0 exactly.
+  //
+  // The tolerance is 1% plus an absolute floor of epsilon * scale = 1e-6.
+  // Some time derivatives are small residuals, e.g. dt tilde tau at the peak
+  // of the perturbation (about 1e-4). There the cartoon and 3D results still
+  // differ by about 1e-6 because of the grids. A less dissipative Riemann
+  // solver leaves that difference as it is but makes the residual smaller, so
+  // a purely relative 1% check can fail although the two agree as well as
+  // before.
+  const Approx local_approx = Approx::custom().epsilon(0.01).scale(1e-4);
   const Approx local_approx_loose = Approx::custom().epsilon(0.1).scale(1e-5);
 
   const auto check_without_border =
