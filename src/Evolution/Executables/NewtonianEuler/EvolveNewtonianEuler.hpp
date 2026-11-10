@@ -46,23 +46,23 @@
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
-#include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
-#include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/NeighborPackagedData.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/PrimitiveGhostData.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/PrimsAfterRollback.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/ResizeAndComputePrimitives.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/SetInitialRdmpData.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/TciOnDgGrid.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/TciOnFdGrid.hpp"
-#include "Evolution/Systems/NewtonianEuler/Subcell/TimeDerivative.hpp"
-#include "Evolution/Systems/NewtonianEuler/System.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "Evolution/Systems/NewtonianMhd/AllSolutions.hpp"
+#include "Evolution/Systems/NewtonianMhd/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/NewtonianMhd/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/NewtonianMhd/FiniteDifference/Factory.hpp"
+#include "Evolution/Systems/NewtonianMhd/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/NewtonianMhd/SoundSpeedSquared.hpp"
+#include "Evolution/Systems/NewtonianMhd/Sources/Factory.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/NeighborPackagedData.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/PrimitiveGhostData.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/PrimsAfterRollback.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/ResizeAndComputePrimitives.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/SetInitialRdmpData.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/TciOnDgGrid.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/TciOnFdGrid.hpp"
+#include "Evolution/Systems/NewtonianMhd/Subcell/TimeDerivative.hpp"
+#include "Evolution/Systems/NewtonianMhd/System.hpp"
+#include "Evolution/Systems/NewtonianMhd/Tags.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -95,12 +95,12 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticData/NewtonianEuler/KhInstability.hpp"
+#include "PointwiseFunctions/AnalyticData/NewtonianMhd/KhInstability.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianMhd/IsentropicVortex.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianMhd/LaneEmdenStar.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianMhd/RiemannProblem.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
@@ -142,14 +142,14 @@ struct EvolutionMetavars {
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
-  using system = NewtonianEuler::System<Dim>;
+  using system = NewtonianMhd::System<Dim>;
 
   using temporal_id = Tags::TimeStepId;
 
   static constexpr bool use_dg_element_collection = false;
 
   using initial_data_tag = evolution::initial_data::Tags::InitialData;
-  using initial_data_list = NewtonianEuler::InitialData::initial_data_list<Dim>;
+  using initial_data_list = NewtonianMhd::InitialData::initial_data_list<Dim>;
 
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
@@ -208,10 +208,10 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<NewtonianEuler::Sources::Source<Dim>,
-                   NewtonianEuler::Sources::all_sources<Dim>>,
+        tmpl::pair<NewtonianMhd::Sources::Source<Dim>,
+                   NewtonianMhd::Sources::all_sources<Dim>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   NewtonianEuler::InitialData::initial_data_list<Dim>>,
+                   NewtonianMhd::InitialData::initial_data_list<Dim>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
@@ -220,11 +220,11 @@ struct EvolutionMetavars {
                        Events::time_events<system>,
                        dg::Events::ChangeFixedLtsRatio<volume_dim>>>>,
         tmpl::pair<evolution::BoundaryCorrection,
-                   NewtonianEuler::BoundaryCorrections::
+                   NewtonianMhd::BoundaryCorrections::
                        standard_boundary_corrections<volume_dim>>,
         tmpl::pair<
-            NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
-            NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
+            NewtonianMhd::BoundaryConditions::BoundaryCondition<volume_dim>,
+            NewtonianMhd::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -277,21 +277,21 @@ struct EvolutionMetavars {
               Actions::UpdateConservatives,
               evolution::dg::subcell::Actions::SetAndCommunicateInitialRdmpData<
                   volume_dim,
-                  NewtonianEuler::subcell::SetInitialRdmpData<volume_dim>>,
+                  NewtonianMhd::subcell::SetInitialRdmpData<volume_dim>>,
               evolution::dg::subcell::Actions::ComputeAndSendTciOnInitialGrid<
                   volume_dim, system,
-                  NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,
+                  NewtonianMhd::subcell::TciOnFdGrid<volume_dim>>,
               evolution::dg::subcell::Actions::SetInitialGridFromTciData<
                   volume_dim, system>,
               Actions::MutateApply<
-                  NewtonianEuler::subcell::ResizeAndComputePrims<volume_dim>>,
+                  NewtonianMhd::subcell::ResizeAndComputePrims<volume_dim>>,
               Actions::UpdateConservatives>,
           tmpl::list<evolution::Initialization::Actions::SetVariables<
                          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
                      Actions::UpdateConservatives>>,
       Initialization::Actions::AddComputeTags<
-          tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,
-                     NewtonianEuler::Tags::SoundSpeedCompute<DataVector>>>,
+          tmpl::list<NewtonianMhd::Tags::SoundSpeedSquaredCompute<DataVector>,
+                     NewtonianMhd::Tags::SoundSpeedCompute<DataVector>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim>,
@@ -323,7 +323,7 @@ struct EvolutionMetavars {
           use_dg_subcell,
           // Note: The primitive variables are computed as part of the TCI.
           evolution::dg::subcell::Actions::TciAndRollback<
-              NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
+              NewtonianMhd::subcell::TciOnDgGrid<volume_dim>>,
           tmpl::list<
               // Conservative `UpdatePrimitives` expects system to
               // possess list of recovery schemes so we use
@@ -346,15 +346,15 @@ struct EvolutionMetavars {
     template <typename DbTagsList>
     static constexpr size_t ghost_zone_size(
         const db::DataBox<DbTagsList>& box) {
-      return db::get<NewtonianEuler::fd::Tags::Reconstructor<Dim>>(box)
+      return db::get<NewtonianMhd::fd::Tags::Reconstructor<Dim>>(box)
           .ghost_zone_size();
     }
 
     using DgComputeSubcellNeighborPackagedData =
-        NewtonianEuler::subcell::NeighborPackagedData;
+        NewtonianMhd::subcell::NeighborPackagedData;
 
     using GhostVariables =
-        NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>;
+        NewtonianMhd::subcell::PrimitiveGhostVariables<volume_dim>;
   };
 
   using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
@@ -370,15 +370,15 @@ struct EvolutionMetavars {
       Actions::MutateApply<ChangeStepSize<tmpl::list<>>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim,
-          NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>,
+          NewtonianMhd::subcell::PrimitiveGhostVariables<volume_dim>,
           use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       Actions::MutateApply<
-          NewtonianEuler::subcell::PrimsAfterRollback<volume_dim>>,
+          NewtonianMhd::subcell::PrimsAfterRollback<volume_dim>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
-          NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
+          NewtonianMhd::subcell::TimeDerivative<volume_dim>>,
       Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_postprocessors>,
@@ -387,9 +387,9 @@ struct EvolutionMetavars {
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
-          NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,
+          NewtonianMhd::subcell::TciOnFdGrid<volume_dim>>,
       Actions::MutateApply<
-          NewtonianEuler::subcell::ResizeAndComputePrims<volume_dim>>,
+          NewtonianMhd::subcell::ResizeAndComputePrims<volume_dim>>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
 
@@ -447,10 +447,10 @@ struct EvolutionMetavars {
   using const_global_cache_tags = tmpl::push_back<
       tmpl::conditional_t<
           use_dg_subcell,
-          tmpl::list<NewtonianEuler::fd::Tags::Reconstructor<volume_dim>>,
+          tmpl::list<NewtonianMhd::fd::Tags::Reconstructor<volume_dim>>,
           tmpl::list<>>,
       initial_data_tag, equation_of_state_tag,
-      NewtonianEuler::Tags::SourceTerm<Dim>>;
+      NewtonianMhd::Tags::SourceTerm<Dim>>;
 
   static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};
