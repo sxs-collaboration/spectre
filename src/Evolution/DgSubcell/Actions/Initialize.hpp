@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/StartsOnSubcellGrid.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -47,7 +48,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -169,22 +169,9 @@ struct SetSubcellGrid {
       }
     }
 
-    const bool bordering_dg_block =
-        evolution::dg::borders_only_dg_block(element, only_dg_block_ids);
-
-    // Non-hypercube topologies (e.g. spherical shells) can never use subcell
-    // and are automatically treated as DG-only.
-    const bool subcell_allowed_in_element =
-        fd::dg_mesh_supports_subcell(dg_mesh) and
-        not alg::found(only_dg_block_ids, element.id().block_id()) and
-        not bordering_dg_block;
-    const bool cell_is_not_on_external_boundary =
-        db::get<::domain::Tags::Element<Dim>>(box)
-            .external_boundaries()
-            .empty();
-
-    constexpr bool subcell_enabled_at_external_boundary =
-        Metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
+    const bool start_on_subcell_grid = starts_on_subcell_grid(
+        element, dg_mesh, only_dg_block_ids,
+        Metavariables::SubcellOptions::subcell_enabled_at_external_boundary);
 
     // Non-hypercube elements (e.g. spherical shells) cannot use subcell and may
     // have > 24 neighbors, which would overflow the fixed-size
@@ -220,8 +207,7 @@ struct SetSubcellGrid {
                    subcell::Tags::TciCallsSinceRollback,
                    subcell::Tags::StepsSinceTciCall>,
         tmpl::list<>>(
-        [&cell_is_not_on_external_boundary, &dg_mesh,
-         subcell_allowed_in_element, &subcell_mesh](
+        [&dg_mesh, start_on_subcell_grid, &subcell_mesh](
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto active_vars_ptr,
@@ -233,9 +219,7 @@ struct SetSubcellGrid {
           // subcells as a normal solve.
           *did_rollback_ptr = false;
 
-          if ((cell_is_not_on_external_boundary or
-               subcell_enabled_at_external_boundary) and
-              subcell_allowed_in_element) {
+          if (start_on_subcell_grid) {
             *active_grid_ptr = ActiveGrid::Subcell;
             active_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
           } else {

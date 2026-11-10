@@ -56,7 +56,7 @@ compute_weighting_extents_override(
           element_id, blocks, initial_refinement_levels);
       // Elements bordering a DG-only block and (unless enabled) elements on
       // an external boundary are not allowed to use subcell. This must match
-      // `evolution::dg::subcell::Actions::Initialize`.
+      // `evolution::dg::subcell::starts_on_subcell_grid`.
       if (borders_only_dg_block(element, only_dg_block_ids) or
           (not subcell_enabled_at_external_boundary and
            not element.external_boundaries().empty())) {

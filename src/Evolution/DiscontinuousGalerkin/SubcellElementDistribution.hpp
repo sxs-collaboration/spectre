@@ -36,12 +36,12 @@ namespace evolution::dg {
  * - it is not on an external boundary, unless
  *   `subcell_enabled_at_external_boundary` is `true`.
  *
- * These conditions must match those in
- * `evolution::dg::subcell::Actions::Initialize`. The entry is the number of
- * finite-difference grid points \f$2N-1\f$ corresponding to the \f$N\f$ DG
- * grid points in `initial_extents`, matching the subcell mesh built by
- * `evolution::dg::subcell::fd::mesh`. All other elements always run on the
- * DG grid and so are omitted from the returned map.
+ * These conditions must match `evolution::dg::subcell::starts_on_subcell_grid`,
+ * which cannot be called here because the `DgSubcell` library links this one.
+ *  The entry is the number of finite-difference grid points \f$2N-1\f$
+ * corresponding to the \f$N\f$ DG grid points in `initial_extents`, matching
+ * the subcell mesh built by `evolution::dg::subcell::fd::mesh`. All other
+ * elements always run on the DG grid and so are omitted from the returned map.
  */
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>
