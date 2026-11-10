@@ -17,7 +17,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -127,16 +126,6 @@ double Hll::dg_package_data(
       auto& v_dot_normal_times_one_minus_cs2 =
           get<::Tags::TempScalar<6>>(temp_buffer);
 
-      const Scalar<DataVector> specific_internal_energy =
-          equation_of_state
-              .specific_internal_energy_from_density_and_temperature(
-                  rest_mass_density, temperature, electron_fraction);
-      const Scalar<DataVector> pressure =
-          equation_of_state.pressure_from_density_and_energy(
-              rest_mass_density, specific_internal_energy, electron_fraction);
-      const Scalar<DataVector> specific_enthalpy =
-          hydro::relativistic_specific_enthalpy(
-              rest_mass_density, specific_internal_energy, pressure);
       const Scalar<DataVector> sound_speed_squared{
           clamp(get(equation_of_state
                         .sound_speed_squared_from_density_and_temperature(
