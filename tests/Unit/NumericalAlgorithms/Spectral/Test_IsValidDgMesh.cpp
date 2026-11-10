@@ -186,8 +186,12 @@ void test_2d(const gsl::not_null<std::mt19937*> generator) {
       is_valid_dg_mesh(Mesh<2>{4, Basis::Fourier, Quadrature::Equiangular}));
   CHECK_FALSE(is_valid_dg_mesh(Mesh<2>{
       {4_st, 9_st}, bases::spherical_surface, quadratures::spherical_surface}));
-  CHECK_FALSE(
+  CHECK(
       is_valid_dg_mesh(Mesh<2>{{4_st, 9_st}, bases::disk, quadratures::disk}));
+  CHECK_FALSE(
+      is_valid_dg_mesh(Mesh<2>{{4_st, 10_st}, bases::disk, quadratures::disk}));
+  CHECK_FALSE(
+      is_valid_dg_mesh(Mesh<2>{{4_st, 15_st}, bases::disk, quadratures::disk}));
 }
 
 void test_3d(const gsl::not_null<std::mt19937*> generator) {
@@ -376,8 +380,16 @@ void test_3d(const gsl::not_null<std::mt19937*> generator) {
       Mesh<3>{{4_st, 4_st, 9_st},
               bases::spherical_shell<Basis::Legendre>,
               quadratures::spherical_shell<Quadrature::GaussLobatto>}));
-  CHECK_FALSE(is_valid_dg_mesh(
+  CHECK(is_valid_dg_mesh(
       Mesh<3>{{4_st, 9_st, 5_st},
+              bases::full_cylinder<Basis::Legendre>,
+              quadratures::full_cylinder<Quadrature::GaussLobatto>}));
+  CHECK_FALSE(is_valid_dg_mesh(
+      Mesh<3>{{4_st, 10_st, 5_st},
+              bases::full_cylinder<Basis::Legendre>,
+              quadratures::full_cylinder<Quadrature::GaussLobatto>}));
+  CHECK_FALSE(is_valid_dg_mesh(
+      Mesh<3>{{4_st, 15_st, 5_st},
               bases::full_cylinder<Basis::Legendre>,
               quadratures::full_cylinder<Quadrature::GaussLobatto>}));
   CHECK_FALSE(is_valid_dg_mesh(Mesh<3>{

@@ -119,7 +119,7 @@ bool is_valid_dg_mesh(const Mesh<Dim>& mesh) {
             if (bases[1] == Basis::ZernikeB2 and
                 quadrature == Quadrature::GaussRadauUpper and
                 quadratures[1] == Quadrature::Equiangular and
-                extents[1] == 4 * extents[0] - 3) {
+                extents[1] % 2 == 1 and extents[1] / 2 <= 2 * extents[0] - 2) {
               break;
             } else {
               return false;
@@ -139,7 +139,7 @@ bool is_valid_dg_mesh(const Mesh<Dim>& mesh) {
             if (bases[1] == Basis::ZernikeB2 and
                 quadrature == Quadrature::GaussRadauUpper and
                 quadratures[1] == Quadrature::Equiangular and
-                extents[1] == 4 * extents[0] - 3 and
+                extents[1] % 2 == 1 and extents[1] / 2 <= 2 * extents[0] - 2 and
                 (bases[2] == Basis::Legendre or bases[2] == Basis::Chebyshev)) {
               break;
             } else {

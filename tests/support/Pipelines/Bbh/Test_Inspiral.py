@@ -331,7 +331,7 @@ class TestInspiral(unittest.TestCase):
                 common_args
                 + [
                     "--lev",
-                    "-2",
+                    "1",
                     "-O",
                     str(self.test_dir / "CylindricalInspiral"),
                     "--cylindrical-domain",
