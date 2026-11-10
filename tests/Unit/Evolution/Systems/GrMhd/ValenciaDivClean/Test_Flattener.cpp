@@ -53,6 +53,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
 
   const Scalar<DataVector> det_logical_to_inertial_jacobian(
       DataVector{{0.2, 0.1, 0.3, 0.2, 0.5, 0.6, 0.4, 0.5}});
+  const Scalar<DataVector> det_logical_to_inertial_inv_jacobian{
+      DataVector{1.0 / get(det_logical_to_inertial_jacobian)}};
 
   const double volume_of_cell =
       definite_integral(get(det_logical_to_inertial_jacobian), mesh);
@@ -111,7 +113,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              mesh, det_logical_to_inertial_inv_jacobian, ideal_fluid,
               primitive_from_conservative_options);
 
     CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
@@ -173,7 +175,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              mesh, det_logical_to_inertial_inv_jacobian, ideal_fluid,
               primitive_from_conservative_options);
 
     // check 1) action, 2) positive tilde_d, 3) all fields changed
@@ -252,7 +254,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
               make_not_null(&tilde_tau), make_not_null(&tilde_s),
               make_not_null(&prims), tilde_b, tilde_phi,
               sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
-              mesh, det_logical_to_inertial_jacobian, ideal_fluid,
+              mesh, det_logical_to_inertial_inv_jacobian, ideal_fluid,
               primitive_from_conservative_options);
 
     CHECK(definite_integral(
