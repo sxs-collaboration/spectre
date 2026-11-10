@@ -262,6 +262,25 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                      vector_state[1], eps_interp_vector, vector_state[2]))[0]) <
         1.e-12);
 
+  // An energy above the table is clamped to the energy at 0.9999 * T_max, the
+  // upper end of the temperature bracket of the root find
+  {
+    const double fallback_temperature = 0.9999 * std::exp(upper_bounds[0]);
+    const Scalar<double> large_eps{2.0 * eos.temperature_upper_bound()};
+    CHECK(get(eos.temperature_from_density_and_energy(
+              state[1], large_eps, state[2])) == approx(fallback_temperature));
+    CHECK(get(eos.pressure_from_density_and_energy(state[1], large_eps,
+                                                   state[2])) ==
+          approx(get(eos.pressure_from_density_and_temperature(
+              state[1], Scalar<double>{fallback_temperature}, state[2]))));
+    const Scalar<DataVector> large_eps_vector{
+        DataVector{data_vector_length, get(large_eps)}};
+    CHECK_ITERABLE_APPROX(
+        get(eos.temperature_from_density_and_energy(
+            vector_state[1], large_eps_vector, vector_state[2])),
+        (DataVector{data_vector_length, fallback_temperature}));
+  }
+
   auto test_against_reference_values = [&](auto& this_eos) {
     get(state[1]) = 1.e-4;
 

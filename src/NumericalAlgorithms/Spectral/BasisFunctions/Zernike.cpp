@@ -132,7 +132,8 @@ compute_collocation_points_and_weights_gauss_radau_impl(
           const double root =
               RootFinder::toms748([M](const double r) { return Pi<Dim>(M, r); },
                                   r_left, r_right, f_left, f_right, 0.0,
-                                  4.0 * std::numeric_limits<double>::epsilon());
+                                  4.0 * std::numeric_limits<double>::epsilon())
+                  .value();
           x[root_index] = root;
           ++root_index;
         }

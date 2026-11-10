@@ -404,7 +404,8 @@ double Translation<Dim>::root_finder(
   };
   return sqrt(RootFinder::toms748(wrapper, square(lower_bound_on_r),
                                   square(upper_bound_on_r), absolute_tol,
-                                  relative_tol));
+                                  relative_tol)
+                  .value());
 }
 
 template <size_t Dim>
