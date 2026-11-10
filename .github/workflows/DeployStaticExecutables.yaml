@@ -70,7 +70,7 @@ jobs:
           "https://drive.google.com/uc?id=1CmgLLfuLod8stc13EtmjHUvBoIgSVD-Y" \
           -O BondiSachsCceR0200.h5
           gdown \
-          "https://drive.google.com/uc?id=1eVzLmVi_m6qK8EGkgQ201TojhIm9FsYN" \
+          "https://drive.google.com/uc?id=1vlftw2DKfywZdOXCLWpGfnyysrLAV130" \
           -O CharacteristicExtractReduction_Expected.h5
       - name: Copy CCE executables from the container
         run: >
