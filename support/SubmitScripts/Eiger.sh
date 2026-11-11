@@ -40,8 +40,12 @@ workdir = "${RUN_DIR}"
 [env]
 LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu"
 EOF
+# Set a stack limit for the job steps (unlimited by default here) so that
+# threads get enough stack
+ulimit -s 8192
 # Run the executable and the CLI in the container
-SPECTRE_CONTAINER="srun --environment=${RUN_DIR}/container-env.toml"
+SPECTRE_CONTAINER="srun --propagate=STACK \
+  --environment=${RUN_DIR}/container-env.toml"
 export SPECTRE_CLI="${SPECTRE_CONTAINER} ${SPECTRE_CLI}"
 {% endblock %}
 
