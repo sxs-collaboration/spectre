@@ -873,7 +873,9 @@ KerrSchild::IntermediateVars<DataType, Frame>::get_var(
   auto result =
       make_with_value<tnsr::i<DataType, 3, Frame>>(get<0>(deriv_H), 0.);
   for (size_t i = 0; i < 3; ++i) {
-    result.get(i) = 2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1);
+    result.get(i) =
+        2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1) +
+        4.0 * get(H) * get<0>(null_form) * deriv_null_form.get(i + 1, 0);
   }
 
   return result;

@@ -80,7 +80,8 @@ namespace Solutions {
  * \gamma_{i j}     &=& \delta_{i j} + 2 H l_i l_j,\\
  * \gamma^{i j}  &=& \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\
  * {\rm det} \gamma_{i j}&=& 1+2H l^t l^t,\\
- * \partial_k ({\rm det} \gamma_{i j})&=& 2 l^t l^t \partial_k H,\\
+ * \partial_k ({\rm det} \gamma_{i j})&=& 2 l^t l^t \partial_k H
+ *               + 4H l^t \partial_k l^t,\\
  * \beta^i       &=& - {2 H l^t l^i \over 1+2H l^t l^t},\\
  * N        &=& \left(1+2 H l^t l^t\right)^{-1/2},\quad\hbox{(lapse)}\\
  * \alpha     &=& \left(1+2 H l^t l^t\right)^{-1},
