@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.support.Logging import configure_logging
+from spectre.support.Machines import this_machine
 from spectre.support.Resubmit import resubmit, resubmit_command
 from spectre.support.Schedule import (
     Checkpoint,
@@ -85,13 +86,18 @@ NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
             )
             self.assertEqual(rendered_input_file["Option"], "TestOpt")
             self.assertEqual(rendered_metadata["MetadataOption"], "MetaOpt")
+        # The machine this build is configured for may set the flag
+        machine = this_machine(raise_exception=False)
+        auto_provision_flag = (
+            machine.AutoProvisionFlag if machine else "+auto-provision"
+        )
         args = (self.test_dir / "Run/out.txt").read_text().split()
         self.assertEqual(
             args,
             [
                 "--input-file",
                 str(self.test_dir / "Run/InputFile.yaml"),
-                "+auto-provision",
+                auto_provision_flag,
             ],
         )
 
