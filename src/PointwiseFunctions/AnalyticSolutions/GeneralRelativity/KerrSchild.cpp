@@ -865,15 +865,20 @@ tnsr::i<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     gr::Tags::DerivDetSpatialMetric<DataType, 3, Frame> /*meta*/) {
+  const auto& H = get_var(computer, internal_tags::H<DataType>{});
   const auto& deriv_H =
       get_var(computer, internal_tags::deriv_H<DataType, Frame>{});
   const auto& null_form =
       get_var(computer, internal_tags::null_form<DataType, Frame>{});
+  const auto& deriv_null_form =
+      get_var(computer, internal_tags::deriv_null_form<DataType, Frame>{});
 
   auto result =
       make_with_value<tnsr::i<DataType, 3, Frame>>(get<0>(deriv_H), 0.);
   for (size_t i = 0; i < 3; ++i) {
-    result.get(i) = 2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1);
+    result.get(i) =
+        2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1) +
+        4.0 * get(H) * get<0>(null_form) * deriv_null_form.get(i + 1, 0);
   }
 
   return result;
