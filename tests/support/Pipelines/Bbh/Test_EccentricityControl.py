@@ -33,12 +33,16 @@ class TestEccentricityControl(unittest.TestCase):
         self.id_input_file_path = os.path.join(
             self.test_dir, "InitialData.yaml"
         )
+        self.inspiral_input_file_path = os.path.join(
+            self.test_dir, "Inspiral.yaml"
+        )
         # Clean up any existing test directory and create new one
         shutil.rmtree(self.test_dir, ignore_errors=True)
         os.makedirs(self.test_dir, exist_ok=True)
         # Create HDF5 and YAML files for the test
         self.create_h5_file()
-        self.create_yaml_file()
+        self.create_id_input_file()
+        self.create_inspiral_input_file()
 
     # Clean up and remove test directory after tests are done
     def tearDown(self):
@@ -69,7 +73,7 @@ class TestEccentricityControl(unittest.TestCase):
                     dataset.append([t, *coords, *coords])
                 h5_file.close_current_object()
 
-    def create_yaml_file(self):
+    def create_id_input_file(self):
         # Define YAML data and write it to the file
         metadata = {
             "TargetParams": {
@@ -79,7 +83,10 @@ class TestEccentricityControl(unittest.TestCase):
                 "DimensionlessSpinA": [0.0, 0.0, 0.0],
                 "DimensionlessSpinB": [0.0, 0.0, 0.0],
                 "Eccentricity": 0.0,
-                "EccentricityAbsoluteTolerance": 1e-3,
+                "RoughEccentricityAbsoluteTolerance": 1e-3,
+                "EccentricityAbsoluteTolerance": 7e-4,
+                "EvolutionLev": 1,
+                "RoughEccCtrlLev": -1,
             },
             "Next": {
                 "With": {
@@ -106,6 +113,7 @@ class TestEccentricityControl(unittest.TestCase):
                         "KerrSchild": {"Mass": 0.5, "Spin": [0.0, 0.0, 0.0]}
                     },
                     "CenterOfMassOffset": [0.0, 0.0],
+                    "LinearVelocity": [0.0, 0.0, 0.0],
                 },
             },
             "DomainCreator": {
@@ -132,11 +140,18 @@ class TestEccentricityControl(unittest.TestCase):
         with open(self.id_input_file_path, "w") as yaml_file:
             yaml.dump_all([metadata, data1], yaml_file)
 
+    def create_inspiral_input_file(self):
+        metadata = {"Lev": -1}
+        input_file = {}
+        with open(self.inspiral_input_file_path, "w") as yaml_file:
+            yaml.dump_all([metadata, input_file], yaml_file)
+
     # Test the eccentricity control function with the created files
     def test_eccentricity_control(self):
         eccentricity_control(
             h5_files=self.h5_filename,
             id_input_file_path=self.id_input_file_path,
+            inspiral_input_file_path=self.inspiral_input_file_path,
             pipeline_dir=self.test_dir,
             plot_output_dir=self.test_dir,
             scheduler=None,
@@ -151,6 +166,8 @@ class TestEccentricityControl(unittest.TestCase):
                 self.h5_filename,
                 "-i",
                 self.id_input_file_path,
+                "--inspiral-input-file",
+                self.inspiral_input_file_path,
                 "-d",
                 self.test_dir,
                 "--plot-output-dir",
