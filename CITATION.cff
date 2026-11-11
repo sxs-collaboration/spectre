@@ -120,6 +120,11 @@ authors:
   family-names: Wittek
   given-names: Nikolas A.
   orcid: https://orcid.org/0000-0001-8575-5450
+- affiliation: Biomaterials & Regenerative Medicine, PUCSP, São Paulo, São Paulo,
+    Brazil
+  family-names: Agourakis
+  given-names: Demetrios Chiuratto
+  orcid: https://orcid.org/0009-0001-8671-8878
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Anantpurkar
@@ -361,8 +366,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2026-10-28
-doi: 10.5281/zenodo.23747621
+date-released: 2026-11-11
+doi: 10.5281/zenodo.24146600
 keywords:
 - Software
 - Astrophysics
@@ -1080,4 +1085,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2026.10.28
+version: 2026.11.11

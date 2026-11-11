@@ -5,8 +5,8 @@
 [![Standard](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.svg?token=yyJ3uBPUE2)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2026.10.28-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2026.10.28)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.23747621.svg)](https://doi.org/10.5281/zenodo.23747621)
+[![release](https://img.shields.io/badge/release-v2026.11.11-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2026.11.11)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.24146600.svg)](https://doi.org/10.5281/zenodo.24146600)
 
 ![banner](docs/Images/banner.png)
 
@@ -45,7 +45,7 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.23747621](https://doi.org/10.5281/zenodo.23747621)
+- DOI: [10.5281/zenodo.24146600](https://doi.org/10.5281/zenodo.24146600)
 
 You can cite this BibTeX entry in your publication:
 
@@ -60,16 +60,16 @@ H\'ebert, Fran\c{c}ois and Kim, Yoonsoo and Kumar, Prayush and Lara, Guillermo
 and Lovelace, Geoffrey and Macedo, Alexandra and Moxon, Jordan and Murphy,
 Michael and O'Shea, Eamonn and Pfeiffer, Harald P. and Teukolsky, Saul A. and
 Wittek, Nikolas A. and others",
-    title = "\texttt{SpECTRE v2026.10.28}",
-    version = "2026.10.28",
+    title = "\texttt{SpECTRE v2026.11.11}",
+    version = "2026.11.11",
     publisher = "Zenodo",
-    doi = "10.5281/zenodo.23747621",
+    doi = "10.5281/zenodo.24146600",
     url = "https://spectre-code.org",
     howpublished =
-"\href{https://doi.org/10.5281/zenodo.23747621}{10.5281/zenodo.23747621}",
+"\href{https://doi.org/10.5281/zenodo.24146600}{10.5281/zenodo.24146600}",
     license = "MIT",
     year = "2026",
-    month = "10"
+    month = "11"
 }
 ```
 <!-- BIBTEX ENTRY -->
