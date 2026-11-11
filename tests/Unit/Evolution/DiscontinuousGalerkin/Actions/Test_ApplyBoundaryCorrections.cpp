@@ -1880,7 +1880,7 @@ PUP::able::PUP_ID MockBoundaryFilter::my_PUP_ID = 0;
 template <bool IsAuxiliary = false, typename Callback>
 void run_boundary_filter_test_1d_gts(
     std::unique_ptr<Filters::Filter<1, tmpl::list<Var1, Var2<1>>>> filter_ptr,
-    Callback&& callback) {
+    Callback&& callback, const bool step_complete = false) {
   constexpr size_t Dim = 1;
   using TagList = tmpl::list<Var1, Var2<Dim>>;
   using metavars = Metavariables<Dim, TestHelpers::SystemType::Conservative,
@@ -1928,7 +1928,9 @@ void run_boundary_filter_test_1d_gts(
 
   const TimeDelta time_step{Slab{0.2, 3.4}, {1, 4}};
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {2, 4}}};
-  const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 4}}};
+  const TimeStepId next_time_step_id =
+      step_complete ? time_step_id.next_step(time_step)
+                    : time_step_id.next_substep(time_step, 0.5);
 
   // Identity Grid→Inertial Jacobians (Grid == ElementLogical in this test).
   Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial> grid_jac{
@@ -2033,7 +2035,25 @@ void test_boundary_filter_step_applies() {
             get_mock_boundary_filter(runner, self_id);
         REQUIRE(mock != nullptr);
         CHECK(mock->call_count() == 1);
-      });
+      },
+      /*step_complete=*/true);
+}
+
+void test_boundary_filter_cadence_only_applies_at_step_completion() {
+  // A selected step must not cause filtering of intermediate RK stages unless
+  // substep filtering is explicitly enabled.
+  for (const bool step_complete : {false, true}) {
+    CAPTURE(step_complete);
+    run_boundary_filter_test_1d_gts(
+        std::make_unique<MockBoundaryFilter>(false, true, false),
+        [step_complete](const auto& runner, const ElementId<1>& self_id) {
+          const MockBoundaryFilter* mock =
+              get_mock_boundary_filter(runner, self_id);
+          REQUIRE(mock != nullptr);
+          CHECK(mock->call_count() == (step_complete ? 1 : 0));
+        },
+        step_complete);
+  }
 }
 
 void test_boundary_filter_jacobians_passed_when_needed() {
@@ -2118,6 +2138,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
   test_boundary_filter_no_cadence_skips();
   test_boundary_filter_substep_applies();
   test_boundary_filter_step_applies();
+  test_boundary_filter_cadence_only_applies_at_step_completion();
   test_boundary_filter_jacobians_passed_when_needed();
   test_boundary_filter_jacobians_not_passed_when_not_needed();
 
