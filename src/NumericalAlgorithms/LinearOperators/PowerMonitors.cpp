@@ -7,11 +7,13 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -33,6 +35,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace PowerMonitors {
 
@@ -140,6 +143,54 @@ std::array<DataVector, Dim> power_monitors(const VectorType& u,
                                            const Mesh<Dim>& mesh) {
   std::array<DataVector, Dim> result{};
   power_monitors(make_not_null(&result), u, mesh);
+  return result;
+}
+
+template <size_t Dim>
+void directional_power_monitors(
+    const gsl::not_null<std::array<DataVector, Dim>*> result,
+    const DataVector& u, const Mesh<Dim>& mesh) {
+  ASSERT(u.size() == mesh.number_of_grid_points(),
+         "The number of grid points per element ("
+             << mesh.number_of_grid_points()
+             << ") must match the size of the vector (" << u.size() << ").");
+  for (size_t d = 0; d < Dim; ++d) {
+    if (mesh.basis(d) != Spectral::Basis::Legendre and
+        mesh.basis(d) != Spectral::Basis::Chebyshev) {
+      ERROR(
+          "directional_power_monitors supports only the Legendre and "
+          "Chebyshev bases, but direction "
+          << d << " of the mesh " << mesh << " has basis " << mesh.basis(d));
+    }
+  }
+  // An empty matrix leaves a direction untouched, so only direction d is
+  // transformed and the other directions stay nodal.
+  const Matrix identity{};
+  for (size_t d = 0; d < Dim; ++d) {
+    auto matrices = make_array<Dim>(std::cref(identity));
+    gsl::at(matrices, d) =
+        std::cref(Spectral::nodal_to_modal_matrix(mesh.slice_through(d)));
+    const DataVector modal_along_d =
+        apply_matrices(matrices, u, mesh.extents());
+    const size_t number_of_modes = mesh.extents(d);
+    const size_t number_of_lines = mesh.extents().slice_away(d).product();
+    DataVector& power = gsl::at(*result, d);
+    power.destructive_resize(number_of_modes);
+    for (size_t k = 0; k < number_of_modes; ++k) {
+      double sum_of_squares = 0.0;
+      for (SliceIterator si(mesh.extents(), d, k); si; ++si) {
+        sum_of_squares += square(modal_along_d[si.volume_offset()]);
+      }
+      power[k] = sqrt(sum_of_squares / static_cast<double>(number_of_lines));
+    }
+  }
+}
+
+template <size_t Dim>
+std::array<DataVector, Dim> directional_power_monitors(const DataVector& u,
+                                                       const Mesh<Dim>& mesh) {
+  std::array<DataVector, Dim> result{};
+  directional_power_monitors(make_not_null(&result), u, mesh);
   return result;
 }
 
@@ -520,6 +571,17 @@ ConvergenceInfo convergence_rate_and_number_of_pile_up_modes(
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (DataVector, ComplexDataVector),
                         (1, 2, 3))
 
+#undef INSTANTIATE
+#undef DIM
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(_, data)                                             \
+  template void directional_power_monitors(                              \
+      gsl::not_null<std::array<DataVector, DIM(data)>*> result,          \
+      const DataVector& u, const Mesh<DIM(data)>& mesh);                 \
+  template std::array<DataVector, DIM(data)> directional_power_monitors( \
+      const DataVector& u, const Mesh<DIM(data)>& mesh);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 #undef DIM
 
