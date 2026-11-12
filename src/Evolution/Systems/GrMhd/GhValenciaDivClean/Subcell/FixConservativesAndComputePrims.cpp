@@ -9,6 +9,8 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
@@ -26,19 +28,21 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean::subcell {
-template <typename OrderedListOfRecoverySchemes, typename System>
-void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes, System>::
+template <typename OrderedListOfRecoverySchemes, typename System,
+          typename CoordinatesTag>
+void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes, System,
+                                     CoordinatesTag>::
     apply(const gsl::not_null<bool*> needed_fixing,
           const gsl::not_null<typename System::variables_tag::type*>
               conserved_vars_ptr,
           const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
               primitive_vars_ptr,
-          const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
+          const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
           const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
           const EquationsOfState::EquationOfState<true, 3>& eos,
           const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
               primitive_from_conservative_options) {
-  CAPTURE_FOR_ERROR(subcell_coords);
+  CAPTURE_FOR_ERROR(inertial_coords);
   const auto& cons_vars = *conserved_vars_ptr;
   CAPTURE_FOR_ERROR(cons_vars);
   // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
@@ -119,14 +123,19 @@ using KastaunThenNewmanThenPalenzuela =
     tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
                ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
                ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
+using SubcellInertialCoords =
+    evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>;
+using DgInertialCoords = domain::Tags::Coordinates<3, Frame::Inertial>;
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define COORDS(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATION(r, data)                     \
-  template struct FixConservativesAndComputePrims< \
-      RECOVERY(data), GhValenciaDivClean::System<NEUTRINO(data)>>;
+#define INSTANTIATION(r, data)                                    \
+  template struct FixConservativesAndComputePrims<                \
+      RECOVERY(data), GhValenciaDivClean::System<NEUTRINO(data)>, \
+      COORDS(data)>;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
@@ -134,9 +143,10 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    GHMHD_NEUTRINOS)
+    GHMHD_NEUTRINOS, (SubcellInertialCoords, DgInertialCoords))
 
 #undef INSTANTIATION
+#undef COORDS
 #undef RECOVERY
 #undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::subcell

@@ -267,7 +267,8 @@ struct EvolutionMetavars {
       Actions::MutateApply<ChangeTimeStepperOrder<system>>,
       tmpl::conditional_t<use_dg_subcell,
                           evolution::dg::subcell::Actions::TciAndRollback<
-                              ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
+                              ScalarAdvection::subcell::TciOnDgGrid<Dim>,
+                              tmpl::list<>>,
                           tmpl::list<>>,
       Actions::MutateApply<CleanHistory<system>>,
       Actions::MutateApply<evolution::dg::CleanMortarHistory<volume_dim>>,

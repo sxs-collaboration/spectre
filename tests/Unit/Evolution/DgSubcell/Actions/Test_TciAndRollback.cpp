@@ -4,9 +4,14 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <memory>
+#include <optional>
+#include <ostream>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -125,7 +130,8 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  evolution::dg::subcell::Actions::TciAndRollback<
-                     typename Metavariables::TciOnDgGrid>,
+                     typename Metavariables::TciOnDgGrid,
+                     typename Metavariables::DgOnlyMutators>,
                  Actions::Label<DummyLabel<0>>,
                  Actions::Label<evolution::dg::subcell::Actions::Labels::
                                     BeginSubcellAfterDgRollback>,
@@ -149,6 +155,8 @@ struct Metavariables {
   static bool tci_fails;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool tci_invoked;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static size_t number_of_dg_only_mutator_calls;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool expected_evolve_on_dg_after_tci_failure;
 
@@ -214,6 +222,41 @@ struct Metavariables {
       return {decision, std::move(rdmp_data)};
     }
   };
+
+  // Stand in for fixing the evolved variables and then computing the
+  // primitive variables from them, which the TCI does on elements that can
+  // use subcell. The primitives depend on the fixed variables, so the
+  // expected primitives are only obtained if the mutators are applied in
+  // order.
+  struct FixVars {
+    using return_tags = tmpl::list<::Tags::Variables<tmpl::list<Var1>>>;
+    using argument_tags = tmpl::list<>;
+
+    static void apply(const gsl::not_null<Variables<tmpl::list<Var1>>*> vars) {
+      ++number_of_dg_only_mutator_calls;
+      get(get<Var1>(*vars)) += 3.0;
+    }
+  };
+
+  struct ComputePrims {
+    using return_tags = tmpl::list<::Tags::Variables<tmpl::list<PrimVar1>>>;
+    using argument_tags = tmpl::list<::Tags::Variables<tmpl::list<Var1>>>;
+
+    static void apply(
+        const gsl::not_null<Variables<tmpl::list<PrimVar1>>*> prim_vars,
+        const Variables<tmpl::list<Var1>>& vars) {
+      ++number_of_dg_only_mutator_calls;
+      get(get<PrimVar1>(*prim_vars)) = 2.0 * get(get<Var1>(vars));
+    }
+  };
+
+  // Systems without primitive variables have nothing to do on DG-only
+  // elements (e.g. Burgers), so test an empty list for them.
+  using DgOnlyMutators =
+      tmpl::conditional_t<HasPrims, tmpl::list<FixVars, ComputePrims>,
+                          tmpl::list<>>;
+  static constexpr size_t number_of_dg_only_mutators =
+      tmpl::size<DgOnlyMutators>::value;
 };
 
 template <size_t Dim, bool HasPrims>
@@ -225,6 +268,9 @@ bool Metavariables<Dim, HasPrims>::tci_fails = false;
 template <size_t Dim, bool HasPrims>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim, HasPrims>::tci_invoked = false;
+template <size_t Dim, bool HasPrims>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+size_t Metavariables<Dim, HasPrims>::number_of_dg_only_mutator_calls = 0;
 template <size_t Dim, bool HasPrims>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim, HasPrims>::expected_evolve_on_dg_after_tci_failure =
@@ -266,12 +312,29 @@ class TestCreator : public DomainCreator<Dim> {
   }
 };
 
+// Which block, if any, is DG-only. The element is in Block0 and its
+// neighbors (if any) are in Block1, Block2, ...
+enum class DgOnlyBlock : uint8_t { None, Own, Neighbor };
+
+std::ostream& operator<<(std::ostream& os, const DgOnlyBlock dg_only_block) {
+  switch (dg_only_block) {
+    case DgOnlyBlock::None:
+      return os << "None";
+    case DgOnlyBlock::Own:
+      return os << "Own";
+    case DgOnlyBlock::Neighbor:
+      return os << "Neighbor";
+    default:
+      ERROR("Unknown DgOnlyBlock");
+  }
+}
+
 template <size_t Dim, bool HasPrims>
 void test_impl(const bool rdmp_fails, const bool tci_fails,
                const bool always_use_subcell, const bool self_starting,
                const bool with_neighbors, const bool use_halo,
                const bool neighbor_is_troubled,
-               const bool disable_subcell_in_block) {
+               const DgOnlyBlock dg_only_block) {
   CAPTURE(Dim);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
@@ -280,16 +343,15 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(with_neighbors);
   CAPTURE(use_halo);
   CAPTURE(neighbor_is_troubled);
-  CAPTURE(disable_subcell_in_block);
+  CAPTURE(dg_only_block);
 
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
   metavars::tci_invoked = false;
+  metavars::number_of_dg_only_mutator_calls = 0;
 
-  // Sets neighboring block "Block1" to DG-only, if disable_subcell_in_block ==
-  // true.
   using comp = component<Dim, metavars>;
   const evolution::dg::subcell::SubcellOptions subcell_options{
       4.0,
@@ -306,9 +368,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       1};
   const std::vector<size_t> only_dg_block_ids =
       evolution::dg::compute_only_dg_block_ids(
-          disable_subcell_in_block
-              ? std::optional{std::vector<std::string>{"Block1"}}
-              : std::optional<std::vector<std::string>>{},
+          dg_only_block == DgOnlyBlock::None
+              ? std::optional<std::vector<std::string>>{}
+              : std::optional{std::vector<std::string>{
+                    dg_only_block == DgOnlyBlock::Own ? "Block0" : "Block1"}},
           TestCreator<Dim>{});
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -352,20 +415,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
                                    (2.0 * direction.dimension() + 1.0));
     }
   }
-  // test FD/DG element neighbor disable_subcell_in_block
-  const bool bordering_dg_block = alg::any_of(
-      element.neighbors(),
-      [&only_dg_block_ids](const auto& direction_and_neighbor) {
-        const size_t first_block_id =
-            direction_and_neighbor.second.ids().begin()->block_id();
-        return alg::found(only_dg_block_ids, first_block_id);
-      });
-
-  const bool self_block_dg_only =
-      alg::found(only_dg_block_ids, element.id().block_id());
-
+  // Subcell is not allowed in DG-only blocks or in elements bordering them.
   const bool subcell_allowed_in_element =
-      not self_block_dg_only and not bordering_dg_block;
+      dg_only_block == DgOnlyBlock::None or
+      (dg_only_block == DgOnlyBlock::Neighbor and not with_neighbors);
 
   // When subcell is not allowed, the TCI is skipped entirely (early return),
   // so evolve_on_dg_after_tci_failure is never checked.  When subcell IS
@@ -480,9 +533,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           runner, 0));
 
   const bool expected_rollback =
-      with_neighbors and ((always_use_subcell or rdmp_fails or tci_fails or
-                           (use_halo and neighbor_is_troubled)) and
-                          not disable_subcell_in_block);
+      with_neighbors and subcell_allowed_in_element and
+      (always_use_subcell or rdmp_fails or tci_fails or
+       (use_halo and neighbor_is_troubled));
 
   if (expected_rollback) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
@@ -601,7 +654,12 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
             original_record);
     }
 
-    CHECK(active_vars_from_box == evolved_vars);
+    // The DG-only mutators (if any) fix the evolved variables.
+    Variables<evolved_vars_tags> expected_evolved_vars = evolved_vars;
+    if (HasPrims and not subcell_allowed_in_element) {
+      get(get<Var1>(expected_evolved_vars)) += 3.0;
+    }
+    CHECK(active_vars_from_box == expected_evolved_vars);
     if (self_starting) {
       CHECK(initial_value_evolved_vars_from_box == initial_value_evolved_vars);
       if constexpr (HasPrims) {
@@ -624,6 +682,24 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const int expected_tci_decision =
       subcell_allowed_in_element ? (rdmp_fails ? 10 : (tci_fails ? 5 : 0)) : 0;
   CHECK(metavars::tci_invoked == subcell_allowed_in_element);
+  // Each DG-only mutator is applied exactly once, and only if the TCI isn't.
+  CHECK(
+      metavars::number_of_dg_only_mutator_calls ==
+      (subcell_allowed_in_element ? 0 : metavars::number_of_dg_only_mutators));
+  if constexpr (HasPrims) {
+    const auto& prim_vars_from_box =
+        ActionTesting::get_databox_tag<comp, ::Tags::Variables<prim_vars_tags>>(
+            runner, 0);
+    if (subcell_allowed_in_element) {
+      // The mock TCI doesn't compute the primitives, so they are unchanged.
+      CHECK(prim_vars_from_box == prim_vars);
+    } else {
+      // The primitives are computed from the fixed evolved variables, which
+      // checks that the mutators are applied in order.
+      CHECK(get(get<PrimVar1>(prim_vars_from_box)) ==
+            DataVector{2.0 * (get(get<Var1>(evolved_vars)) + 3.0)});
+    }
+  }
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::TciDecision>(
@@ -634,17 +710,132 @@ template <size_t Dim>
 void test() {
   for (const auto& [rdmp_fails, tci_fails, always_use_subcell, self_starting,
                     have_neighbors, use_halo, neighbor_is_troubled,
-                    disable_subcell_in_block] :
+                    dg_only_block] :
        cartesian_product(make_array(false, true), make_array(false, true),
                          make_array(false, true), make_array(false, true),
                          make_array(false, true), make_array(false, true),
-                         make_array(false, true), make_array(false, true))) {
+                         make_array(false, true),
+                         make_array(DgOnlyBlock::None, DgOnlyBlock::Own,
+                                    DgOnlyBlock::Neighbor))) {
     test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
                          self_starting, have_neighbors, use_halo,
-                         neighbor_is_troubled, disable_subcell_in_block);
+                         neighbor_is_troubled, dg_only_block);
     test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
                           self_starting, have_neighbors, use_halo,
-                          neighbor_is_troubled, disable_subcell_in_block);
+                          neighbor_is_troubled, dg_only_block);
+  }
+}
+
+// Elements whose DG mesh does not support subcell (e.g. spherical shells) are
+// never in the DG-only block list, but must still skip the TCI and apply the
+// DG-only mutators instead, even if subcell would otherwise be forced.
+template <size_t Dim, bool HasPrims>
+void test_nonhypercube_mesh() {
+  CAPTURE(Dim);
+  CAPTURE(HasPrims);
+  using metavars = Metavariables<Dim, HasPrims>;
+  using comp = component<Dim, metavars>;
+  metavars::tci_invoked = false;
+  metavars::number_of_dg_only_mutator_calls = 0;
+
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      4.0,
+      1_st,
+      1.0e-3,
+      1.0e-4,
+      true,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      true,
+      ::fd::DerivativeOrder::Two,
+      1,
+      1,
+      1};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {subcell_options, std::vector<size_t>{}}};
+
+  const Mesh<Dim> dg_mesh{4, Spectral::Basis::SphericalHarmonic,
+                          Spectral::Quadrature::Gauss};
+  REQUIRE_FALSE(evolution::dg::subcell::fd::dg_mesh_supports_subcell(dg_mesh));
+  const size_t num_pts = dg_mesh.number_of_grid_points();
+  const Element<Dim> element = create_element<Dim>(true);
+
+  using GhostData = evolution::dg::subcell::GhostData;
+  DirectionalIdMap<Dim, GhostData> ghost_data{};
+  ghost_data[DirectionalId<Dim>{Direction<Dim>::lower_xi(),
+                                ElementId<Dim>{1}}] = GhostData{1};
+  typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+      neighbor_decisions{};
+  neighbor_decisions.insert(std::pair{
+      DirectionalId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{1}}, 10});
+  const evolution::dg::subcell::RdmpTciData rdmp_tci_data{
+      .max_variables_values = {2.0}, .min_variables_values = {-2.0}};
+
+  Variables<tmpl::list<Var1>> evolved_vars{num_pts};
+  alg::iota(get(get<Var1>(evolved_vars)), 1.0);
+  const Variables<tmpl::list<PrimVar1>> prim_vars{num_pts, 1000.0};
+
+  const TimeStepId time_step_id{false, 1, Slab{1.0, 2.0}.end()};
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const auto active_grid = evolution::dg::subcell::ActiveGrid::Dg;
+  const bool did_rollback = false;
+  const int tci_decision = -1;
+  const TimeSteppers::History<Variables<tmpl::list<Var1>>> history{1};
+  const Variables<tmpl::list<Var1>> initial_value_evolved_vars{num_pts, 1.0e8};
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  if constexpr (HasPrims) {
+    ActionTesting::emplace_array_component_and_initialize<comp>(
+        &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
+        {std::make_unique<DummyReconstructor>(), time_step_id, dg_mesh,
+         subcell_mesh, element, active_grid, did_rollback, ghost_data,
+         tci_decision, rdmp_tci_data, DirectionalIdMap<Dim, Mesh<Dim>>{},
+         evolved_vars, history, initial_value_evolved_vars, neighbor_decisions,
+         Interps{}, prim_vars,
+         Variables<tmpl::list<PrimVar1>>{num_pts, 1.0e10}});
+  } else {
+    (void)prim_vars;
+    ActionTesting::emplace_array_component_and_initialize<comp>(
+        &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
+        {std::make_unique<DummyReconstructor>(), time_step_id, dg_mesh,
+         subcell_mesh, element, active_grid, did_rollback, ghost_data,
+         tci_decision, rdmp_tci_data, DirectionalIdMap<Dim, Mesh<Dim>>{},
+         evolved_vars, history, initial_value_evolved_vars, neighbor_decisions,
+         Interps{}});
+  }
+  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+
+  CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 2);
+  CHECK_FALSE(metavars::tci_invoked);
+  CHECK(metavars::number_of_dg_only_mutator_calls ==
+        metavars::number_of_dg_only_mutators);
+  CHECK(
+      ActionTesting::get_databox_tag<comp,
+                                     evolution::dg::subcell::Tags::ActiveGrid>(
+          runner, 0) == evolution::dg::subcell::ActiveGrid::Dg);
+  CHECK_FALSE(ActionTesting::get_databox_tag<
+              comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) == 0);
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
+        rdmp_tci_data);
+  CHECK(
+      ActionTesting::get_databox_tag<
+          comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+          runner, 0)
+          .empty());
+  const auto& vars_from_box =
+      ActionTesting::get_databox_tag<comp, ::Tags::Variables<tmpl::list<Var1>>>(
+          runner, 0);
+  if constexpr (HasPrims) {
+    CHECK(get(get<Var1>(vars_from_box)) ==
+          DataVector{get(get<Var1>(evolved_vars)) + 3.0});
+    CHECK(get(get<PrimVar1>(
+              ActionTesting::get_databox_tag<
+                  comp, ::Tags::Variables<tmpl::list<PrimVar1>>>(runner, 0))) ==
+          DataVector{2.0 * (get(get<Var1>(evolved_vars)) + 3.0)});
+  } else {
+    CHECK(vars_from_box == evolved_vars);
   }
 }
 
@@ -663,8 +854,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndRollback",
   // - active_grid is correct
   // - did_rollback is correct
   // - if self-start check initial value (and prims) were projected
+  // - DG-only elements (DG-only block, bordering a DG-only block, or a mesh
+  //   that doesn't support subcell) skip the TCI and apply the DG-only
+  //   mutators, in order
   test<1>();
   test<2>();
   test<3>();
+  test_nonhypercube_mesh<1, true>();
+  test_nonhypercube_mesh<1, false>();
+  test_nonhypercube_mesh<2, true>();
+  test_nonhypercube_mesh<2, false>();
+  test_nonhypercube_mesh<3, true>();
+  test_nonhypercube_mesh<3, false>();
 }
 }  // namespace
