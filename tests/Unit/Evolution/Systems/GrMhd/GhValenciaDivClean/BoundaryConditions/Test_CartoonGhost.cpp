@@ -368,11 +368,10 @@ void test_gh_fd_ghost_fluxes(const size_t ghost_zone_size) {
   const Approx flux_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
   tmpl::for_each<typename FluxVars::tags_list>(
       [&cell_centered_ghost_fluxes, &interior_fluxes, &ghost_zone_size,
-       &flux_approx](auto tag_v) {
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        check_all_ghost_layers(get<tag>(interior_fluxes),
-                               get<tag>(cell_centered_ghost_fluxes.value()),
-                               ghost_zone_size, pretty_type::name<tag>(),
+       &flux_approx]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        check_all_ghost_layers(get<Tag>(interior_fluxes),
+                               get<Tag>(cell_centered_ghost_fluxes.value()),
+                               ghost_zone_size, pretty_type::name<Tag>(),
                                flux_approx);
       });
 }

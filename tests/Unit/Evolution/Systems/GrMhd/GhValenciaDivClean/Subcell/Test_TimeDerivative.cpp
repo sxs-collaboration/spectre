@@ -128,14 +128,6 @@ struct DummyEvolutionMetaVars {
   };
 };
 
-template <bool aligned>
-using CoordinateMap = tmpl::conditional_t<
-    aligned,
-    domain::CoordinateMaps::ProductOf3Maps<domain::CoordinateMaps::Affine,
-                                           domain::CoordinateMaps::Affine,
-                                           domain::CoordinateMaps::Affine>,
-    domain::CoordinateMaps::Frustum>;
-
 template <SolutionKind Kind>
 struct SolutionTraits;
 template <>
@@ -161,7 +153,7 @@ typename SolutionTraits<Kind>::type make_solution() {
   }
 }
 
-template <typename System, bool aligned_coordinates, SolutionKind Kind,
+template <typename System, bool AlignedCoordinates, SolutionKind Kind,
           typename ErrorTagsList>
 std::array<double, tmpl::size<ErrorTagsList>::value> test(
     const size_t num_dg_pts, const ::fd::DerivativeOrder fd_derivative_order,
@@ -171,34 +163,36 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
   static_assert(
       computing_grmhd_errors or std::is_same_v<ErrorTagsList, GhErrorTags>,
       "ErrorTagsList must be either GrmhdErrorTags or GhErrorTags");
-  CoordinateMap<aligned_coordinates> coordinate_map;
-  ElementId<3> element_id{};
-  if constexpr (aligned_coordinates) {
-    using Affine = domain::CoordinateMaps::Affine;
-    using Affine3D =
-        domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-    if constexpr (Kind == SolutionKind::BondiMichel) {
-      const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
-      coordinate_map = Affine3D{affine_map, affine_map, affine_map};
-      element_id =
-          ElementId<3>{0, {SegmentId{2, 1}, SegmentId{2, 1}, SegmentId{2, 1}}};
+  const auto [coordinate_map, element_id] = []() {
+    if constexpr (AlignedCoordinates) {
+      using Affine = domain::CoordinateMaps::Affine;
+      using Affine3D =
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+      if constexpr (Kind == SolutionKind::BondiMichel) {
+        const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
+        return std::pair{
+            Affine3D{affine_map, affine_map, affine_map},
+            ElementId<3>{0,
+                         {SegmentId{2, 1}, SegmentId{2, 1}, SegmentId{2, 1}}}};
+      } else {
+        const Affine affine_map{-1.0, 1.0, -4.0, 4.0};
+        return std::pair{
+            Affine3D{affine_map, affine_map, affine_map},
+            ElementId<3>{0,
+                         {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}}};
+      }
     } else {
-      const Affine affine_map{-1.0, 1.0, -4.0, 4.0};
-      coordinate_map = Affine3D{affine_map, affine_map, affine_map};
-      element_id =
-          ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}};
+      // Only BondiMichel is run on a non-aligned element: the high-order flux
+      // corrections the non-aligned geometry exercises are GRMHD-only, and
+      // TovStar here measures the GH variables.
+      const std::array<std::array<double, 2>, 4> face_vertices{
+          {{{-5., -5.}}, {{5., 5.}}, {{-3., -3.}}, {{3., 3.}}}};
+      return std::pair{
+          domain::CoordinateMaps::Frustum(face_vertices, -2., 4.,
+                                          OrientationMap<3>::create_aligned()),
+          ElementId<3>{0, {SegmentId{3, 2}, SegmentId{3, 2}, SegmentId{3, 2}}}};
     }
-  } else {
-    // Only BondiMichel is run on a non-aligned element: the high-order flux
-    // corrections the non-aligned geometry exercises are GRMHD-only, and
-    // TovStar here measures the GH variables.
-    const std::array<std::array<double, 2>, 4> face_vertices{
-        {{{-5., -5.}}, {{5., 5.}}, {{-3., -3.}}, {{3., 3.}}}};
-    coordinate_map = domain::CoordinateMaps::Frustum(
-        face_vertices, -2., 4., OrientationMap<3>::create_aligned());
-    element_id =
-        ElementId<3>{0, {SegmentId{3, 2}, SegmentId{3, 2}, SegmentId{3, 2}}};
-  }
+  }();
 
   const auto soln = make_solution<Kind>();
   std::vector<DirectionMap<
@@ -431,25 +425,25 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
           neighbor_mesh_velocity.get(i) =
               neighbor_coords.get(i) * expansion_velocity.value();
         }
-        tmpl::for_each<evolved_vars_tags>([&neighbor_cons, &neighbor_fluxes,
-                                           &neighbor_mesh_velocity](
-                                              auto tag_v) {
-          using tag = tmpl::type_from<decltype(tag_v)>;
-          using flux_tag = ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
-          using FluxTensor = typename flux_tag::type;
-          const auto& var = get<tag>(neighbor_cons);
-          auto& flux = get<flux_tag>(neighbor_fluxes);
-          for (size_t storage_index = 0; storage_index < var.size();
-               ++storage_index) {
-            const auto tensor_index = var.get_tensor_index(storage_index);
-            for (size_t i = 0; i < 3; i++) {
-              const auto flux_storage_index =
-                  FluxTensor::get_storage_index(prepend(tensor_index, i));
-              flux[flux_storage_index] -=
-                  var[storage_index] * neighbor_mesh_velocity.get(i);
-            }
-          }
-        });
+        tmpl::for_each<evolved_vars_tags>(
+            [&neighbor_cons, &neighbor_fluxes,
+             &neighbor_mesh_velocity]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+              using flux_tag =
+                  ::Tags::Flux<Tag, tmpl::size_t<3>, Frame::Inertial>;
+              using FluxTensor = typename flux_tag::type;
+              const auto& var = get<Tag>(neighbor_cons);
+              auto& flux = get<flux_tag>(neighbor_fluxes);
+              for (size_t storage_index = 0; storage_index < var.size();
+                   ++storage_index) {
+                const auto tensor_index = var.get_tensor_index(storage_index);
+                for (size_t i = 0; i < 3; i++) {
+                  const auto flux_storage_index =
+                      FluxTensor::get_storage_index(prepend(tensor_index, i));
+                  flux[flux_storage_index] -=
+                      var[storage_index] * neighbor_mesh_velocity.get(i);
+                }
+              }
+            });
       }
     }
     Variables<prims_to_reconstruct_tags> prims_to_reconstruct{
@@ -525,25 +519,25 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
     if (expansion_velocity.has_value()) {
       using evolved_vars_tags =
           typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
-      tmpl::for_each<evolved_vars_tags>([&cell_centered_cons_vars,
-                                         &cell_centered_fluxes,
-                                         &subcell_mesh_velocity](auto tag_v) {
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        using flux_tag = ::Tags::Flux<tag, tmpl::size_t<3>, Frame::Inertial>;
-        using FluxTensor = typename flux_tag::type;
-        const auto& var = get<tag>(cell_centered_cons_vars);
-        auto& flux = get<flux_tag>(cell_centered_fluxes.value());
-        for (size_t storage_index = 0; storage_index < var.size();
-             ++storage_index) {
-          const auto tensor_index = var.get_tensor_index(storage_index);
-          for (size_t i = 0; i < 3; i++) {
-            const auto flux_storage_index =
-                FluxTensor::get_storage_index(prepend(tensor_index, i));
-            flux[flux_storage_index] -=
-                var[storage_index] * subcell_mesh_velocity.value().get(i);
-          }
-        }
-      });
+      tmpl::for_each<evolved_vars_tags>(
+          [&cell_centered_cons_vars, &cell_centered_fluxes,
+           &subcell_mesh_velocity]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+            using flux_tag =
+                ::Tags::Flux<Tag, tmpl::size_t<3>, Frame::Inertial>;
+            using FluxTensor = typename flux_tag::type;
+            const auto& var = get<Tag>(cell_centered_cons_vars);
+            auto& flux = get<flux_tag>(cell_centered_fluxes.value());
+            for (size_t storage_index = 0; storage_index < var.size();
+                 ++storage_index) {
+              const auto tensor_index = var.get_tensor_index(storage_index);
+              for (size_t i = 0; i < 3; i++) {
+                const auto flux_storage_index =
+                    FluxTensor::get_storage_index(prepend(tensor_index, i));
+                flux[flux_storage_index] -=
+                    var[storage_index] * subcell_mesh_velocity.value().get(i);
+              }
+            }
+          });
     }
   }
   auto box = db::create<
@@ -660,15 +654,15 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
     tmpl::for_each<ErrorTagsList>(
         [&box, &subcell_mesh, &expansion_velocity, &cell_centered_coords,
          &cell_centered_logical_to_inertial_inv_jacobian,
-         &output_minus_expected_dt_vars, &dt_vars](auto var_tag_v) {
-          using var_tag = tmpl::type_from<decltype(var_tag_v)>;
-          const auto& var = get<var_tag>(box);
+         &output_minus_expected_dt_vars,
+         &dt_vars]<typename VarTag>(tmpl::type_<VarTag> /*meta*/) {
+          const auto& var = get<VarTag>(box);
           const auto deriv_var = partial_derivative(
               var, subcell_mesh,
               cell_centered_logical_to_inertial_inv_jacobian);
           auto& output_minus_expected_dt_var =
-              get<var_tag>(output_minus_expected_dt_vars);
-          const auto& output_dt_var = get<::Tags::dt<var_tag>>(dt_vars);
+              get<VarTag>(output_minus_expected_dt_vars);
+          const auto& output_dt_var = get<::Tags::dt<VarTag>>(dt_vars);
           for (size_t i = 0; i < output_minus_expected_dt_var.size(); ++i) {
             output_minus_expected_dt_var[i] = output_dt_var[i];
             if (expansion_velocity.has_value()) {
@@ -700,15 +694,15 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
 
     tmpl::for_each<ErrorTagsList>([&expansion_velocity, &cell_centered_coords,
                                    &output_minus_expected_dt_vars, &dt_vars,
-                                   &cell_centered_gh_derivs](auto var_tag_v) {
-      using var_tag = tmpl::type_from<decltype(var_tag_v)>;
-      using grad_tag = ::Tags::deriv<var_tag, tmpl::size_t<3>, Frame::Inertial>;
+                                   &cell_centered_gh_derivs]<typename VarTag>(
+                                      tmpl::type_<VarTag> /*meta*/) {
+      using grad_tag = ::Tags::deriv<VarTag, tmpl::size_t<3>, Frame::Inertial>;
       using FluxTensor = typename grad_tag::type;
       const auto& deriv_var = get<grad_tag>(cell_centered_gh_derivs);
 
       auto& output_minus_expected_dt_var =
-          get<var_tag>(output_minus_expected_dt_vars);
-      const auto& output_dt_var = get<::Tags::dt<var_tag>>(dt_vars);
+          get<VarTag>(output_minus_expected_dt_vars);
+      const auto& output_dt_var = get<::Tags::dt<VarTag>>(dt_vars);
       for (size_t i = 0; i < output_minus_expected_dt_var.size(); ++i) {
         output_minus_expected_dt_var[i] = output_dt_var[i];
         if (expansion_velocity.has_value()) {
@@ -728,10 +722,10 @@ std::array<double, tmpl::size<ErrorTagsList>::value> test(
   std::array<double, tmpl::size<ErrorTagsList>::value> results{};
   size_t result_index = 0;
   tmpl::for_each<ErrorTagsList>([&output_minus_expected_dt_vars, &results,
-                                 &result_index](auto tag_v) {
-    using tag = tmpl::type_from<decltype(tag_v)>;
+                                 &result_index]<typename Tag>(
+                                    tmpl::type_<Tag> /*meta*/) {
     gsl::at(results, result_index) =
-        max(get(pointwise_l2_norm(get<tag>(output_minus_expected_dt_vars))));
+        max(get(pointwise_l2_norm(get<Tag>(output_minus_expected_dt_vars))));
     ++result_index;
   });
   return results;

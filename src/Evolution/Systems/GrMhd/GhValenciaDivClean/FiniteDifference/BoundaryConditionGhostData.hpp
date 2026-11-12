@@ -118,9 +118,10 @@ void BoundaryConditionGhostData<System>::apply(
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
   size_t num_prims_tensor_components = 0;
-  tmpl::for_each<reconstruction_tags>([&num_prims_tensor_components](auto tag) {
-    num_prims_tensor_components += tmpl::type_from<decltype(tag)>::type::size();
-  });
+  tmpl::for_each<reconstruction_tags>(
+      [&num_prims_tensor_components]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+        num_prims_tensor_components += Tag::type::size();
+      });
 
   using flux_variables = typename System::flux_variables;
   const bool compute_cell_centered_flux =

@@ -192,9 +192,6 @@ void test(const BoundaryConditionType& boundary_condition,
       subcell_inertial_coords, time,
       tmpl::append<typename System::spacetime_variables_tag::tags_list,
                    typename System::primitive_variables_tag::tags_list>{}));
-  for (size_t i = 0; i < 3; ++i) {
-    get<gr::Tags::Shift<DataVector, 3>>(volume_vars).get(i) = -2.0;
-  }
 
   std::optional<tnsr::I<DataVector, 3>> volume_mesh_velocity{};
 
@@ -393,13 +390,14 @@ void test(const BoundaryConditionType& boundary_condition,
             expected_neighbor_fluxes{get(rest_mass_density).size()};
         grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
             make_not_null(&expected_neighbor_fluxes), boundary_data);
-        tmpl::for_each<cons_tags>([&fd_ghost_fluxes,
-                                   &expected_neighbor_fluxes](auto cons_tag_v) {
-          using tag = Flux<tmpl::type_from<std::decay_t<decltype(cons_tag_v)>>>;
-          CAPTURE(pretty_type::get_name<tag>());
-          CHECK_ITERABLE_APPROX(get<tag>(fd_ghost_fluxes),
-                                get<tag>(expected_neighbor_fluxes));
-        });
+        tmpl::for_each<cons_tags>(
+            [&fd_ghost_fluxes, &expected_neighbor_fluxes]<typename ConsTag>(
+                tmpl::type_<ConsTag> /*meta*/) {
+              using tag = Flux<ConsTag>;
+              CAPTURE(pretty_type::get_name<tag>());
+              CHECK_ITERABLE_APPROX(get<tag>(fd_ghost_fluxes),
+                                    get<tag>(expected_neighbor_fluxes));
+            });
       };
 
   //
@@ -473,8 +471,8 @@ void test(const BoundaryConditionType& boundary_condition,
     }
   }
 
-  if (typeid(BoundaryConditionType) ==
-      typeid(BoundaryConditions::DirichletFreeOutflow<System>)) {
+  if (std::is_same_v<BoundaryConditionType,
+                     BoundaryConditions::DirichletFreeOutflow<System>>) {
     const size_t num_ghost_pts = ghost_zone_size * num_face_pts;
 
     const auto ghost_logical_coords =
@@ -502,11 +500,11 @@ void test(const BoundaryConditionType& boundary_condition,
     tmpl::for_each<tmpl::list<RestMassDensity, ElectronFraction, Temperature,
                               LorentzFactorTimesSpatialVelocity, MagneticField,
                               DivergenceCleaningField>>(
-        [&expected_ghost_vars, &fd_ghost_vars](auto tag_v) {
-          using tag = tmpl::type_from<decltype(tag_v)>;
-          CAPTURE(pretty_type::get_name<tag>());
-          CHECK_ITERABLE_APPROX(get<tag>(fd_ghost_vars),
-                                get<tag>(expected_ghost_vars));
+        [&expected_ghost_vars,
+         &fd_ghost_vars]<typename Tag>(tmpl::type_<Tag> /*meta*/) {
+          CAPTURE(pretty_type::get_name<Tag>());
+          CHECK_ITERABLE_APPROX(get<Tag>(fd_ghost_vars),
+                                get<Tag>(expected_ghost_vars));
         });
 
     if (set_fluxes) {
@@ -527,13 +525,13 @@ void test(const BoundaryConditionType& boundary_condition,
       Variables<metric_tags> ghost_metric{num_ghost_pts};
       tmpl::for_each<metric_tags>([&ghost_metric, &outermost_metric,
                                    &ghost_zone_size,
-                                   &num_face_pts](auto tag_v) {
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        for (size_t comp = 0; comp < get<tag>(ghost_metric).size(); ++comp) {
+                                   &num_face_pts]<typename Tag>(
+                                      tmpl::type_<Tag> /*meta*/) {
+        for (size_t comp = 0; comp < get<Tag>(ghost_metric).size(); ++comp) {
           for (size_t face = 0; face < num_face_pts; ++face) {
             for (size_t i_ghost = 0; i_ghost < ghost_zone_size; ++i_ghost) {
-              get<tag>(ghost_metric)[comp][i_ghost + ghost_zone_size * face] =
-                  get<tag>(outermost_metric)[comp][face];
+              get<Tag>(ghost_metric)[comp][i_ghost + ghost_zone_size * face] =
+                  get<Tag>(outermost_metric)[comp][face];
             }
           }
         }
