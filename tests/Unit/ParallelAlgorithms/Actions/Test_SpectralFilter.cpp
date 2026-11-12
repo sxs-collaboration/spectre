@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -32,7 +33,11 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SpectralFilter.hpp"
+#include "Time/Slab.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
+#include "Time/Tags/TimeStepId.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -160,6 +165,7 @@ using InvJacTag =
 using JacTag = domain::Tags::Jacobian<1, Frame::Grid, Frame::Inertial>;
 using FilterTag = Filters::Tags::SpectralFilter<1, tmpl::list<ScalarFieldTag>>;
 using StepTag = ::Tags::StepNumberWithinSlab;
+using NextTimeStepIdTag = ::Tags::Next<::Tags::TimeStepId>;
 using MeshTag = domain::Tags::Mesh<1>;
 using ElementTag = domain::Tags::Element<1>;
 
@@ -172,9 +178,9 @@ struct ElementArray {
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<
                      Parallel::Phase::Initialization,
-                     tmpl::list<ActionTesting::InitializeDataBox<
-                         tmpl::list<VarsTag, MeshTag, ElementTag, StepTag,
-                                    FilterTag, InvJacTag, JacTag>>>>,
+                     tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+                         VarsTag, MeshTag, ElementTag, StepTag, FilterTag,
+                         InvJacTag, JacTag, NextTimeStepIdTag>>>>,
                  Parallel::PhaseActions<Parallel::Phase::Testing,
                                         tmpl::list<dg::Actions::SpectralFilter<
                                             1, tmpl::list<ScalarFieldTag>>>>>;
@@ -196,8 +202,16 @@ Jacobian<DataVector, 1, Frame::Grid, Frame::Inertial> make_identity_jac() {
 
 template <typename Filter, typename Callback>
 void run_action(std::unique_ptr<Filter> filter_ptr, const double initial_value,
-                const uint64_t step_number, Callback&& callback) {
+                const uint64_t step_number, Callback&& callback,
+                const bool step_complete = true) {
   using element_array = ElementArray<Metavariables>;
+  const Slab slab{0.0, 1.0};
+  const TimeStepId step_start{true, 0, slab.start()};
+  // The action runs after UpdateU and before AdvanceTime, so the next ID
+  // identifies whether the updated solution completes the step.
+  const TimeStepId next_time_step_id =
+      step_complete ? step_start.next_step(slab.duration())
+                    : step_start.next_substep(slab.duration(), 0.5);
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, 0,
@@ -206,7 +220,7 @@ void run_action(std::unique_ptr<Filter> filter_ptr, const double initial_value,
                Spectral::Quadrature::GaussLobatto},
        Element<1>{ElementId<1>{0}, {}, domain::topologies::hypercube<1>},
        step_number, std::unique_ptr<FilterBase>(std::move(filter_ptr)),
-       make_identity_inv_jac(), make_identity_jac()});
+       make_identity_inv_jac(), make_identity_jac(), next_time_step_id});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
   std::forward<Callback>(callback)(runner);
@@ -265,6 +279,32 @@ void test_step_flag_applies_filter() {
              });
 }
 
+// A selected step must not cause filtering of intermediate RK stages unless
+// substep filtering is explicitly enabled. Keep the step number at zero to
+// reproduce the GTS case where every step is selected by the cadence check.
+void test_volume_filter_cadence() {
+  for (const bool step_complete : {false, true}) {
+    CAPTURE(step_complete);
+    for (const bool apply_substep : {false, true}) {
+      CAPTURE(apply_substep);
+      for (const bool apply_this_step : {false, true}) {
+        CAPTURE(apply_this_step);
+        const bool should_filter =
+            apply_substep or (step_complete and apply_this_step);
+        run_action(
+            std::make_unique<MockFilter>(apply_substep, apply_this_step,
+                                         /*need_jacs=*/false),
+            3.0, 0,
+            [should_filter](const auto& runner) {
+              CHECK(get_scalar_field(runner) ==
+                    DataVector(5, should_filter ? 6.0 : 3.0));
+            },
+            step_complete);
+      }
+    }
+  }
+}
+
 // Test: need_jacobians=true → Jacobians populated in apply_in_volume.
 void test_jacobians_passed_when_needed() {
   run_action(std::make_unique<MockFilter>(/*apply_substep=*/true,
@@ -316,6 +356,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Actions.SpectralFilter",
   test_no_gating_flags_skips();
   test_substep_flag_applies_filter();
   test_step_flag_applies_filter();
+  test_volume_filter_cadence();
   test_jacobians_passed_when_needed();
   test_jacobians_not_passed_when_not_needed();
   test_unsupported_mesh_errors();

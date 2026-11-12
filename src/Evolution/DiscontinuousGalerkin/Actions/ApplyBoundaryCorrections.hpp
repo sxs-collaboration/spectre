@@ -637,6 +637,7 @@ struct ApplyBoundaryCorrections {
                   ::Tags::TimeStep,
                   Filters::Tags::SpectralFilter<volume_dim, FilterTagList>,
                   ::Tags::StepNumberWithinSlab,
+                  ::Tags::Next<::Tags::TimeStepId>,
                   domain::Tags::Jacobian<volume_dim, Frame::Grid,
                                          Frame::Inertial>,
                   domain::Tags::InverseJacobian<volume_dim, Frame::Grid,
@@ -665,6 +666,7 @@ struct ApplyBoundaryCorrections {
       const TimeDelta& time_step,
       const Filters::Filter<volume_dim, FilterTagList>& boundary_filter,
       const uint64_t step_number_within_slab,
+      const TimeStepId& next_time_step_id,
       const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
           volume_jac_grid_to_inertial,
       const InverseJacobian<DataVector, volume_dim, Frame::Grid,
@@ -675,9 +677,9 @@ struct ApplyBoundaryCorrections {
                mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
                std::numeric_limits<double>::signaling_NaN(), &boundary_filter,
-               step_number_within_slab, volume_jac_grid_to_inertial,
-               volume_inv_jac_grid_to_inertial, gts_det_inv_jacobian,
-               volume_args...);
+               step_number_within_slab, next_time_step_id.substep() == 0,
+               volume_jac_grid_to_inertial, volume_inv_jac_grid_to_inertial,
+               gts_det_inv_jacobian, volume_args...);
   }
 
   // full step (LTS: local_time_stepping=true, DenseOutput=false)
@@ -699,6 +701,7 @@ struct ApplyBoundaryCorrections {
       const TimeDelta& time_step,
       const Filters::Filter<volume_dim, FilterTagList>& boundary_filter,
       const uint64_t step_number_within_slab,
+      const TimeStepId& next_time_step_id,
       const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
           volume_jac_grid_to_inertial,
       const InverseJacobian<DataVector, volume_dim, Frame::Grid,
@@ -708,8 +711,9 @@ struct ApplyBoundaryCorrections {
                mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
                std::numeric_limits<double>::signaling_NaN(), &boundary_filter,
-               step_number_within_slab, volume_jac_grid_to_inertial,
-               volume_inv_jac_grid_to_inertial, {}, volume_args...);
+               step_number_within_slab, next_time_step_id.substep() == 0,
+               volume_jac_grid_to_inertial, volume_inv_jac_grid_to_inertial, {},
+               volume_args...);
   }
 
   // dense output (LTS only, DenseOutput=true)
@@ -733,7 +737,7 @@ struct ApplyBoundaryCorrections {
         vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
         mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
         time_stepper, boundary_correction, TimeDelta{}, dense_output_time,
-        nullptr, static_cast<uint64_t>(0),
+        nullptr, static_cast<uint64_t>(0), false,
         Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>{},
         InverseJacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>{},
         {}, volume_args...);
@@ -770,7 +774,7 @@ struct ApplyBoundaryCorrections {
       const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step, const double dense_output_time,
       const Filters::Filter<volume_dim, FilterTagList>* const filter_ptr,
-      const uint64_t step_number_within_slab,
+      const uint64_t step_number_within_slab, const bool step_complete,
       const Jacobian<DataVector, volume_dim, Frame::Grid, Frame::Inertial>&
           volume_jac_grid_to_inertial,
       const InverseJacobian<DataVector, volume_dim, Frame::Grid,
@@ -812,7 +816,8 @@ struct ApplyBoundaryCorrections {
         const auto step_number = static_cast<size_t>(step_number_within_slab);
         boundary_filter_active =
             filter_ptr->apply_boundary_filter_on_substep() or
-            filter_ptr->apply_boundary_filter_on_this_step(step_number);
+            (step_complete and
+             filter_ptr->apply_boundary_filter_on_this_step(step_number));
       }
     }
 
