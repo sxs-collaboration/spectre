@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <vector>
 
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -60,6 +61,32 @@ void test_simple_sparse_matrix() {
 
   for (size_t i = 0; i < y.size(); ++i) {
     CHECK(y[i] == approx(yytest[2 + 3 * i]));
+  }
+
+  // Compare all offsets with separate scalar multiplies, including zero
+  // stride and the large-stride fallback.
+  for (size_t stride = 0; stride <= 33; ++stride) {
+    CAPTURE(stride);
+    // Offset the spans and leave sentinels on both sides of the used storage.
+    std::vector<double> source(6 * stride + 2);
+    std::vector<double> expected(5 * stride + 2);
+    for (size_t i = 0; i < source.size(); ++i) {
+      source[i] = 0.13 * static_cast<double>(i) - 1.7;
+    }
+    for (size_t i = 0; i < expected.size(); ++i) {
+      expected[i] = -0.017 * static_cast<double>(i) + 0.31;
+    }
+    auto actual = expected;
+    for (size_t offset = 0; offset < stride; ++offset) {
+      A.increment_multiply_on_right(make_not_null(&expected), offset + 1,
+                                    stride, source, offset + 1, stride);
+    }
+    const auto source_span =
+        gsl::make_span(source).subspan(1, source.size() - 2);
+    auto actual_span = gsl::make_span(actual).subspan(1, actual.size() - 2);
+    A.increment_multiply_on_right_all_offsets(make_not_null(&actual_span),
+                                              source_span, stride);
+    CHECK_ITERABLE_APPROX(actual, expected);
   }
 }
 }  // namespace
