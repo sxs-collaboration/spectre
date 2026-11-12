@@ -82,6 +82,7 @@ struct Parameters {
   size_t wedge_prism_radial_refinement = 1;
   size_t cylinder_radial_grid_points = 3;
   size_t cylinder_radial_refinement = 1;
+  std::optional<double> cylinder_log_map_strength{};
   size_t b2_angular_grid_points = 7;
   std::array<size_t, 2> hollow_cylinder_angular_grid_points{7, 3};
   BinaryNeutronStars::SphericalShellsInitialRadialRefinement::type
@@ -109,11 +110,13 @@ Parameters mirrored_parameters(const bool bulge) {
   return params;
 }
 
-// Equal mass (|CenterA| == |CenterB|) with two spherical shells
+// Equal mass (|CenterA| == |CenterB|) with two spherical shells and a
+// logarithmic map in the cylinders
 Parameters equal_mass_parameters(const bool bulge) {
   Parameters params{};
   params.x_axis_points = {-6.0, -3.5, 3.5, 6.0};
   params.wedge_inner_radius = 2.5;
+  params.cylinder_log_map_strength = 1.0;
   params.spherical_shells_radial_partitioning = {17.0};
   params.spherical_shells_radial_refinement = std::vector<size_t>{1, 2};
   params.spherical_shells_radial_distribution =
@@ -142,6 +145,7 @@ BinaryNeutronStars make_creator(
                             params.wedge_prism_radial_refinement,
                             params.cylinder_radial_grid_points,
                             params.cylinder_radial_refinement,
+                            params.cylinder_log_map_strength,
                             params.b2_angular_grid_points,
                             params.hollow_cylinder_angular_grid_points,
                             params.spherical_shells_radial_refinement,
@@ -807,6 +811,65 @@ void test_geometry() {
   }
 }
 
+void test_cylinder_log_map() {
+  INFO("Test cylinder log map");
+  Parameters asymmetric_bulged{};
+  asymmetric_bulged.bulge = true;
+  for (const auto strength :
+       {std::optional<double>{}, std::optional{1.0}, std::optional{2.5}}) {
+    CAPTURE(strength);
+    for (auto params : {asymmetric_bulged, mirrored_parameters(true),
+                        equal_mass_parameters(false)}) {
+      CAPTURE(params.bulge);
+      CAPTURE(params.x_axis_points[0]);
+      params.cylinder_log_map_strength = strength;
+      const auto domain = make_creator(params).create_domain();
+      // Where the outer faces of the deformed-cube wedges meet x = 0
+      const double inner_radius =
+          params.bulge
+              ? sqrt(square(bulge_radii(params)[0]) - square(params.center_B()))
+              : params.wedge_outer_radius;
+      const double outer_radius = params.cylinder_outer_radius;
+      const DataVector xi{-1.0, -0.6, -0.1, 0.3, 0.8, 1.0};
+      const DataVector fraction = 0.5 * (xi + 1.0);
+      DataVector expected_radius{};
+      if (strength.has_value()) {
+        // ln(r - r_0) is linear in xi, with r_0 set by the ratio of the grid
+        // spacings at the outer and inner faces,
+        // (r_out - r_0) / (r_in - r_0) = strength * r_out / r_in
+        const double spacing_ratio = *strength * outer_radius / inner_radius;
+        const double origin = (outer_radius - spacing_ratio * inner_radius) /
+                              (1.0 - spacing_ratio);
+        expected_radius = origin + (inner_radius - origin) *
+                                       exp(fraction * log(spacing_ratio));
+      } else {
+        expected_radius =
+            inner_radius + fraction * (outer_radius - inner_radius);
+      }
+      for (const auto& [name, zeta] :
+           {std::pair{"BRightHollowCylinder", 1.0},
+            std::pair{"ALeftHollowCylinder", -1.0}}) {
+        CAPTURE(name);
+        const auto& block = *alg::find_if(
+            domain.blocks(),
+            [&name](const Block<3>& b) { return b.name() == name; });
+        for (const double eta : {0.0, 1.3, -2.4}) {
+          CAPTURE(eta);
+          tnsr::I<DataVector, 3, Frame::BlockLogical> logical_coords{xi.size()};
+          get<0>(logical_coords) = xi;
+          get<1>(logical_coords) = eta;
+          get<2>(logical_coords) = zeta;
+          const auto inertial_coords = block.stationary_map()(logical_coords);
+          CHECK_ITERABLE_APPROX(get<0>(inertial_coords),
+                                DataVector(xi.size(), 0.0));
+          CHECK_ITERABLE_APPROX(get(magnitude(inertial_coords)),
+                                expected_radius);
+        }
+      }
+    }
+  }
+}
+
 void test_option_parsing() {
   INFO("Test option parsing");
   TestHelpers::domain::creators::test_creation(
@@ -823,6 +886,7 @@ void test_option_parsing() {
       "  WedgePrismInitialRadialRefinement: 1\n"
       "  CylinderInitialRadialGridPoints: 3\n"
       "  CylinderInitialRadialRefinement: 1\n"
+      "  CylinderLogMapStrength: None\n"
       "  B2InitialAngularGridPoints: 7\n"
       "  HollowCylinderInitialAngularGridPoints: [7, 3]\n"
       "  SphericalShellsInitialRadialRefinement: 2\n"
@@ -848,6 +912,7 @@ void test_option_parsing() {
       "  WedgePrismInitialRadialRefinement: 1\n"
       "  CylinderInitialRadialGridPoints: 3\n"
       "  CylinderInitialRadialRefinement: 1\n"
+      "  CylinderLogMapStrength: 1.0\n"
       "  B2InitialAngularGridPoints: 7\n"
       "  HollowCylinderInitialAngularGridPoints: [7, 3]\n"
       "  SphericalShellsInitialRadialRefinement: [1, 2]\n"
@@ -884,6 +949,7 @@ void test_option_parsing() {
       "  WedgePrismInitialRadialRefinement: 1\n"
       "  CylinderInitialRadialGridPoints: 3\n"
       "  CylinderInitialRadialRefinement: 1\n"
+      "  CylinderLogMapStrength: None\n"
       "  B2InitialAngularGridPoints: 7\n"
       "  HollowCylinderInitialAngularGridPoints: [7, 3]\n"
       "  SphericalShellsInitialRadialRefinement: 2\n"
@@ -961,10 +1027,14 @@ void test_parse_errors() {
         p.cylinder_outer_radius = 9.0;
       },
       "CylindricalFlatEndcapInterior (the B2s' map) requires");
+  check_modified([](Parameters& p) { p.cylinder_log_map_strength = 0.5; },
+                 "must be at least 1, or None for a linear grid");
   check_modified([](Parameters& p) { p.b2_angular_grid_points = 8; },
                  "B2InitialAngularGridPoints must be odd");
   check_modified(
-      [](Parameters& p) { p.hollow_cylinder_angular_grid_points = {6, 3}; },
+      [](Parameters& p) {
+        p.hollow_cylinder_angular_grid_points = {6, 3};
+      },
       "HollowCylinderInitialAngularGridPoints[0] must be odd");
   check_modified(
       [](Parameters& p) {
@@ -1124,6 +1194,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryNeutronStars", "[Domain][Unit]") {
   test_initial_extents_and_refinement();
   test_domain_creator_checks();
   test_geometry();
+  test_cylinder_log_map();
   test_option_parsing();
   test_parse_errors();
   test_time_dependent_maps();
