@@ -249,4 +249,29 @@ void WorldtubeData::pup(PUP::er& p) {
   }
 }
 
+void KleinGordonWorldtubeData::variables_impl(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
+    const size_t output_l_max, double /*time*/,
+    tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const {
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
+  for (const auto collocation_point : collocation) {
+    get<0>(*cartesian_coordinates)[collocation_point.offset] =
+        extraction_radius_ * cos(collocation_point.phi) *
+        sin(collocation_point.theta);
+    get<1>(*cartesian_coordinates)[collocation_point.offset] =
+        extraction_radius_ * sin(collocation_point.phi) *
+        sin(collocation_point.theta);
+    get<2>(*cartesian_coordinates)[collocation_point.offset] =
+        extraction_radius_ * cos(collocation_point.theta);
+  }
+}
+
+void KleinGordonWorldtubeData::pup(PUP::er& p) {
+  p | extraction_radius_;
+  if (p.isUnpacking()) {
+    intermediate_cache_ = IntermediateCacheTuple{};
+  }
+}
+
 }  // namespace Cce::Solutions
