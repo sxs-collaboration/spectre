@@ -110,6 +110,10 @@ class SimpleSparseMatrix {
   /// Slow, should not use very often in critical situations.
   double operator()(size_t row_dest_index, size_t column_src_index) const;
 
+  /// Compares the stored nonzero elements.
+  friend bool operator==(const SimpleSparseMatrix& lhs,
+                         const SimpleSparseMatrix& rhs) = default;
+
  private:
   // Holds all nonzero matrix elements.
   std::vector<double> matrix_elements_;

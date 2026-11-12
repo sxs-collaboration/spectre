@@ -5,9 +5,13 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <optional>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -157,5 +161,32 @@ void test_apply_filter(const size_t num_to_kill) {
       }
     }
   });
+}
+
+// Filling a holder again with a different ell_max needs to rebuild the
+// matrices. Compare against a freshly filled holder.
+template <typename VarsList>
+void test_fill_filters_follow_ell_max() {
+  constexpr size_t num_to_kill = 2;
+  const auto fill = [](const gsl::not_null<FilterMatrixHolder*> matrices,
+                       const size_t ell_max) {
+    fill_tensor_ylm_filters<VarsList>(matrices, ell_max, num_to_kill,
+                                      std::nullopt,
+                                      CoefficientNormalization::Spherepack);
+  };
+  FilterMatrixHolder reused;
+  fill(make_not_null(&reused), 9);
+  for (const size_t ell_max : std::array<size_t, 2>{{6, 9}}) {
+    CAPTURE(ell_max);
+    fill(make_not_null(&reused), ell_max);
+    FilterMatrixHolder fresh;
+    fill(make_not_null(&fresh), ell_max);
+    CHECK(reused.ell_max == ell_max);
+    CHECK(reused.scalar == fresh.scalar);
+    CHECK(reused.i == fresh.i);
+    CHECK(reused.ii == fresh.ii);
+    CHECK(reused.ij == fresh.ij);
+    CHECK(reused.kii == fresh.kii);
+  }
 }
 }  // namespace ylm::TensorYlm

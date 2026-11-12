@@ -175,6 +175,7 @@ SPECTRE_TEST_CASE(
   test_modal_nodal_invertibility();
   test_apply_filter<filter_detail::gh_spacetime_vars_list>(0);
   test_apply_filter<filter_detail::gh_spacetime_vars_list>(5);
+  test_fill_filters_follow_ell_max<filter_detail::gh_spacetime_vars_list>();
 }
 }  // namespace
 }  // namespace ylm::TensorYlm
