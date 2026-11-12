@@ -1,0 +1,183 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Same mirror as SingleCoatingMirror.yaml, but driven by the differential
+# higher-order-mode profile TEM02 - TEM20 (zero net force). This checks that
+# a multi-mode `LaserBeam` parses in the executable. The Background is the
+# TEM00 half-space-mirror solution and only serves as an initial guess here;
+# its error norms are not meaningful for this profile. No OutputFileChecks are
+# given because no reference run exists yet for this configuration.
+
+Executable: SolveElasticity3D
+Testing:
+  Check: parse
+ExpectedOutput:
+  - MirrorReductions.h5
+  - MirrorVolume0.h5
+
+---
+
+Background:
+  # Only used to compute errors, which quantify how far away the solution is
+  # from the half-space mirror solution. Has no effect on the numerical
+  # simulation.
+  &half_space_mirror
+  HalfSpaceMirror:
+    BeamWidth: &beam_width 0.17677669534
+    Material: &fused_silica
+      BulkModulus: 36.36363636363637
+      ShearModulus: 30.76923076923077
+    IntegrationIntervals: 350
+    AbsoluteTolerance: 1e-12
+    RelativeTolerance: 1e-10
+
+InitialGuess: *half_space_mirror  # Or: Zero
+
+RandomizeInitialGuess: None
+
+Material:
+  Layer0: &algaas
+    CubicCrystal:
+      C_11: 119.94
+      C_12: 55.38
+      C_44: 59.15
+    # Or: effective-isotropic approximation
+    # IsotropicHomogeneous:
+    #   BulkModulus: 92.59263333
+    #   ShearModulus: 37.8788
+  Layer1:
+    IsotropicHomogeneous: *fused_silica
+
+DomainCreator:
+  Cylinder:
+    InnerRadius: 0.2
+    OuterRadius: 12.5
+    LowerZBound: 0.
+    UpperZBound: 12.50683
+    # Order: [r, phi, z]
+    InitialRefinement:
+      Layer0: [0, 0, 0]
+      Layer1: [0, 0, 2]
+    InitialGridPoints:
+      Layer0: [5, 5, 3]
+      Layer1: [5, 5, 5]
+    UseEquiangularMap: True
+    RadialPartitioning: [0.7]
+    PartitioningInZ: [&coating_thickness 0.00683]
+    RadialDistribution: [Linear, Logarithmic]
+    DistributionInZ: [Linear, Logarithmic]
+    BoundaryConditions:
+      LowerZ:
+        LaserBeam:
+          BeamWidth: *beam_width
+          # Incoherent sum with unit force per mode, so the net force is zero
+          Modes:
+            - {N: 0, M: 2, Weight: 1.}
+            - {N: 2, M: 0, Weight: -1.}
+      UpperZ: Fixed
+      Mantle: Free
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+    Quadrature: GaussLobatto
+    Formulation: StrongInertial
+
+Observers:
+  VolumeFileName: "MirrorVolume"
+  ReductionFileName: "MirrorReductions"
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 1000
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-4
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    InitialCoarseLevels: Auto
+    PreSmoothing: True
+    UseBottomSolver: False
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    ObservePerCoreReductions: False
+    OutputVolumeData: False
+
+EventsAndTriggersAtIterations:
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms: &volume_integrals
+          SubfileName: VolumeIntegrals
+          TensorsToObserve:
+            - Name: PotentialEnergyDensity
+              NormType: VolumeIntegral
+              Components: Individual
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
+      - ObserveNormsPerLayer: *volume_integrals
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Displacement
+            - Strain
+            - Stress
+            - PotentialEnergyDensity
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+          BlocksToObserve: All
+
+Amr:
+  Verbosity: Quiet
+  Criteria: []
+  EnableInBlocks: All
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumPolynomialModes: Auto
+      FourierM: Auto
+      SphericalHarmonicL: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  MaxCoarseLevels: Auto
+  Iterations: 1
+
+PhaseChangeAndTriggers: []
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
