@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <numbers>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -142,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
     const double mass = 1.0;
     const std::array<double, 3> dimless_spin{{0., 0.0, 0.8}};
     const std::array<double, 3> boost_velocity{
-        {0.998 * 0.5, 0.998 * sqrt(3.0) / 2.0, 0.}};
+        {0.998 * 0.5, 0.998 * std::numbers::sqrt3 / 2.0, 0.}};
     const double r_plus =
         mass * (1. + sqrt(1. - dot(dimless_spin, dimless_spin)));
     const DataVector theta{M_PI_2, M_PI_2, 0., M_PI_2};
