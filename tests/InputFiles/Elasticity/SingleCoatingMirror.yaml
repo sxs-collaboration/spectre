@@ -11,19 +11,19 @@ OutputFileChecks:
   - Label: Volume integrals
     Subfile: VolumeIntegrals.dat
     FileGlob: MirrorReductions.h5
-    SkipColumns: [0, 1, 2]
+    SkipColumns: [0, 1, 2, 4, 5]
     ExpectedData: [[1.47912989657707e-02]]
     AbsoluteTolerance: 1.e-4
   - Label: Coating integrals
     Subfile: VolumeIntegralsLayer0.dat
     FileGlob: MirrorReductions.h5
-    SkipColumns: [0, 1, 2]
+    SkipColumns: [0, 1, 2, 4, 5]
     ExpectedData: [[3.12266515383387e-04]]
     AbsoluteTolerance: 1.e-4
   - Label: Substrate integrals
     Subfile: VolumeIntegralsLayer1.dat
     FileGlob: MirrorReductions.h5
-    SkipColumns: [0, 1, 2]
+    SkipColumns: [0, 1, 2, 4, 5]
     ExpectedData: [[1.44790324503873e-02]]
     AbsoluteTolerance: 1.e-4
 
@@ -155,6 +155,12 @@ EventsAndTriggersAtIterations:
             - Name: PotentialEnergyDensity
               NormType: VolumeIntegral
               Components: Individual
+            - Name: BulkPotentialEnergyDensity
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: ShearPotentialEnergyDensity
+              NormType: VolumeIntegral
+              Components: Individual
           BlocksToObserve: All
           ReductionScope: WholeDomain
       - ObserveNormsPerLayer: *error_norms
@@ -166,6 +172,8 @@ EventsAndTriggersAtIterations:
             - Strain
             - Stress
             - PotentialEnergyDensity
+            - BulkPotentialEnergyDensity
+            - ShearPotentialEnergyDensity
           InterpolateToMesh: None
           ProjectToMesh: None
           CoordinatesFloatingPointType: Float
