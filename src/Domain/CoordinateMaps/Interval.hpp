@@ -77,6 +77,9 @@ namespace domain::CoordinateMaps {
  * \xi &= -\frac{A-B}{2(a-b)} \left(\frac{2(a-c)(b-c)}{x-c} - (a-c) -
  * (b-c)\right) + \frac{A+B}{2}
  * \f}
+ *
+ * The inverse of both distributions returns `std::nullopt` for \f$x\f$ at or
+ * beyond the singularity, where it is undefined.
  */
 class Interval {
  public:
