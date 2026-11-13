@@ -93,6 +93,17 @@ std::array<T, 1> Interval::operator()(
 
 std::optional<std::array<double, 1>> Interval::inverse(
     const std::array<double, 1>& target_coords) const {
+  // The logarithmic and inverse distributions only map to the side of the
+  // singularity that contains the target interval
+  if (distribution_ == Distribution::Logarithmic or
+      distribution_ == Distribution::Inverse) {
+    const double singularity_pos = singularity_pos_.value();
+    const double singularity_sign =
+        std::min(a_, b_) > singularity_pos ? 1. : -1.;
+    if (singularity_sign * (target_coords[0] - singularity_pos) <= 0.) {
+      return std::nullopt;
+    }
+  }
   switch (distribution_) {
     case Distribution::Linear: {
       return {
