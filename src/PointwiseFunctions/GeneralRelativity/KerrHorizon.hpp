@@ -48,7 +48,10 @@ template <typename DataType>
 Scalar<DataType> kerr_schild_radius_from_boyer_lindquist(
     const double boyer_lindquist_radius,
     const std::array<DataType, 2>& theta_phi, double mass,
-    const std::array<double, 3>& dimensionless_spin);
+    const std::array<double, 3>& dimensionless_spin,
+    const std::array<double, 3>& boost_velocity = std::array<double, 3>{
+        {0.0, 0.0, 0.0}});
+
 /*!
  * \brief The Kerr-Schild radius corresponding to a Kerr horizon.
  *

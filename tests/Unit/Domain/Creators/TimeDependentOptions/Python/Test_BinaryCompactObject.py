@@ -22,10 +22,18 @@ class TestBinaryCompactObjectTimeDependentOptions(unittest.TestCase):
             [[1.0, -1.0, 0.5], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
         )
         shape_map_a = ShapeMapOptions["A"](
-            10, KerrSchildFromBoyerLindquist(0.66, [0.0, 0.0, 0.99]), None
+            10,
+            KerrSchildFromBoyerLindquist(
+                0.66, [0.0, 0.0, 0.99], [0.0, 0.0, 0.0]
+            ),
+            None,
         )
         shape_map_b = ShapeMapOptions["B"](
-            10, KerrSchildFromBoyerLindquist(0.33, [0.0, 0.0, -0.99]), None
+            10,
+            KerrSchildFromBoyerLindquist(
+                0.33, [0.0, 0.0, -0.99], [0.0, 0.0, 0.0]
+            ),
+            None,
         )
         skew_map = SkewMapOptions([0.0, 40.0, 50.0], [0.0, 10.0, 0.0])
         binary_compact_object_one_map = BinaryCompactObjectTimeDependentOptions(

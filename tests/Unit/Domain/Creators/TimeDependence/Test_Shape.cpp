@@ -352,6 +352,7 @@ void test_all() {
   constexpr double mass{1.0};
   constexpr double coefficient_truncation_limit{0.0};
   const std::array<double, 3> spin{{0.1, 0.4, -0.5}};
+  const std::array<double, 3> velocity{{0., 0., 0.}};
   const std::array<double, 3> center{{-0.02, 0.013, 0.024}};
   const double inner_radius = 2.0;
   const double outer_radius = 100;
@@ -360,9 +361,9 @@ void test_all() {
   const std::string f_of_t_name = "Shape";
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-      time_dep = std::make_unique<Shape>(initial_time, l_max, mass, spin,
-                                         center, coefficient_truncation_limit,
-                                         inner_radius, outer_radius);
+      time_dep = std::make_unique<Shape>(
+          initial_time, l_max, mass, spin, velocity, center,
+          coefficient_truncation_limit, inner_radius, outer_radius);
   test(time_dep, initial_time, f_of_t_name, l_max,
        std::make_unique<Transition>(sphere_transition),
        coefficient_truncation_limit, inner_radius, outer_radius, mass, spin,
@@ -378,6 +379,7 @@ void test_all() {
            "  LMax: 16\n"
            "  Mass: 1.0\n"
            "  Spin: [0.1, 0.4, -0.5]\n"
+           "  Velocity: [0., 0., 0.]\n"
            "  Center: [-0.02, 0.013, 0.024]\n"
            "  CoefficientTruncationLimit: 0.0\n"
            "  InnerRadius: 2.0\n"
@@ -392,6 +394,7 @@ void test_equivalence() {
   const double mass = 1.0;
   const std::array<double, 3> spin1 = {{0.0, 0.5, 0.1}};
   const std::array<double, 3> spin2 = {{0.3, 0.2, 0.0}};
+  const std::array<double, 3> velocity1 = {{0., 0., 0.}};
   const std::array<double, 3> center1 = {{-0.2, 1.3, 2.4}};
   const std::array<double, 3> center2 = {{0.2, -1.3, 2.4}};
   const double inner_radius = 1.0;
@@ -400,38 +403,78 @@ void test_equivalence() {
   const double coefficient_truncation_limit1 = 0.0;
   const double coefficient_truncation_limit2 = 1.0e-4;
 
-  Shape sc0{1.0,          4,
-            mass,         spin1,
-            center1,      coefficient_truncation_limit1,
-            inner_radius, outer_radius1};
-  Shape sc1{1.0,          4,
-            mass,         spin1,
-            center1,      coefficient_truncation_limit1,
-            inner_radius, outer_radius1};
-  Shape sc2{1.0,          4,
-            mass,         spin2,
-            center1,      coefficient_truncation_limit1,
-            inner_radius, outer_radius1};
-  Shape sc3{1.0,          4,
-            mass,         spin2,
-            center1,      coefficient_truncation_limit1,
-            inner_radius, outer_radius1};
-  Shape sc4{1.0,          4,
-            mass,         spin1,
-            center2,      coefficient_truncation_limit2,
-            inner_radius, outer_radius2};
-  Shape sc5{1.0,          4,
-            mass,         spin1,
-            center2,      coefficient_truncation_limit2,
-            inner_radius, outer_radius2};
-  Shape sc6{1.0,          4,
-            mass,         spin2,
-            center2,      coefficient_truncation_limit2,
-            inner_radius, outer_radius2};
-  Shape sc7{1.0,          4,
-            mass,         spin2,
-            center2,      coefficient_truncation_limit2,
-            inner_radius, outer_radius2};
+  Shape sc0{1.0,
+            4,
+            mass,
+            spin1,
+            velocity1,
+            center1,
+            coefficient_truncation_limit1,
+            inner_radius,
+            outer_radius1};
+  Shape sc1{1.0,
+            4,
+            mass,
+            spin1,
+            velocity1,
+            center1,
+            coefficient_truncation_limit1,
+            inner_radius,
+            outer_radius1};
+  Shape sc2{1.0,
+            4,
+            mass,
+            spin2,
+            velocity1,
+            center1,
+            coefficient_truncation_limit1,
+            inner_radius,
+            outer_radius1};
+  Shape sc3{1.0,
+            4,
+            mass,
+            spin2,
+            velocity1,
+            center1,
+            coefficient_truncation_limit1,
+            inner_radius,
+            outer_radius1};
+  Shape sc4{1.0,
+            4,
+            mass,
+            spin1,
+            velocity1,
+            center2,
+            coefficient_truncation_limit2,
+            inner_radius,
+            outer_radius2};
+  Shape sc5{1.0,
+            4,
+            mass,
+            spin1,
+            velocity1,
+            center2,
+            coefficient_truncation_limit2,
+            inner_radius,
+            outer_radius2};
+  Shape sc6{1.0,
+            4,
+            mass,
+            spin2,
+            velocity1,
+            center2,
+            coefficient_truncation_limit2,
+            inner_radius,
+            outer_radius2};
+  Shape sc7{1.0,
+            4,
+            mass,
+            spin2,
+            velocity1,
+            center2,
+            coefficient_truncation_limit2,
+            inner_radius,
+            outer_radius2};
 
   CHECK(sc0 == sc0);
   CHECK_FALSE(sc0 != sc0);
@@ -460,6 +503,7 @@ void test_errors() {
           "  CoefficientTruncationLimit: 0.0\n"
           "  Mass: 1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"
+          "  Velocity: [0.0, 0.0, 0.0]\n"
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 1.0\n"
           "  OuterRadius: 10.0\n"),
@@ -475,6 +519,7 @@ void test_errors() {
           "  CoefficientTruncationLimit: 0.0\n"
           "  Mass: 1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"
+          "  Velocity: [0.0, 0.0, 0.0]\n"
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 10.0\n"
           "  OuterRadius: 1.0\n"),
@@ -489,6 +534,7 @@ void test_errors() {
           "  LMax: 4\n"
           "  Mass: -1.0\n"
           "  Spin: [0.0, 1.0, 0.1]\n"
+          "  Velocity: [0.0, 0.0, 0.0]\n"
           "  Center: [-0.01, 0.02, 0.01]\n"
           "  InnerRadius: 1.0\n"
           "  OuterRadius: 10.0\n"),

@@ -63,6 +63,7 @@ DomainCreator:
         CoefficientTruncationLimit: 0.
         Mass: *KerrMass
         Spin: *KerrSpin
+        Velocity: [0.0, 0.0, 0.0]
         Center: *KerrCenter
         InnerRadius: *InnerRadius
         OuterRadius: *OuterRadius

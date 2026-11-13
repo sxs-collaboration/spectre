@@ -203,12 +203,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Ringdown.MinimumAhCExcisionRadius",
           std::nullopt,
           domain::creators::time_dependent_options::ShapeMapOptions<
               true, domain::ObjectLabel::A>{
-              32_st, domain::creators::time_dependent_options::
-                         KerrSchildFromBoyerLindquist{0.2, {0.0, 0.0, 0.0}}},
+              32_st,
+              domain::creators::time_dependent_options::
+                  KerrSchildFromBoyerLindquist{
+                      0.2, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}},
           domain::creators::time_dependent_options::ShapeMapOptions<
               true, domain::ObjectLabel::B>{
-              32_st, domain::creators::time_dependent_options::
-                         KerrSchildFromBoyerLindquist{0.4, {0.0, 0.0, 0.0}}},
+              32_st,
+              domain::creators::time_dependent_options::
+                  KerrSchildFromBoyerLindquist{
+                      0.4, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}},
           std::nullopt};
 
   using Object = domain::creators::BinaryCompactObject::Object;
