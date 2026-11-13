@@ -248,10 +248,10 @@ void project_tensors_to_boundary(
  *
  * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.
  */
-template <typename Symm, typename IndexList, size_t Dim>
+template <typename Symm, typename IndexList, size_t Dim, typename VectorType>
 void project_tensor_to_boundary(
-    const gsl::not_null<Tensor<DataVector, Symm, IndexList>*> face_field,
-    const Tensor<DataVector, Symm, IndexList>& volume_field,
+    const gsl::not_null<Tensor<VectorType, Symm, IndexList>*> face_field,
+    const Tensor<VectorType, Symm, IndexList>& volume_field,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   const size_t sliced_dim = direction.dimension();
   if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
@@ -293,11 +293,11 @@ void project_tensor_to_boundary(
   }
 }
 
-template <typename Symm, typename IndexList, size_t Dim>
-Tensor<DataVector, Symm, IndexList> project_tensor_to_boundary(
-    const Tensor<DataVector, Symm, IndexList>& volume_field,
+template <typename Symm, typename IndexList, size_t Dim, typename VectorType>
+Tensor<VectorType, Symm, IndexList> project_tensor_to_boundary(
+    const Tensor<VectorType, Symm, IndexList>& volume_field,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
-  Tensor<DataVector, Symm, IndexList> face_field{
+  Tensor<VectorType, Symm, IndexList> face_field{
       volume_mesh.slice_away(direction.dimension()).number_of_grid_points()};
   project_tensor_to_boundary(make_not_null(&face_field), volume_field,
                              volume_mesh, direction);

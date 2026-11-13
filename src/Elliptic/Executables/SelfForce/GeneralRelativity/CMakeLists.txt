@@ -41,4 +41,5 @@ target_link_libraries(
   GrSelfForceAmrCriteria
   GrSelfForceAnalyticData
   GrSelfForceBoundaryConditions
+  GrSelfForceEvents
   )
