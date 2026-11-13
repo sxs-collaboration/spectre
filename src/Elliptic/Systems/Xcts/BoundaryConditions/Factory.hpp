@@ -15,5 +15,5 @@ using standard_boundary_conditions =
     tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>,
                Flatness<System::enabled_equations>,
                Robin<System::enabled_equations>,
-               ApparentHorizon<System::conformal_geometry>>;
+               ApparentHorizon<System::conformal_geometry> >;
 }
