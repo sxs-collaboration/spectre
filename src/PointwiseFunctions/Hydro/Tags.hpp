@@ -167,6 +167,13 @@ struct EquationOfState : db::SimpleTag {
   }
 };
 
+/// The Kretschmann scalar in hydro.
+/// \see hydro::kretschmann_scalar
+template <typename DataType>
+struct KretschmannScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The inverse plasma beta \f$\beta^{-1} = b^2 / (2 p)\f$, where
 ///// \f$b^2\f$ is the square of the comoving magnetic field amplitude
 ///// and \f$p\f$ is the fluid pressure.
@@ -229,6 +236,17 @@ struct MagneticPressure : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The Pontryagin scalar
+/// \f$P = {}^{*}R_{abcd}R^{abcd} = {}^{*}C_{abcd}C^{abcd} = 16 E_{ab}B^{ab}\f$,
+/// where \f$E_{ab}\f$ and \f$B_{ab}\f$ are the electric and magnetic
+/// decompositions of the Weyl tensor, \f$C_{abcd}\f$. Note that the formula is
+/// the same as in vacuum, but the input Weyl electric component is different in
+/// the hydro system.
+template <typename DataType>
+struct PontryaginScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The fluid pressure \f$p\f$.
 template <typename DataType>
 struct Pressure : db::SimpleTag {
@@ -238,6 +256,18 @@ struct Pressure : db::SimpleTag {
 /// The rest-mass density \f$\rho\f$.
 template <typename DataType>
 struct RestMassDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The spacetime (4D) Ricci tensor \f$R_{ab}\f$.
+template <typename DataType, size_t Dim, typename Fr>
+struct GrRicci : db::SimpleTag {
+  using type = tnsr::aa<DataType, Dim, Fr>;
+};
+
+/// The spacetime (4D) Ricci scalar \f$R\f$.
+template <typename DataType>
+struct GrRicciScalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
@@ -293,6 +323,12 @@ struct SpecificInternalEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The stress-energy tensor \f$T^{ab}\f$.
+template <typename DataType, size_t Dim, typename Fr>
+struct StressEnergy : db::SimpleTag {
+  using type = tnsr::AA<DataType, Dim, Fr>;
+};
+
 /// The temperature \f$T\f$ of the fluid.
 template <typename DataType>
 struct Temperature : db::SimpleTag {
@@ -307,6 +343,20 @@ struct Temperature : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct TransportVelocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
+};
+
+/// The electric part of the Weyl tensor in hydro.
+/// \see hydro::weyl_electric
+template <typename DataType, size_t Dim, typename Fr>
+struct WeylElectric : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Fr>;
+};
+
+/// The Weyl electric scalar \f$E_{ij} E^{ij}\f$.
+/// \see gr::weyl_electric_scalar
+template <typename DataType>
+struct WeylElectricScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
 };
 
 /// The spatial components of the four-velocity one-form \f$u_i\f$.

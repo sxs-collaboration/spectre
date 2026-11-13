@@ -205,6 +205,12 @@ void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
   CHECK_ITERABLE_APPROX(spatial_metric, spatial_metric_test);
   CHECK_ITERABLE_APPROX(shift, shift_test);
   CHECK_ITERABLE_APPROX(lapse, lapse_test);
+
+  // The induced spatial metric should only differ from the spacetime metric
+  // by an $\alpha^2$ term.
+  auto induced_spatial_metric_test = gr::induced_spatial_metric(psi, lapse);
+  induced_spatial_metric_test.get(0, 0) -= square(get(lapse));
+  CHECK_ITERABLE_APPROX(psi, induced_spatial_metric_test);
 }
 
 template <size_t Dim, typename DataType>
@@ -218,18 +224,25 @@ void test_compute_deriv_inverse_spatial_metric(const DataType& used_for_size) {
       {{{-10., 10.}}}, used_for_size);
 }
 
-void test_compute_pontryagin_scalar_in_vacuum(const DataVector& used_for_size) {
+void test_compute_pontryagin_scalar(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<Scalar<DataVector> (*)(
           const tnsr::ii<DataVector, 3, Frame::Inertial>&,
           const tnsr::ii<DataVector, 3, Frame::Inertial>&,
           const tnsr::II<DataVector, 3, Frame::Inertial>&)>(
-          &gr::pontryagin_scalar_in_vacuum),
-      "ComputeSpacetimeQuantities", "pontryagin_scalar_in_vacuum",
-      // The C++ Tenex contraction and the Python matrix-product reference
-      // accumulate roundoff in a different order for this fully algebraic
-      // expression, so allow a slightly looser comparison here.
-      {{{-10., 10.}}}, used_for_size, 2.0e-12);
+          &gr::pontryagin_scalar),
+      "ComputeSpacetimeQuantities", "pontryagin_scalar", {{{-10., 10.}}},
+      used_for_size);
+}
+
+void test_compute_kretschmann_scalar_in_vacuum(
+    const DataVector& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataVector> (*)(const Scalar<DataVector>&,
+                                         const Scalar<DataVector>&)>(
+          &gr::kretschmann_scalar_in_vacuum),
+      "ComputeSpacetimeQuantities", "kretschmann_scalar_in_vacuum",
+      {{{-10., 10.}}}, used_for_size);
 }
 
 void test_compute_gauss_bonnet_scalar_in_vacuum(
@@ -271,7 +284,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_cov_deriv_extrinsic_curvature_adm,
                                     (1, 2, 3));
-  test_compute_pontryagin_scalar_in_vacuum(DataVector{5});
+  test_compute_pontryagin_scalar(DataVector{5});
+  test_compute_kretschmann_scalar_in_vacuum(DataVector{5});
   test_compute_gauss_bonnet_scalar_in_vacuum(DataVector{5});
 
   // Check that compute items work correctly in the DataBox
@@ -295,6 +309,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       gr::Tags::ShiftCompute<DataVector, 3, Frame::Inertial>>("Shift");
   TestHelpers::db::test_compute_tag<
       gr::Tags::LapseCompute<DataVector, 3, Frame::Inertial>>("Lapse");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::InducedSpatialMetricCompute<DataVector, 3, Frame::Inertial>>(
+      "InducedSpatialMetric");
   TestHelpers::db::test_compute_tag<
       gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>>(
       "SqrtDetSpatialMetric");
@@ -339,6 +356,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                 expected_det_and_inverse_spatial_metric.second);
   const auto expected_lapse =
       gr::lapse(expected_shift, expected_spacetime_metric);
+  const auto expected_induced_spatial_metric =
+      gr::induced_spatial_metric(expected_spacetime_metric, expected_lapse);
   const auto expected_inverse_spacetime_metric = gr::inverse_spacetime_metric(
       expected_lapse, expected_shift,
       expected_det_and_inverse_spatial_metric.second);
@@ -352,6 +371,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::ShiftCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::LapseCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::InducedSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::InverseSpacetimeMetricCompute<DataVector, 3,
                                                   Frame::Inertial>,
           gr::Tags::SpacetimeNormalOneFormCompute<DataVector, 3,
@@ -369,6 +389,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
         sqrt(get(expected_det_and_inverse_spatial_metric.first)));
   CHECK(db::get<gr::Tags::Shift<DataVector, 3>>(box) == expected_shift);
   CHECK(db::get<gr::Tags::Lapse<DataVector>>(box) == expected_lapse);
+  CHECK(db::get<gr::Tags::InducedSpatialMetric<DataVector, 3, Frame::Inertial>>(
+            box) == expected_induced_spatial_metric);
   CHECK(db::get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(box) ==
         expected_inverse_spacetime_metric);
   CHECK(db::get<gr::Tags::SpacetimeNormalOneForm<DataVector, 3>>(box) ==

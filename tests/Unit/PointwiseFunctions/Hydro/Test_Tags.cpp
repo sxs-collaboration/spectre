@@ -31,6 +31,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "EquationOfState");
   TestHelpers::db::test_simple_tag<hydro::Tags::LorentzFactor<DataVector>>(
       "LorentzFactor");
+  TestHelpers::db::test_simple_tag<hydro::Tags::KretschmannScalar<DataVector>>(
+      "KretschmannScalar");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::InversePlasmaBeta<DataVector>>("InversePlasmaBeta");
   TestHelpers::db::test_simple_tag<
@@ -48,10 +50,16 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       hydro::Tags::MagneticFieldSquared<DataVector>>("MagneticFieldSquared");
   TestHelpers::db::test_simple_tag<hydro::Tags::MagneticPressure<DataVector>>(
       "MagneticPressure");
+  TestHelpers::db::test_simple_tag<hydro::Tags::PontryaginScalar<DataVector>>(
+      "PontryaginScalar");
   TestHelpers::db::test_simple_tag<hydro::Tags::Pressure<DataVector>>(
       "Pressure");
   TestHelpers::db::test_simple_tag<hydro::Tags::RestMassDensity<DataVector>>(
       "RestMassDensity");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::GrRicci<DataVector, 3, Frame::ElementLogical>>("GrRicci");
+  TestHelpers::db::test_simple_tag<hydro::Tags::GrRicciScalar<DataVector>>(
+      "GrRicciScalar");
   TestHelpers::db::test_simple_tag<hydro::Tags::SoundSpeedSquared<DataVector>>(
       "SoundSpeedSquared");
   // [prefix_example]
@@ -76,11 +84,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpecificInternalEnergy<DataVector>>(
       "SpecificInternalEnergy");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::StressEnergy<DataVector, 3, Frame::ElementLogical>>(
+      "StressEnergy");
   TestHelpers::db::test_simple_tag<hydro::Tags::Temperature<DataVector>>(
       "Temperature");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::TransportVelocity<DataVector, 3, Frame::Inertial>>(
       "TransportVelocity");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::WeylElectric<DataVector, 3, Frame::ElementLogical>>(
+      "WeylElectric");
+  TestHelpers::db::test_simple_tag<hydro::Tags::WeylElectricScalar<DataVector>>(
+      "WeylElectricScalar");
   TestHelpers::db::test_simple_tag<hydro::Tags::LowerSpatialFourVelocity<
       DataVector, 3, Frame::ElementLogical>>("LowerSpatialFourVelocity");
   TestHelpers::db::test_simple_tag<

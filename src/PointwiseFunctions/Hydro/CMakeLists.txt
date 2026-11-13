@@ -15,12 +15,15 @@ spectre_target_sources(
   MagneticFieldTreatment.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
+  QuadraticCurvatureScalars.cpp
   QuadrupoleFormula.cpp
+  Ricci.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   SpecificEntropy.cpp
   StressEnergy.cpp
   TransportVelocity.cpp
+  WeylElectric.cpp
   )
 
 spectre_target_headers(
@@ -34,7 +37,9 @@ spectre_target_headers(
   MagneticFieldTreatment.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
+  QuadraticCurvatureScalars.hpp
   QuadrupoleFormula.hpp
+  Ricci.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
   SpecificEntropy.hpp
@@ -44,6 +49,7 @@ spectre_target_headers(
   Temperature.hpp
   TransportVelocity.hpp
   Units.hpp
+  WeylElectric.hpp
   )
 
 target_link_libraries(
