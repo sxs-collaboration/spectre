@@ -54,6 +54,57 @@ std::array<DataVector, Dim> power_monitors(const VectorType& u,
 /// @{
 /*!
  * \ingroup SpectralGroup
+ * \brief Returns array of power monitors in each spatial dimension, averaging
+ * over the grid points of the other dimensions. These are the power monitors
+ * used in SpEC.
+ *
+ * Let \f$ \psi_{i_0,i_1,i_2} \f$ be the nodal values of the variable
+ * \f$ \psi \f$, i.e. its values at the grid points, where \f$ i_0 \f$,
+ * \f$ i_1 \f$ and \f$ i_2 \f$ label the grid points of the x, y and z
+ * dimensions. For the power monitors in the x dimension (indexed by
+ * \f$ k_0 \f$), only the x dimension is transformed to modal coefficients,
+ *
+ * \f{align*}{
+ *  C_{k_0,i_1,i_2} = \sum_{i_0} \mathcal{V}^{-1}_{k_0 i_0}
+ *   \psi_{i_0,i_1,i_2} ,
+ * \f}
+ *
+ * where \f$ \mathcal{V}^{-1} \f$ is the inverse Vandermonde matrix of the x
+ * dimension (see `Spectral::nodal_to_modal_matrix`). It replaces the grid
+ * point index \f$ i_0 \f$ by the mode index \f$ k_0 \f$ and leaves the other
+ * two indices unchanged, so the coefficients \f$ C_{k_0,i_1,i_2} \f$ are
+ * modal in the x dimension and nodal in the y and z dimensions. We then
+ * compute
+ *
+ * \f{align*}{
+ *  P_{k_0}[\psi] = \sqrt{ \frac{1}{N_1 N_2}
+ *   \sum_{i_1,i_2} \left| C_{k_0,i_1,i_2} \right|^2} ,
+ * \f}
+ *
+ * where \f$ N_1 \f$ and \f$ N_2 \f$ are the numbers of grid points in the y
+ * and z dimensions. The power monitors in the y and z dimensions are computed
+ * in the same way.
+ *
+ * In contrast, `power_monitors` computes the modal coefficients immediately in
+ * all dimensions and averages over the modes \f$ k_1, k_2 \f$ of the y and z
+ * dimensions instead of their grid values. The two functions give the same
+ * result, up to a constant factor in each dimension, if the function is
+ * separable in x, y and z, and differ in general otherwise. Only the Legendre
+ * and Chebyshev bases are supported.
+ */
+template <size_t Dim>
+void directional_power_monitors(
+    gsl::not_null<std::array<DataVector, Dim>*> result, const DataVector& u,
+    const Mesh<Dim>& mesh);
+
+template <size_t Dim>
+std::array<DataVector, Dim> directional_power_monitors(const DataVector& u,
+                                                       const Mesh<Dim>& mesh);
+/// @}
+
+/// @{
+/*!
+ * \ingroup SpectralGroup
  * \brief Compute the relative truncation error.
  *
  * The negative logarithm of this quantity is defined by Eqs. (57) and

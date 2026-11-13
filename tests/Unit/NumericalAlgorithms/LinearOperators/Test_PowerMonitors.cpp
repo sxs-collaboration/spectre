@@ -11,15 +11,18 @@
 #include <complex>
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/ModalVector.hpp"
+#include "DataStructures/StripeIterator.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -792,6 +795,119 @@ void test_accumulate_and_normalize_spherical_shell_angular_power() {
                         (DataVector{1.0, 2.0, 3.0}));
 }
 
+// The directional power monitor must match a line-by-line transform, must
+// agree with power_monitors in 1D, where there is a single line, and up to a
+// factor per direction for a function that factorizes, and must reject other
+// bases.
+void test_directional_power_monitors(const gsl::not_null<std::mt19937*> gen) {
+  INFO("directional_power_monitors");
+  std::uniform_real_distribution<double> dist{-1.0, 1.0};
+
+  {
+    INFO("1D");
+    const Mesh<1> mesh{7, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const auto u = make_with_random_values<DataVector>(
+        gen, make_not_null(&dist), mesh.number_of_grid_points());
+    CHECK_ITERABLE_APPROX(PowerMonitors::directional_power_monitors(u, mesh),
+                          PowerMonitors::power_monitors(u, mesh));
+  }
+
+  {
+    INFO("3D against a line-by-line transform");
+    const Mesh<3> mesh{
+        {{5, 6, 4}},
+        {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
+          Spectral::Basis::Legendre}},
+        {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+          Spectral::Quadrature::Gauss}}};
+    const auto& extents = mesh.extents();
+    const auto u = make_with_random_values<DataVector>(
+        gen, make_not_null(&dist), mesh.number_of_grid_points());
+    std::array<DataVector, 3> expected{};
+    for (size_t d = 0; d < 3; ++d) {
+      gsl::at(expected, d) = DataVector(extents[d], 0.0);
+      DataVector line(extents[d]);
+      size_t number_of_lines = 0;
+      for (StripeIterator stripe(extents, d); stripe; ++stripe) {
+        ++number_of_lines;
+        for (size_t k = 0; k < extents[d]; ++k) {
+          line[k] = u[stripe.offset() + k * stripe.stride()];
+        }
+        const ModalVector modes =
+            to_modal_coefficients(line, mesh.slice_through(d));
+        for (size_t k = 0; k < extents[d]; ++k) {
+          gsl::at(expected, d)[k] += square(modes[k]);
+        }
+      }
+      gsl::at(expected, d) =
+          sqrt(gsl::at(expected, d) / static_cast<double>(number_of_lines));
+    }
+    CHECK_ITERABLE_APPROX(PowerMonitors::directional_power_monitors(u, mesh),
+                          expected);
+    std::array<DataVector, 3> result{};
+    PowerMonitors::directional_power_monitors(make_not_null(&result), u, mesh);
+    CHECK_ITERABLE_APPROX(result, expected);
+  }
+
+  {
+    INFO("factorizing function");
+    const Mesh<3> mesh{{{6, 5, 7}},
+                       Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const auto& extents = mesh.extents();
+    const auto x = logical_coordinates(mesh);
+    const std::array<DataVector, 3> factors{
+        {exp(-square(get<0>(x)) / 0.6) + 0.3 * get<0>(x),
+         1.0 + 0.5 * get<1>(x) - 0.2 * square(get<1>(x)),
+         cos(1.3 * get<2>(x))}};
+    const DataVector u = factors[0] * factors[1] * factors[2];
+    const auto result = PowerMonitors::directional_power_monitors(u, mesh);
+    const auto full = PowerMonitors::power_monitors(u, mesh);
+    for (size_t d = 0; d < 3; ++d) {
+      CAPTURE(d);
+      // The factor along d, sampled on the first line along d.
+      DataVector line(extents[d]);
+      for (size_t k = 0; k < extents[d]; ++k) {
+        Index<3> point{{{0, 0, 0}}};
+        point[d] = k;
+        line[k] = gsl::at(factors, d)[collapsed_index(point, extents)];
+      }
+      const ModalVector modes =
+          to_modal_coefficients(line, mesh.slice_through(d));
+      // The other two factors are constant along d, so their nodal RMS over
+      // the lines is the RMS over the whole grid.
+      DataVector transverse(mesh.number_of_grid_points(), 1.0);
+      for (size_t other = 0; other < 3; ++other) {
+        if (other != d) {
+          transverse *= gsl::at(factors, other);
+        }
+      }
+      const double transverse_rms = sqrt(mean(square(transverse)));
+      DataVector expected(extents[d]);
+      for (size_t k = 0; k < extents[d]; ++k) {
+        expected[k] = abs(modes[k]) * transverse_rms;
+      }
+      CHECK_ITERABLE_APPROX(gsl::at(result, d), expected);
+      // Up to a constant factor this is also what power_monitors gives.
+      const double ratio = gsl::at(result, d)[0] / gsl::at(full, d)[0];
+      for (size_t k = 0; k < extents[d]; ++k) {
+        if (gsl::at(full, d)[k] > 1.e-10 * max(gsl::at(full, d))) {
+          CHECK(gsl::at(result, d)[k] == approx(ratio * gsl::at(full, d)[k]));
+        }
+      }
+    }
+  }
+
+  {
+    INFO("unsupported basis");
+    const Mesh<3> mesh = shell_mesh(4, 4);
+    CHECK_THROWS_WITH(PowerMonitors::directional_power_monitors(
+                          DataVector(mesh.number_of_grid_points(), 1.0), mesh),
+                      Catch::Matchers::ContainsSubstring(
+                          "supports only the Legendre and Chebyshev bases"));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
@@ -799,6 +915,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   MAKE_GENERATOR(gen);
   test_power_monitors_impl();
   test_power_monitors_second_impl();
+  test_directional_power_monitors(make_not_null(&gen));
   test_relative_truncation_error_impl();
   test_relative_truncation_error_with_symmetry();
   test_relative_truncation_error_linear_function();
