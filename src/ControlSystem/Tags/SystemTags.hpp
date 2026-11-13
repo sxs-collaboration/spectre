@@ -26,7 +26,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/TaggedTuple.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -109,8 +108,6 @@ struct WriteDataToDisk : db::SimpleTag {
     return {names.begin(), names.end()};
   }
 };
-
-using ObserveCenters = ah::Tags::ObserveCenters;
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
