@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Schwarzschild.cpp
   Test_SphericalKerr.cpp
   Test_TovStar.cpp
+  Test_WrappedGr.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
