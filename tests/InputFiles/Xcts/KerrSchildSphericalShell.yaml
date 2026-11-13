@@ -1,0 +1,243 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveXcts
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 120
+ExpectedOutput:
+  - KerrSchildSphericalShellReductions.h5
+  - KerrSchildSphericalShellVolume0.h5
+OutputFileChecks:
+  - Label: Discretization error
+    Subfile: ErrorNorms.dat
+    FileGlob: KerrSchildSphericalShellReductions.h5
+    ExpectedData:
+      - [
+          0,
+          1530,
+          4.16915998386076e+03,
+          0.00000000000000e+00,
+          2.04575548899570e-01,
+          3.59404302124362e-01,
+        ]
+      - [
+          1,
+          1530,
+          4.16915998386076e+03,
+          3.45021781281655e-06,
+          1.44516441334983e-05,
+          1.70773830138045e-05,
+        ]
+    AbsoluteTolerance: 1e-8
+  - Label: Nonlinear solver convergence
+    Subfile: NewtonRaphsonResiduals.dat
+    FileGlob: KerrSchildSphericalShellReductions.h5
+    SkipColumns: [1] # Skip walltime
+    ExpectedData:
+      - [0, 0, 1.10903143390373e+02, 1.]
+      - [1, 0, 9.55430730148458e-01, 1.]
+      - [2, 0, 4.33100890972275e-02, 1.]
+      - [3, 0, 5.60138311626245e-04, 1.]
+      - [4, 0, 3.82096076059838e-09, 1.]
+    AbsoluteTolerance: 1e-4
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background: &solution
+  KerrSchild:
+    Mass: &KerrMass 1.
+    Spin: &KerrSpin [0., 0., 0.6]
+    Center: &KerrCenter [0., 0., 0.]
+    Velocity: [0., 0., 0.]
+
+InitialGuess: Flatness
+
+RandomizeInitialGuess: None
+
+DomainCreator:
+  SphericalShells:
+    # Boyer-Lindquist radius a bit inside the horizon:
+    # 0.89 * (M + sqrt(M^2 - a^2))
+    InnerRadius: &InnerRadius 1.602
+    OuterRadius: &OuterRadius 10.
+    InitialRadialRefinement: 1
+    InitialNumberOfRadialGridPoints: 5
+    InitialSphericalHarmonicL: 8
+    RadialPartitioning: []
+    RadialDistribution: Logarithmic
+    TimeDependentMaps:
+      Shape:
+        InitialTime: 0.
+        LMax: 18
+        CoefficientTruncationLimit: 0.
+        Mass: *KerrMass
+        Spin: *KerrSpin
+        Center: *KerrCenter
+        InnerRadius: *InnerRadius
+        OuterRadius: *OuterRadius
+    InnerBoundaryCondition:
+      AnalyticSolution:
+        Solution: *solution
+        ConformalFactorMinusOne: Dirichlet
+        LapseTimesConformalFactorMinusOne: Dirichlet
+        ShiftExcess: Dirichlet
+    OuterBoundaryCondition:
+      AnalyticSolution:
+        Solution: *solution
+        ConformalFactorMinusOne: Dirichlet
+        LapseTimesConformalFactorMinusOne: Dirichlet
+        ShiftExcess: Dirichlet
+
+Amr:
+  Verbosity: Verbose
+  Criteria:
+    - IncreaseResolution
+  EnableInBlocks: All
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  MaxCoarseLevels: Auto
+  # AMR not yet supported for spherical shells
+  Iterations: 1
+
+PhaseChangeAndTriggers:
+  # Run AMR in every iteration, but not on the initial guess
+  - Trigger:
+      EveryNIterations:
+        N: 1
+        Offset: 1
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(UpdateSections)
+      - VisitAndReturn(CheckDomain)
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+    Quadrature: GaussLobatto
+    # Prefer the weak formulation for spherical shells. The strong formulation
+    # has an even-odd pattern (even-L converges faster than odd-L).
+    Formulation: WeakInertial
+
+Observers:
+  VolumeFileName: "KerrSchildSphericalShellVolume"
+  ReductionFileName: "KerrSchildSphericalShellReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-6
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Quiet
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 30
+      RelativeResidual: 1.e-4
+      AbsoluteResidual: 1.e-12
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    InitialCoarseLevels: Auto
+    PreSmoothing: True
+    UseBottomSolver: False
+    PostSmoothingAtBottom: False
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+    OutputVolumeData: False
+
+RadiallyCompressedCoordinates: None
+
+EventsAndTriggersAtIterations:
+  - Trigger: Always
+    Events:
+      - ObserveNorms:
+          SubfileName: ErrorNorms
+          TensorsToObserve:
+            - Name: Error(ConformalFactorMinusOne)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(LapseTimesConformalFactorMinusOne)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(ShiftExcess)
+              NormType: L2Norm
+              Components: Sum
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - HamiltonianConstraint
+            - MomentumConstraint
+            - Error(ConformalFactorMinusOne)
+            - Error(LapseTimesConformalFactorMinusOne)
+            - Error(ShiftExcess)
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
+  # Can't skip resets if bottom solver is enabled because we start at flatness
+  SkipResets: False
