@@ -34,6 +34,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -274,6 +275,9 @@ void DirichletAnalytic<System>::fd_ghost(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         magnetic_field,
     const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+    const gsl::not_null<std::optional<
+        Variables<db::wrap_tags_in<Flux, typename System::flux_variables>>>*>
+        cell_centered_ghost_fluxes,
     const Direction<3>& direction,
 
     // fd_interior_temporary_tags
@@ -300,32 +304,41 @@ void DirichletAnalytic<System>::fd_ghost(
 
   // Compute FD ghost data with the analytic data or solution
   auto boundary_values = call_with_dynamic_type<
-      tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataVector>,
-                          hydro::Tags::ElectronFraction<DataVector>,
-                          hydro::Tags::SpecificInternalEnergy<DataVector>,
-                          hydro::Tags::Temperature<DataVector>,
-                          hydro::Tags::SpatialVelocity<DataVector, 3>,
-                          hydro::Tags::LorentzFactor<DataVector>,
-                          hydro::Tags::MagneticField<DataVector, 3>,
-                          hydro::Tags::DivergenceCleaningField<DataVector>,
-                          gr::Tags::SpacetimeMetric<DataVector, 3>,
-                          ::gh::Tags::Pi<DataVector, 3>,
-                          ::gh::Tags::Phi<DataVector, 3>>,
+      tuples::TaggedTuple<
+          hydro::Tags::RestMassDensity<DataVector>,
+          hydro::Tags::ElectronFraction<DataVector>,
+          hydro::Tags::SpecificInternalEnergy<DataVector>,
+          hydro::Tags::Pressure<DataVector>,
+          hydro::Tags::Temperature<DataVector>,
+          hydro::Tags::SpatialVelocity<DataVector, 3>,
+          hydro::Tags::LorentzFactor<DataVector>,
+          hydro::Tags::MagneticField<DataVector, 3>,
+          hydro::Tags::DivergenceCleaningField<DataVector>,
+          gr::Tags::SpacetimeMetric<DataVector, 3>,
+          ::gh::Tags::Pi<DataVector, 3>, ::gh::Tags::Phi<DataVector, 3>,
+          gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
+          gr::Tags::SqrtDetSpatialMetric<DataVector>,
+          gr::Tags::InverseSpatialMetric<DataVector, 3>>,
       ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list>(
       analytic_prescription_.get(),
       [&ghost_inertial_coords, &time](const auto* const initial_data) {
-        using hydro_and_spacetime_tags =
-            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                       hydro::Tags::ElectronFraction<DataVector>,
-                       hydro::Tags::SpecificInternalEnergy<DataVector>,
-                       hydro::Tags::Temperature<DataVector>,
-                       hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       hydro::Tags::LorentzFactor<DataVector>,
-                       hydro::Tags::MagneticField<DataVector, 3>,
-                       hydro::Tags::DivergenceCleaningField<DataVector>,
-                       gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<DataVector, 3>,
-                       ::gh::Tags::Phi<DataVector, 3>>;
+        using hydro_and_spacetime_tags = tmpl::list<
+            hydro::Tags::RestMassDensity<DataVector>,
+            hydro::Tags::ElectronFraction<DataVector>,
+            hydro::Tags::SpecificInternalEnergy<DataVector>,
+            hydro::Tags::Pressure<DataVector>,
+            hydro::Tags::Temperature<DataVector>,
+            hydro::Tags::SpatialVelocity<DataVector, 3>,
+            hydro::Tags::LorentzFactor<DataVector>,
+            hydro::Tags::MagneticField<DataVector, 3>,
+            hydro::Tags::DivergenceCleaningField<DataVector>,
+            gr::Tags::SpacetimeMetric<DataVector, 3>,
+            ::gh::Tags::Pi<DataVector, 3>, ::gh::Tags::Phi<DataVector, 3>,
+            gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+            gr::Tags::SpatialMetric<DataVector, 3>,
+            gr::Tags::SqrtDetSpatialMetric<DataVector>,
+            gr::Tags::InverseSpatialMetric<DataVector, 3>>;
         if constexpr (is_analytic_solution_v<
                           std::decay_t<decltype(*initial_data)>>) {
           return initial_data->variables(ghost_inertial_coords, time,
@@ -364,6 +377,11 @@ void DirichletAnalytic<System>::fd_ghost(
       get<hydro::Tags::MagneticField<DataVector, 3>>(boundary_values);
   *divergence_cleaning_field =
       get<hydro::Tags::DivergenceCleaningField<DataVector>>(boundary_values);
+
+  if (cell_centered_ghost_fluxes->has_value()) {
+    grmhd::ValenciaDivClean::compute_fluxes_from_primitives(
+        make_not_null(&cell_centered_ghost_fluxes->value()), boundary_values);
+  }
 }
 
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)

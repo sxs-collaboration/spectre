@@ -62,14 +62,8 @@ struct System {
 
   using primitive_variables_tag =
       typename grmhd_system::primitive_variables_tag;
-  using spacetime_variables_tag = ::Tags::Variables<
-      tmpl::list<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                               Frame::Inertial>,
-                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
-                               Frame::Inertial>,
-                 ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
-                               tmpl::size_t<3>, Frame::Inertial>,
-                 gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
+  using spacetime_variables_tag =
+      ::Tags::Variables<gr::tags_for_hydro<volume_dim, DataVector>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
 
