@@ -20,6 +20,7 @@ spectre_target_headers(
   IsA.hpp
   IsCallable.hpp
   IsComplexOfFundamental.hpp
+  IsDeviceCapable.hpp
   IsInteger.hpp
   IsIterable.hpp
   IsMaplike.hpp

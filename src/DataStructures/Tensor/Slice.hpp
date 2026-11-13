@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <boost/range/combine.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <cstddef>
 #include <optional>
 
@@ -42,11 +40,9 @@ void data_on_slice(
   }
 
   for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
-    for (decltype(auto) interface_and_volume_tensor_components :
-         boost::combine(*interface_tensor, volume_tensor)) {
-      boost::get<0>(interface_and_volume_tensor_components)[si.slice_offset()] =
-          boost::get<1>(
-              interface_and_volume_tensor_components)[si.volume_offset()];
+    for (size_t i = 0; i < volume_tensor.size(); ++i) {
+      (*interface_tensor)[i][si.slice_offset()] =
+          volume_tensor[i][si.volume_offset()];
     }
   }
 }
