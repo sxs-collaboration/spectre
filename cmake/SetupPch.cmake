@@ -45,11 +45,15 @@ target_link_libraries(
   INTERFACE
   Blaze
   Brigand
+  Catch2
   Charmxx::charmxx
   Charmxx::pup
   HDF5::HDF5
+  Libsharp
   SpectreFlags
   SpectreKokkos
+  xsimd
+  yaml-cpp::yaml-cpp
   )
 
 # Targets can reuse the PCH generated for this library. They must also link
