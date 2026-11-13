@@ -40,10 +40,10 @@ namespace Solutions {
  * \brief Kerr black hole in Kerr-Schild coordinates
  *
  * \details
- * The metric is \f$g_{\mu\nu} = \eta_{\mu\nu} + 2 H l_\mu l_\nu\f$,
- * where \f$\eta_{\mu\nu}\f$ is the Minkowski metric, \f$H\f$ is a scalar
- * function, and \f$l_\mu\f$ is the outgoing null vector.
- * \f$H\f$ and \f$l_\mu\f$ are known functions of the coordinates
+ * The metric is $g_{\mu\nu} = \eta_{\mu\nu} + 2 H l_\mu l_\nu$,
+ * where $\eta_{\mu\nu}$ is the Minkowski metric, $H$ is a scalar
+ * function, and $l_\mu$ is the outgoing null vector.
+ * $H$ and $l_\mu$ are known functions of the coordinates
  * and of the mass and spin vector.
  *
  * The following are input file options that can be specified:
@@ -55,164 +55,165 @@ namespace Solutions {
  *
  *
  * A Kerr-Schild coordinate system is defined by
- * \f{equation}{
+ * \begin{equation}
  * g_{\mu\nu}  \equiv \eta_{\mu\nu} + 2 H l_\mu l_\nu,
- * \f}
- * where \f$H\f$ is a scalar function of the coordinates, \f$\eta_{\mu\nu}\f$
- * is the Minkowski metric, and \f$l^\mu\f$ is a null vector. Note that the
- * form of the metric along with the nullness of \f$l^\mu\f$ allows one to
- * raise and lower indices of \f$l^\mu\f$ using \f$\eta_{\mu\nu}\f$, and
- * that \f$l^t l^t = l_t l_t = l^i l_i\f$.
+ * \end{equation}
+ * where $H$ is a scalar function of the coordinates, $\eta_{\mu\nu}$
+ * is the Minkowski metric, and $l^\mu$ is a null vector. Note that the
+ * form of the metric along with the nullness of $l^\mu$ allows one to
+ * raise and lower indices of $l^\mu$ using $\eta_{\mu\nu}$, and
+ * that $l^t l^t = l_t l_t = l^i l_i$.
  * Note also that
- * \f{equation}{
+ * \begin{equation}
  * g^{\mu\nu}  \equiv \eta^{\mu\nu} - 2 H l^\mu l^\nu,
- * \f}
- * and that \f$\sqrt{-g}=1\f$.
- * Also, \f$l_\mu\f$ is a geodesic with respect to both the physical metric
+ * \end{equation}
+ * and that $\sqrt{-g}=1$.
+ * Also, $l_\mu$ is a geodesic with respect to both the physical metric
  * and the Minkowski metric:
- * \f{equation}{
+ * \begin{equation}
  * l^\mu \partial_\mu l_\nu = l^\mu\nabla_\mu l_\nu = 0.
- * \f}
+ * \end{equation}
  *
  *
  * The corresponding 3+1 quantities are
- * \f{eqnarray}{
- * \gamma_{i j}     &=& \delta_{i j} + 2 H l_i l_j,\\
- * \gamma^{i j}  &=& \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\
- * {\rm det} \gamma_{i j}&=& 1+2H l^t l^t,\\
- * \partial_k ({\rm det} \gamma_{i j})&=& 2 l^t l^t \partial_k H,\\
- * \beta^i       &=& - {2 H l^t l^i \over 1+2H l^t l^t},\\
- * N        &=& \left(1+2 H l^t l^t\right)^{-1/2},\quad\hbox{(lapse)}\\
- * \alpha     &=& \left(1+2 H l^t l^t\right)^{-1},
- *                \quad\hbox{(densitized lapse)}\\
- * K_{i j}  &=& - \left(1+2 H l^t l^t\right)^{1/2}
+ * \begin{align}
+ * \gamma_{i j}     &= \delta_{i j} + 2 H l_i l_j,\\
+ * \gamma^{i j}  &= \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\
+ * {\rm det} \gamma_{i j}&= 1+2H l^t l^t,\\
+ * \partial_k ({\rm det} \gamma_{i j})&= 2 l^t l^t \partial_k H
+ *               + 4H l^t \partial_k l^t,\\
+ * \beta^i       &= - {2 H l^t l^i \over 1+2H l^t l^t},\\
+ * \alpha        &= \left(1+2 H l^t l^t\right)^{-1/2},\quad\hbox{(lapse)}\\
+ * K_{i j}  &= - \left(1+2 H l^t l^t\right)^{1/2}
  *       \left[l_i l_j \partial_{t} H + 2 H l_{(i} \partial_{t} l_{j)}\right]
  *                 \nonumber \\
- *                 &&-2\left(1+2 H l^t l^t\right)^{-1/2}
+ *                 &\quad -2\left(1+2 H l^t l^t\right)^{-1/2}
  *                \left[H l^t \partial_{(i}l_{j)} + H l_{(i}\partial_{j)}l^t
  *          + l^t l_{(i}\partial_{j)} H + 2H^2 l^t l_{(i} l^k\partial_{k}l_{j)}
  *          + H l^t l_i l_j l^k \partial_{k} H\right],\\
- * \partial_{k}\gamma_{i j}&=& 2 l_i l_j\partial_{k} H +
+ * \partial_{k}\gamma_{i j}&= 2 l_i l_j\partial_{k} H +
  *    4 H l_{(i} \partial_{k}l_{j)},\\
- * \partial_{k}N   &=& -\left(1+2 H l^t l^t\right)^{-3/2}
+ * \partial_{k}\alpha   &= -\left(1+2 H l^t l^t\right)^{-3/2}
  *                    \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right),\\
- * \partial_{k}\beta^i  &=& - 2\left(1+2H l^t l^t\right)^{-1}
+ * \partial_{k}\beta^i  &= - 2\left(1+2H l^t l^t\right)^{-1}
  *    \left(l^tl^i\partial_{k}H+Hl^t\partial_{k}l^i+Hl^i\partial_{k}l^t\right)
  *                   + 4 H l^t l^i \left(1+2H l^t l^t\right)^{-2}
- *                     \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right),\\
- * \Gamma^k{}_{i j}&=& -\delta^{k m}\left(l_i l_j \partial_{m}H
- *                                    + 2l_{(i} \partial_{m}l_{j)} \right)
- *                   + 2 H l_{(i}\partial_{j)} l^k
- *          \nonumber \\
- *                  &&+\left(1+2 H l^t l^t\right)^{-1}
- *                     \left[2 l^k l_{(i}\partial_{j)} H
- *                          +2 H l_i l_j l^k l^m \partial_{m}H
- *                          +2 H l^k \partial_{(i}l_{j)}
- *                          +4 H^2 l^k l_{(i} (l^m \partial_{m}l_{j)}
- *                                      -\partial_{j)} l^t)
- *                     \right].
- * \f}
- * Note that \f$l^i\f$ is **not** equal to \f$\gamma^{i j} l_j\f$; it is equal
- * to \f$g^{i \mu} l_\mu\f$.
+ *                     \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right).
+ * \end{align}
+ * Note that $l^i$ is **not** equal to $\gamma^{i j} l_j$; it is equal
+ * to $g^{i \mu} l_\mu$.
  *
  * ## Kerr Spacetime
  *
+ * ### Zero spin expressions
+ * For $\vec{a} = 0$, some curvature quantities are more conveniently computed
+ * from simpler expressions:
+ * \begin{align}
+ * \partial_i \alpha
+ * &= \frac{M X_i}{r^3}
+ *      \left(1 + \frac{2M}{r}\right)^{-3/2}, \\
+ *   K
+ *   &= \frac{2M(r + 3M)}{\left[r(r + 2M)\right]^{3/2}}, \\
+ *   \gamma^{jk}\Gamma^i{}_{jk}
+ *   &= \frac{M(3r + 8M)}{r^2(r + 2M)^2}\,X^i.
+ * \end{align}
+ *
  * ### Spin in the z direction
  *
- * Assume Cartesian coordinates \f$(t,x,y,z)\f$. Then for stationary Kerr
- * spacetime with mass \f$M\f$ and angular momentum \f$a M\f$
- * in the \f$z\f$ direction,
- * \f{eqnarray}{
- * H     &=& {M r^3 \over r^4 + a^2 z^2},\\
- * l_\mu &=&
+ * Assume Cartesian coordinates $(t,x,y,z)$. Then for stationary Kerr
+ * spacetime with mass $M$ and angular momentum $a M$
+ * in the $z$ direction,
+ * \begin{align}
+ * H     &= {M r^3 \over r^4 + a^2 z^2},\\
+ * l_\mu &=
  * \left(1,{rx+ay\over r^2+a^2},{ry-ax\over r^2+a^2},{z\over r}\right),
- * \f}
- * where \f$r\f$ is defined by
- * \f{equation}{
+ * \end{align}
+ * where $r$ is defined by
+ * \begin{align}
  * \label{eq:rdefinition1}
  * {x^2+y^2\over a^2+r^2} + {z^2\over r^2} = 1,
- * \f}
+ * \end{align}
  * or equivalently,
- * \f{equation}{
+ * \begin{equation}
  * r^2 = {1\over 2}(x^2 + y^2 + z^2 - a^2)
  *      + \left({1\over 4}(x^2 + y^2 + z^2 - a^2)^2 + a^2 z^2\right)^{1/2}.
- * \f}
+ * \end{equation}
  *
  * Possibly useful formula:
- * \f{equation}{
+ * \begin{equation}
  * \partial_{i} r = {x_i + z \delta_{i z} \displaystyle {a^2\over r^2} \over
  *   2 r\left(1 - \displaystyle {x^2 + y^2 + z^2 - a^2\over 2 r^2}\right)}.
- * \f}
+ * \end{equation}
  *
  * ### Spin in an arbitrary direction
  *
- * For arbitrary spin direction, let \f$\vec{x}\equiv (x,y,z)\f$ and
- * \f$\vec{a}\f$ be a flat-space three-vector with magnitude-squared
- * (\f$\delta_{ij}\f$ norm) equal to \f$a^2\f$.
+ * For arbitrary spin direction, let $\vec{x}\equiv (x,y,z)$ and
+ * $\vec{a}$ be a flat-space three-vector with magnitude-squared
+ * ($\delta_{ij}$ norm) equal to $a^2$.
  * Then the Kerr-Schild quantities for Kerr spacetime are:
- * \f{eqnarray}{
- * H       &=& {M r^3 \over r^4 + (\vec{a}\cdot\vec{x})^2},\\
- * \vec{l} &=& {r\vec{x}-\vec{a}\times\vec{x}+(\vec{a}\cdot\vec{x})\vec{a}/r
+ * \begin{align}
+ * H       &= {M r^3 \over r^4 + (\vec{a}\cdot\vec{x})^2},\\
+ * \vec{l} &= {r\vec{x}-\vec{a}\times\vec{x}+(\vec{a}\cdot\vec{x})\vec{a}/r
  *              \over r^2+a^2 },\\
- * l_t     &=& 1,\\
+ * l_t     &= 1,\\
  * \label{eq:rdefinition2}
- * r^2     &=& {1\over 2}(\vec{x}\cdot\vec{x}-a^2)
+ * r^2     &= {1\over 2}(\vec{x}\cdot\vec{x}-a^2)
  *      + \left({1\over 4}(\vec{x}\cdot\vec{x}-a^2)^2
  *              + (\vec{a}\cdot\vec{x})^2\right)^{1/2},
- * \f}
- * where \f$\vec{l}\equiv (l_x,l_y,l_z)\f$, and
+ * \end{align}
+ * where $\vec{l}\equiv (l_x,l_y,l_z)$, and
  * all dot and cross products are evaluated as flat-space 3-vector operations.
  *
  * Possibly useful formulae:
- * \f{equation}{
+ * \begin{equation}
  * \partial_{i} r = {x_i + (\vec{a}\cdot\vec{x})a_i/r^2 \over
  *   2 r\left(1 - \displaystyle {\vec{x}\cdot\vec{x}-a^2\over 2 r^2}\right)},
- * \f}
- * \f{equation}{
+ * \end{equation}
+ * \begin{equation}
  * {\partial_{i} H \over H} =
  *  {3\partial_{i}r\over r} - {4 r^3 \partial_{i}r +
  *                     2(\vec{a}\cdot\vec{x})\vec{a}
  *                     \over r^4 + (\vec{a}\cdot\vec{x})^2},
- * \f}
- * \f{equation}{
+ * \end{equation}
+ * \begin{equation}
  * (r^2+a^2)\partial_{j} l_i =
  *                 (x_i-2 r l_i-(\vec{a}\cdot\vec{x})a_i/r^2)\partial_{j}r
  *                 + r\delta_{ij} + a_i a_j/r + \epsilon^{ijk} a_k.
- * \f}
+ * \end{equation}
  *
  * ## Cartesian and Spherical Coordinates for Kerr
  *
  * The Kerr-Schild coordinates are defined in terms of the Cartesian
- * coordinates \f$(x,y,z)\f$.  If one wishes to express Kerr-Schild
+ * coordinates $(x,y,z)$.  If one wishes to express Kerr-Schild
  * coordinates in terms of the spherical polar coordinates
- * \f$(\tilde{r},\theta,\phi)\f$ then one can make the obvious and
+ * $(\tilde{r},\theta,\phi)$ then one can make the obvious and
  * usual transformation
- * \f{equation}{
+ * \begin{equation}
  * \label{eq:sphertocartsimple}
  * x=\tilde{r}\sin\theta\cos\phi,\quad
  * y=\tilde{r}\sin\theta\sin\phi,\quad
  * z=\tilde{r}\cos\theta.
- * \f}
+ * \end{equation}
  *
  * This is simple, and has the advantage that in this coordinate system
- * for \f$M\to0\f$, Kerr spacetime becomes Minkowski space in spherical
- * coordinates \f$(\tilde{r},\theta,\phi)\f$. However, the disadvantage is
+ * for $M\to0$, Kerr spacetime becomes Minkowski space in spherical
+ * coordinates $(\tilde{r},\theta,\phi)$. However, the disadvantage is
  * that the horizon of a Kerr hole is **not** located at constant
- * \f$\tilde{r}\f$, but is located instead at constant \f$r\f$,
- * where \f$r\f$ is the radial
- * Boyer-Lindquist coordinate defined in (\f$\ref{eq:rdefinition2}\f$).
+ * $\tilde{r}$, but is located instead at constant $r$,
+ * where $r$ is the radial
+ * Boyer-Lindquist coordinate defined in ($\ref{eq:rdefinition2}$).
  *
- * For spin in the \f$z\f$ direction, one could use the transformation
- * \f{equation}{
+ * For spin in the $z$ direction, one could use the transformation
+ * \begin{equation}
  * x=\sqrt{r^2+a^2}\sin\theta\cos\phi,\quad
  * y=\sqrt{r^2+a^2}\sin\theta\sin\phi,\quad
  * z=r\cos\theta.
- * \f}
- * In this case, for \f$M\to0\f$, Kerr spacetime becomes Minkowski space in
+ * \end{equation}
+ * In this case, for $M\to0$, Kerr spacetime becomes Minkowski space in
  * spheroidal coordinates, but now the horizon is on a constant-coordinate
  * surface.
  *
- * Right now we use (\f$\ref{eq:sphertocartsimple}\f$), but we may
+ * Right now we use ($\ref{eq:sphertocartsimple}$), but we may
  * wish to use the other transformation in the future.
  *
  * ## Boost of the Kerr-Schild solution
@@ -224,6 +225,13 @@ namespace Solutions {
  * each of the covariant objects individually. Notice that we also need to
  * appropriately boost the coordinates to the to the rest frame before computing
  * the metric.
+ *
+ * The time derivatives of the metric components are given by:
+ * \begin{align}
+ *   \partial_t \alpha &= - v^{i}\partial_{i}\alpha, \\
+ *   \partial_t \beta^{i} &= - v^{j}\partial_{j}\beta^{i},\\
+ *   \partial_t \gamma_{ij} &= - v^{k}\partial_{k} \gamma_{ij}.
+ * \end{align}
  *
  * \warning While technically the boosted Kerr-Schild metric is dependent on
  * both the time and space coordinates, we have implemented it only at $t = 0$

@@ -20,7 +20,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpatialMetric.hpp"
 #include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -659,21 +658,19 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
     return;
   }
-  const auto& ex_curvature =
-      cache->get_var(*this, gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>{});
-  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
-  const auto& shift =
-      cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{});
-  const auto& deriv_shift =
-      cache->get_var(*this, DerivShift<DataType, Frame>{});
-  const auto& spatial_metric =
-      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
   const auto& deriv_spatial_metric =
       cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{});
-    // Reconstruct from the extrinsic curvature and shift
-    gr::time_derivative_of_spatial_metric(dt_spatial_metric, lapse, shift,
-                                          deriv_shift, spatial_metric,
-                                          deriv_spatial_metric, ex_curvature);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      dt_spatial_metric->get(i, j) = -gsl::at(solution().boost_velocity(), 0) *
+                                     deriv_spatial_metric.get(0, i, j);
+      for (size_t k = 1; k < 3; ++k) {
+        dt_spatial_metric->get(i, j) +=
+            -gsl::at(solution().boost_velocity(), k) *
+            deriv_spatial_metric.get(k, i, j);
+      }
+    }
+  }
 }
 
 template <typename DataType, typename Frame>
@@ -839,8 +836,16 @@ template <typename DataType, typename Frame>
 Scalar<DataType> KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     ::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/) {
-  const auto& H = get(get_var(computer, internal_tags::H<DataType>{}));
-  return make_with_value<Scalar<DataType>>(H, 0.);
+  const auto& deriv_lapse = get_var(computer, DerivLapse<DataType, Frame>{});
+  Scalar<DataType> dt_lapse =
+      make_with_value<Scalar<DataType>>(get<0>(deriv_lapse), 0.);
+  get(dt_lapse) =
+      -gsl::at(computer.solution().boost_velocity(), 0) * deriv_lapse.get(0);
+  for (size_t i = 1; i < 3; ++i) {
+    get(dt_lapse) +=
+        -gsl::at(computer.solution().boost_velocity(), i) * deriv_lapse.get(i);
+  }
+  return dt_lapse;
 }
 
 template <typename DataType, typename Frame>
@@ -848,8 +853,18 @@ tnsr::I<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>> /*meta*/) {
-  const auto& H = get(get_var(computer, internal_tags::H<DataType>()));
-  return make_with_value<tnsr::I<DataType, 3, Frame>>(H, 0.);
+  const auto& deriv_shift = get_var(computer, DerivShift<DataType, Frame>());
+  tnsr::I<DataType, 3, Frame> dt_shift =
+      make_with_value<tnsr::I<DataType, 3, Frame>>(get<0, 0>(deriv_shift), 0.);
+  for (size_t i = 0; i < 3; ++i) {
+    dt_shift.get(i) = -gsl::at(computer.solution().boost_velocity(), 0) *
+                      deriv_shift.get(0, i);
+    for (size_t j = 1; j < 3; ++j) {
+      dt_shift.get(i) += -gsl::at(computer.solution().boost_velocity(), j) *
+                         deriv_shift.get(j, i);
+    }
+  }
+  return dt_shift;
 }
 
 template <typename DataType, typename Frame>
@@ -865,15 +880,20 @@ tnsr::i<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     gr::Tags::DerivDetSpatialMetric<DataType, 3, Frame> /*meta*/) {
+  const auto& H = get_var(computer, internal_tags::H<DataType>{});
   const auto& deriv_H =
       get_var(computer, internal_tags::deriv_H<DataType, Frame>{});
   const auto& null_form =
       get_var(computer, internal_tags::null_form<DataType, Frame>{});
+  const auto& deriv_null_form =
+      get_var(computer, internal_tags::deriv_null_form<DataType, Frame>{});
 
   auto result =
       make_with_value<tnsr::i<DataType, 3, Frame>>(get<0>(deriv_H), 0.);
   for (size_t i = 0; i < 3; ++i) {
-    result.get(i) = 2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1);
+    result.get(i) =
+        2.0 * square(get<0>(null_form)) * deriv_H.get(i + 1) +
+        4.0 * get(H) * get<0>(null_form) * deriv_null_form.get(i + 1, 0);
   }
 
   return result;
@@ -930,10 +950,6 @@ tnsr::Abb<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
     gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame> /*meta*/) {
-  ASSERT(
-      computer.solution().zero_velocity(),
-      "The tag gr::Tags::SpacetimeChristoffelSecondKind is not supported for a "
-      "boosted KerrSchild solution.");
   const auto& lapse = get_var(computer, gr::Tags::Lapse<DataType>{});
   const auto& shift = get_var(computer, gr::Tags::Shift<DataType, 3, Frame>{});
   const auto& spatial_metric =
