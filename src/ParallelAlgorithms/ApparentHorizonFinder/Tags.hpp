@@ -8,6 +8,8 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <variant>
+#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
@@ -278,12 +280,21 @@ struct ObservationTimeCompute : ObservationTime<Index>, db::ComputeTag {
 /// @}
 
 /// Simple tag for whether to write the centers of the horizons to disk.
+///
+/// The centers are written if any control system writes data to disk, i.e. if
+/// `control_system::OptionTags::WriteDataToDisk` is `true` or a non-empty list
+/// of control system names.
 struct ObserveCenters : db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<control_system::OptionTags::WriteDataToDisk>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) { return option; }
+  static type create_from_options(
+      const std::variant<bool, std::vector<std::string>>& option) {
+    return std::holds_alternative<bool>(option)
+               ? std::get<bool>(option)
+               : not std::get<std::vector<std::string>>(option).empty();
+  }
 };
 
 /// \ingroup DataBoxTagsGroup

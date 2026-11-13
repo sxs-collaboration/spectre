@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -107,7 +108,8 @@ void test_expansion_control_system() {
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {"DummyFileName", std::move(domain), 4, true, false, ::Verbosity::Silent,
+      {"DummyFileName", std::move(domain), 4, true,
+       std::unordered_set<std::string>{}, ::Verbosity::Silent,
        std::move(is_active_map), std::move(grid_center_A),
        std::move(grid_center_B), std::move(system_to_combined_names)},
       {std::move(initial_functions_of_time),

@@ -9,7 +9,10 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
+#include <variant>
+#include <vector>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/CombinedName.hpp"
@@ -53,13 +56,58 @@ struct InitialTime;
 namespace control_system::Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
-/// DataBox tag for writing control system data to disk
+/// DataBox tag holding the names of the control systems that write data to
+/// disk
+///
+/// \details Created from `OptionTags::WriteDataToDisk`. If that option is
+/// `true`, this holds the names of all control systems in the executable, and
+/// if it is `false`, this is empty. If the option is a list of names, each name
+/// must be the `name()` of a control system in the executable.
 struct WriteDataToDisk : db::SimpleTag {
-  using type = bool;
-  using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
+  using type = std::unordered_set<std::string>;
 
-  static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) { return option; }
+  template <typename Metavariables>
+  using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
+  static constexpr bool pass_metavariables = true;
+
+ private:
+  template <typename Component>
+  using system = typename Component::control_system;
+
+ public:
+  template <typename Metavariables>
+  static type create_from_options(
+      const std::variant<bool, std::vector<std::string>>& option) {
+    using all_control_systems =
+        tmpl::transform<metafunctions::all_control_components<Metavariables>,
+                        tmpl::bind<system, tmpl::_1>>;
+    type all_names{};
+    tmpl::for_each<all_control_systems>(
+        [&all_names]<typename ControlSystem>(
+            tmpl::type_<ControlSystem> /*meta*/) {
+          all_names.insert(ControlSystem::name());
+        });
+    if (std::holds_alternative<bool>(option)) {
+      return std::get<bool>(option) ? all_names : type{};
+    }
+    const auto& names = std::get<std::vector<std::string>>(option);
+    if (names.empty()) {
+      ERROR(
+          "No control systems were specified in option "
+          "ControlSystems.WriteDataToDisk. Specify one or more of "
+          << all_names << ", 'true' for all, or 'false' for none.");
+    }
+    for (const auto& name : names) {
+      if (not all_names.contains(name)) {
+        ERROR("Unknown control system '"
+              << name
+              << "' in option ControlSystems.WriteDataToDisk. The control "
+                 "systems in this executable are "
+              << all_names);
+      }
+    }
+    return {names.begin(), names.end()};
+  }
 };
 
 using ObserveCenters = ah::Tags::ObserveCenters;
