@@ -96,6 +96,18 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Interval", "[Domain][Unit]") {
   CHECK(get<0>(inverse_map_right(point_2)) == approx(2.579668049792531120));
   CHECK(get<0>(inverse_map_right(point_3)) == approx(2.6896705253784505788));
 
+  // Points at or beyond the singularity have no preimage
+  for (const auto& map_left : {logarithmic_map_left, inverse_map_left}) {
+    CHECK_FALSE(map_left.inverse({{-3.2}}).has_value());
+    CHECK_FALSE(map_left.inverse({{-5.}}).has_value());
+    CHECK(map_left.inverse({{-3.15}}).has_value());
+  }
+  for (const auto& map_right : {logarithmic_map_right, inverse_map_right}) {
+    CHECK_FALSE(map_right.inverse({{2.8}}).has_value());
+    CHECK_FALSE(map_right.inverse({{4.}}).has_value());
+    CHECK(map_right.inverse({{2.75}}).has_value());
+  }
+
   check_if_map_is_identity(CoordinateMaps::Interval{
       -1.5, 1.0, -1.5, 1.0, CoordinateMaps::Distribution::Linear});
 }

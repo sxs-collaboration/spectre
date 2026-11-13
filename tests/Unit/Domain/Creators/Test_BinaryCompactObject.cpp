@@ -1552,6 +1552,51 @@ void test_kerr_horizon_conforming() {
   }
 }
 
+void test_log_maps_block_logical_coordinates() {
+  INFO("Locate points near the objects in a domain with log maps");
+  // Similar to the domain of the BBH initial data pipeline. Finding the block
+  // of each point inverts the maps of other blocks, which must not raise
+  // floating-point exceptions, e.g. at the singularity of the log maps.
+  const double inner_radius = 1.;
+  const double outer_radius = 20. / 3.75;
+  const double x_pos = 10.;
+  const domain::creators::BinaryCompactObject domain_creator{
+      Object{inner_radius, outer_radius, x_pos, true, 1., 1.},
+      Object{inner_radius, outer_radius, -x_pos, true, 1., 1.},
+      std::array<double, 2>{{0., 0.}},
+      80.,
+      300.,
+      1.0,
+      0_st,
+      6_st};
+  const auto domain = domain_creator.create_domain();
+  const size_t num_points = 10;
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist_radius{0., 2. * outer_radius};
+  std::uniform_real_distribution<double> dist_cos_theta{-1., 1.};
+  std::uniform_real_distribution<double> dist_phi{0., 2. * M_PI};
+  for (const double center : {x_pos, -x_pos}) {
+    CAPTURE(center);
+    const auto radius = make_with_random_values<DataVector>(
+        make_not_null(&gen), make_not_null(&dist_radius), num_points);
+    const auto cos_theta = make_with_random_values<DataVector>(
+        make_not_null(&gen), make_not_null(&dist_cos_theta), num_points);
+    const auto phi = make_with_random_values<DataVector>(
+        make_not_null(&gen), make_not_null(&dist_phi), num_points);
+    const DataVector sin_theta = sqrt(1. - square(cos_theta));
+    tnsr::I<DataVector, 3> x{};
+    get<0>(x) = center + radius * sin_theta * cos(phi);
+    get<1>(x) = radius * sin_theta * sin(phi);
+    get<2>(x) = radius * cos_theta;
+    const auto x_logical = block_logical_coordinates(domain, x);
+    for (size_t i = 0; i < num_points; ++i) {
+      CAPTURE(radius[i]);
+      // Points inside the excision are not in the domain, all others are
+      CHECK(x_logical[i].has_value() == (radius[i] > inner_radius));
+    }
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 45]]
@@ -1568,4 +1613,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
   test_parse_errors();
   test_spherical_harmonics_wavezone();
   test_kerr_horizon_conforming();
+  test_log_maps_block_logical_coordinates();
 }
