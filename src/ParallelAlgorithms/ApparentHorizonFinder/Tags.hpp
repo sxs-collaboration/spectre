@@ -27,6 +27,9 @@
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
 /// \cond
+namespace control_system::OptionTags {
+struct WriteDataToDisk;
+}  // namespace control_system::OptionTags
 class FastFlow;
 namespace ylm {
 template <typename Frame>

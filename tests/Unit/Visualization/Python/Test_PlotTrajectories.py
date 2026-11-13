@@ -112,29 +112,58 @@ class TestPlotTrajectories(unittest.TestCase):
         ):
             with self.subTest(times_a=times_a, times_b=times_b):
                 self.write_trajectories(times_a, times_b)
-                with self.assertRaisesRegex(
-                    click.UsageError, "no common observation times"
-                ):
+                with self.assertRaises(click.UsageError) as error:
                     import_A_and_B([self.h5_filename])
+                message = str(error.exception)
+                self.assertIn("no common observation times", message)
+                self.assertIn("A has 2 sample(s) spanning", message)
+                self.assertIn("B has 2 sample(s) spanning", message)
+                self.assertIn("No interpolation is performed", message)
 
     def test_ambiguous_times(self):
         for times_a, times_b in (
             ([1.0], [1.0, np.nextafter(1.0, np.inf)]),
             ([1.0, np.nextafter(1.0, np.inf)], [1.0]),
-            ([1.0, 1.0 + 1.0e-14], [1.0 + 2.0 * np.finfo(float).eps, 2.0]),
         ):
             with self.subTest(times_a=times_a, times_b=times_b):
                 self.write_trajectories(times_a, times_b)
-                with self.assertRaisesRegex(
-                    click.UsageError, "Ambiguous trajectory times"
-                ):
+                with self.assertRaises(click.UsageError) as error:
                     import_A_and_B([self.h5_filename])
+                message = str(error.exception)
+                self.assertIn("Ambiguous trajectory times", message)
+                self.assertIn(
+                    (
+                        "1 ambiguous A-to-B match group"
+                        if len(times_a) == 1
+                        else "1 ambiguous B-to-A match group"
+                    ),
+                    message,
+                )
+                self.assertIn("time 1", message)
+
+    def test_inconsistent_times(self):
+        self.write_trajectories(
+            [1.0, 1.0 + 1.0e-14],
+            [1.0 + 2.0 * np.finfo(float).eps, 2.0],
+        )
+        with self.assertRaises(click.UsageError) as error:
+            import_A_and_B([self.h5_filename])
+        self.assertIn("Inconsistent trajectory times", str(error.exception))
+        self.assertIn("1 matched sample pair", str(error.exception))
+        self.assertIn("A time 1", str(error.exception))
+        self.assertIn("B time", str(error.exception))
+        self.assertIn("difference", str(error.exception))
+        self.assertIn("local spacing", str(error.exception))
+        self.assertIn("No interpolation is performed", str(error.exception))
 
     def test_empty_trajectories(self):
         with self.assertRaisesRegex(click.UsageError, "No trajectory files"):
             import_A_and_B([])
         self.write_trajectories([], [0.0])
-        with self.assertRaisesRegex(click.UsageError, "must contain samples"):
+        with self.assertRaisesRegex(click.UsageError, "at least one sample"):
+            import_A_and_B([self.h5_filename])
+        self.write_trajectories([np.nan], [0.0])
+        with self.assertRaisesRegex(click.UsageError, "times must be finite"):
             import_A_and_B([self.h5_filename])
 
     def test_missing_subfile(self):

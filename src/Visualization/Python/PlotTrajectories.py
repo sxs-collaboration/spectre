@@ -21,13 +21,24 @@ def _align_trajectories(A, B):
     """Match samples at common times, allowing only roundoff differences."""
 
     def sort_and_deduplicate(data):
-        if len(data) == 0 or not np.all(np.isfinite(data[:, 0])):
+        if len(data) == 0:
             raise click.UsageError(
-                "Trajectories must contain samples with finite times."
+                "Each trajectory must contain at least one sample."
             )
+        if not np.all(np.isfinite(data[:, 0])):
+            raise click.UsageError("Trajectory times must be finite.")
         data = data[np.argsort(data[:, 0], kind="stable")]
         # Keep the last occurrence, so later segments replace restart samples.
         return data[np.append(np.diff(data[:, 0]) != 0.0, True)]
+
+    def format_times(times):
+        return np.array2string(
+            np.asarray(times),
+            precision=17,
+            separator=", ",
+            threshold=6,
+            edgeitems=3,
+        )
 
     A, B = map(sort_and_deduplicate, (A, B))
     times_a, times_b = A[:, 0], B[:, 0]
@@ -36,16 +47,43 @@ def _align_trajectories(A, B):
     upper = np.searchsorted(times_b, times_a + tolerance, side="right")
     indices_a = np.flatnonzero(upper > lower)
     indices_b = lower[indices_a]
-    if np.any(upper - lower > 1) or len(np.unique(indices_b)) != len(indices_b):
+    ambiguous_a = np.flatnonzero(upper - lower > 1)
+    unique_b, b_match_counts = np.unique(indices_b, return_counts=True)
+    ambiguous_b = unique_b[b_match_counts > 1]
+    if len(ambiguous_a) > 0 or len(ambiguous_b) > 0:
+        details = []
+        if len(ambiguous_a) > 0:
+            i = ambiguous_a[0]
+            group = "group" if len(ambiguous_a) == 1 else "groups"
+            details.append(
+                f"Found {len(ambiguous_a)} ambiguous A-to-B match {group}."
+                f" First: A time {times_a[i]:.17g} matches B times"
+                f" {format_times(times_b[lower[i] : upper[i]])}."
+            )
+        if len(ambiguous_b) > 0:
+            j = ambiguous_b[0]
+            matching_a = indices_a[indices_b == j]
+            group = "group" if len(ambiguous_b) == 1 else "groups"
+            details.append(
+                f"Found {len(ambiguous_b)} ambiguous B-to-A match {group}."
+                f" First: B time {times_b[j]:.17g} matches A times"
+                f" {format_times(times_a[matching_a])}."
+            )
         raise click.UsageError(
-            "Ambiguous trajectory times: roundoff tolerance would match"
-            " multiple samples. Use consistently sampled horizon-center data."
+            "Ambiguous trajectory times within roundoff tolerance. "
+            + " ".join(details)
+            + " Remove duplicate or near-duplicate timestamps, or select center"
+            " subfiles written on the same observation schedule."
         )
     if len(indices_a) == 0:
         raise click.UsageError(
             "The horizon trajectories have no common observation times."
+            f" A has {len(A)} sample(s) spanning [{times_a[0]:.17g},"
+            f" {times_a[-1]:.17g}]; B has {len(B)} sample(s) spanning"
+            f" [{times_b[0]:.17g}, {times_b[-1]:.17g}]."
             " Select center subfiles with common samples or schedule both"
-            " horizon observations at the same times."
+            " horizon observations at the same times. No interpolation is"
+            " performed."
         )
 
     def local_spacing(times):
@@ -55,10 +93,20 @@ def _align_trajectories(A, B):
     spacing = np.minimum(
         local_spacing(times_a)[indices_a], local_spacing(times_b)[indices_b]
     )
-    if np.any(np.abs(times_a[indices_a] - times_b[indices_b]) > 0.01 * spacing):
+    time_differences = np.abs(times_a[indices_a] - times_b[indices_b])
+    inconsistent = np.flatnonzero(time_differences > 0.01 * spacing)
+    if len(inconsistent) > 0:
+        i = inconsistent[0]
+        pair = "pair" if len(inconsistent) == 1 else "pairs"
         raise click.UsageError(
-            "Ambiguous trajectory times: timestamp differences are too large"
-            " relative to the local sampling interval to treat as roundoff."
+            f"Inconsistent trajectory times: {len(inconsistent)} matched sample"
+            f" {pair} differ by more than 1% of the local sampling interval."
+            f" First: A time {times_a[indices_a[i]]:.17g}, B time"
+            f" {times_b[indices_b[i]]:.17g}, difference"
+            f" {time_differences[i]:.17g}, local spacing {spacing[i]:.17g}."
+            " Select center subfiles written on the same observation schedule"
+            " or schedule both horizon observations at the same times. No"
+            " interpolation is performed."
         )
 
     logger.debug(
