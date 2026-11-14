@@ -88,7 +88,9 @@ DomainCreator:
               - {{ HorizonRotationRight_z }}
             Lapse: *kerr_right
             {% if negative_expansion_bc %}
-            NegativeExpansion: *kerr_right
+            NegativeExpansion:
+              Solution: *kerr_right
+              ComovingShift: None
             {% else %}
             NegativeExpansion: None
             {% endif %}
@@ -108,7 +110,9 @@ DomainCreator:
               - {{ HorizonRotationLeft_z }}
             Lapse: *kerr_left
             {% if negative_expansion_bc %}
-            NegativeExpansion: *kerr_left
+            NegativeExpansion:
+              Solution: *kerr_left
+              ComovingShift: None
             {% else %}
             NegativeExpansion: None
             {% endif %}

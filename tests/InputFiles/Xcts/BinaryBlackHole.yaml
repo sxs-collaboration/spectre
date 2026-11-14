@@ -113,7 +113,9 @@ DomainCreator:
             Center: [*x_right, *y_offset, *z_offset]
             Rotation: [0., 0., 0.]
             Lapse: *kerr_right
-            NegativeExpansion: *kerr_right
+            NegativeExpansion:
+              Solution: *kerr_right
+              ComovingShift: None
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
     ObjectB:
@@ -126,7 +128,9 @@ DomainCreator:
             Center: [*x_left, *y_offset, *z_offset]
             Rotation: [0., 0., 0.]
             Lapse: *kerr_left
-            NegativeExpansion: *kerr_left
+            NegativeExpansion:
+              Solution: *kerr_left
+              ComovingShift: None
       ShellLogMapStrength: 1.0
       CubeLogMapStrength: None
     CenterOfMassOffset: [*y_offset, *z_offset]
