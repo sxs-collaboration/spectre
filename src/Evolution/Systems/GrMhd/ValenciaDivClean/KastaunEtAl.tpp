@@ -386,11 +386,24 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     return std::nullopt;
   }
 
+  // The master function is >= 0 at the upper bound of the bracket (Sec. II.F).
+  // It can be exactly zero at the upper bound, e.g. when the specific internal
+  // energy is at its lower bound, so roundoff can make it slightly negative.
+  // Treat such a value as a root at the upper bound.
+  const double f_at_lower_bound = f_of_mu(bracket->first);
+  double f_at_upper_bound = f_of_mu(bracket->second);
+  if (f_at_upper_bound < 0.0 and
+      f_at_upper_bound >= -(absolute_tolerance_ +
+                            relative_tolerance_ * bracket->second)) {
+    f_at_upper_bound = 0.0;
+  }
+
   // Try to recover primitves
   // NOLINTNEXTLINE(clang-analyzer-core)
-  const auto root = RootFinder::toms748(f_of_mu, bracket->first,
-                                        bracket->second, absolute_tolerance_,
-                                        relative_tolerance_, max_iterations_);
+  const auto root = RootFinder::toms748(
+      f_of_mu, bracket->first, bracket->second, f_at_lower_bound,
+      f_at_upper_bound, absolute_tolerance_, relative_tolerance_,
+      max_iterations_);
   if (not root.has_value()) {
     return std::nullopt;
   }
