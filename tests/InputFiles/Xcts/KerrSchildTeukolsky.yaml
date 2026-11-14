@@ -21,7 +21,7 @@ Background: &solution
       Mass: &KerrMass 1.
       Spin: &KerrSpin [0.1, -0.2, 0.3]
       Center: &KerrCenter [0., 0., 0.]
-      Velocity: [0., 0., 0.]
+      Velocity: &KerrVelocity [0., 0., 0.]
     TeukolskyWave:
       Amplitude: 0.02
       Mode: 2
@@ -30,6 +30,7 @@ Background: &solution
       Center: [0.1, -0.2, 0.3]
       Radius: 20.
       Width: 4.
+    LinearVelocity: *KerrVelocity
 
 InitialGuess: *solution
 
