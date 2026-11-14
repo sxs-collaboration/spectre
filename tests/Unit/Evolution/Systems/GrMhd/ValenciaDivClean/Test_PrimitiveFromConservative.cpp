@@ -491,6 +491,68 @@ void test_kastaun_momentum_cap(const DataVector& used_for_size) {
                                larger_approx);
 }
 
+// Magnetic energy exceeds tau, so the root lies at the upper end of the
+// bracket and roundoff decides whether it is bracketed.
+void test_kastaun_root_at_upper_bracket(const DataVector& used_for_size) {
+  INFO("test KastaunEtAl with the root at the upper end of the bracket");
+  auto spatial_metric =
+      make_with_value<tnsr::ii<DataVector, 3>>(used_for_size, 0.0);
+  get<0, 0>(spatial_metric) = 1.0;
+  get<1, 1>(spatial_metric) = 1.0;
+  get<2, 2>(spatial_metric) = 1.0;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& inv_spatial_metric = det_and_inv.second;
+  const Scalar<DataVector> sqrt_det_spatial_metric =
+      Scalar<DataVector>{sqrt(get(det_and_inv.first))};
+
+  const auto tilde_d =
+      make_with_value<Scalar<DataVector>>(used_for_size, 1.0e-4);
+  const auto tilde_ye = make_with_value<Scalar<DataVector>>(used_for_size, 0.5);
+  const auto tilde_tau =
+      make_with_value<Scalar<DataVector>>(used_for_size, -1.0);
+  const auto tilde_phi =
+      make_with_value<Scalar<DataVector>>(used_for_size, 0.0);
+  auto tilde_b = make_with_value<tnsr::I<DataVector, 3>>(used_for_size, 0.0);
+  get<0>(tilde_b) = 0.1;
+  auto tilde_s = make_with_value<tnsr::i<DataVector, 3>>(used_for_size, 0.0);
+  get<0>(tilde_s) = -2.0;
+  get<1>(tilde_s) = 7.0;
+
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+      primitive_from_conservative_options(1.0e-12, 1.0e-12, 10.0);
+  const EquationsOfState::Equilibrium3D ideal_fluid{
+      EquationsOfState::IdealFluid<true>{4.0 / 3.0}};
+
+  const size_t number_of_points = used_for_size.size();
+  Scalar<DataVector> rest_mass_density(number_of_points);
+  Scalar<DataVector> electron_fraction(number_of_points);
+  Scalar<DataVector> specific_internal_energy(number_of_points);
+  Scalar<DataVector> temperature(number_of_points);
+  tnsr::I<DataVector, 3> spatial_velocity(number_of_points);
+  tnsr::I<DataVector, 3> magnetic_field(number_of_points);
+  Scalar<DataVector> divergence_cleaning_field(number_of_points);
+  Scalar<DataVector> lorentz_factor(number_of_points);
+  Scalar<DataVector> pressure(number_of_points, 0.0);
+  const bool success = grmhd::ValenciaDivClean::PrimitiveFromConservative<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+      false>::apply(make_not_null(&rest_mass_density),
+                    make_not_null(&electron_fraction),
+                    make_not_null(&specific_internal_energy),
+                    make_not_null(&spatial_velocity),
+                    make_not_null(&magnetic_field),
+                    make_not_null(&divergence_cleaning_field),
+                    make_not_null(&lorentz_factor), make_not_null(&pressure),
+                    make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau,
+                    tilde_s, tilde_b, tilde_phi, spatial_metric,
+                    inv_spatial_metric, sqrt_det_spatial_metric, ideal_fluid,
+                    primitive_from_conservative_options);
+  REQUIRE(success);
+  CHECK_ITERABLE_APPROX(get(specific_internal_energy),
+                        DataVector(number_of_points, 0.0));
+  CHECK(max(get(lorentz_factor)) <= 10.0 * (1.0 + 1.0e-12));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
@@ -510,6 +572,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
   test_kastaun_momentum_cap(dv);
+  test_kastaun_root_at_upper_bracket(dv);
   test_primitive_from_conservative_known<
       tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
