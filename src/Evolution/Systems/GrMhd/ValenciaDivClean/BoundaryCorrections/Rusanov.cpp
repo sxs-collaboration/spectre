@@ -61,6 +61,7 @@ double Rusanov::dg_package_data(
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3,
                   Frame::Inertial>& /*spatial_velocity_one_form*/,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& /*spatial_metric*/,
 
     const Scalar<DataVector>& /*rest_mass_density*/,
     const Scalar<DataVector>& /*electron_fraction*/,

@@ -178,6 +178,8 @@ void test_soln() {
           helpers::Tags::PythonFunctionName<hydro::Tags::SpatialVelocityOneForm<
               DataVector, 3, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
+              gr::Tags::SpatialMetric<DataVector, 3>>,
+          helpers::Tags::PythonFunctionName<
               hydro::Tags::RestMassDensity<DataVector>>,
           helpers::Tags::PythonFunctionName<
               hydro::Tags::ElectronFraction<DataVector>>,
@@ -192,8 +194,9 @@ void test_soln() {
           "soln_shift",
           "soln_spatial_velocity",  // flat spacetime, so up and down indices
                                     // are same
-          "soln_rest_mass_density", "soln_electron_fraction_long",
-          "soln_temperature_long", "soln_spatial_velocity"},
+          "soln_spatial_metric_long", "soln_rest_mass_density",
+          "soln_electron_fraction_long", "soln_temperature_long",
+          "soln_spatial_velocity"},
       "DirichletAnalytic:\n"
       "  AnalyticPrescription:\n"
       "    SmoothFlow:\n"
@@ -263,6 +266,8 @@ void test_data() {
           helpers::Tags::PythonFunctionName<hydro::Tags::SpatialVelocityOneForm<
               DataVector, 3, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
+              gr::Tags::SpatialMetric<DataVector, 3>>,
+          helpers::Tags::PythonFunctionName<
               hydro::Tags::RestMassDensity<DataVector>>,
           helpers::Tags::PythonFunctionName<
               hydro::Tags::ElectronFraction<DataVector>>,
@@ -277,8 +282,9 @@ void test_data() {
           "soln_shift",
           "data_spatial_velocity",  // flat spacetime, so up and down indices
                                     // are same
-          "data_rest_mass_density", "data_electron_fraction_long",
-          "data_temperature", "data_spatial_velocity"},
+          "data_spatial_metric", "data_rest_mass_density",
+          "data_electron_fraction_long", "data_temperature",
+          "data_spatial_velocity"},
       "DirichletAnalytic:\n"
       "  AnalyticPrescription:\n"
       "    MagneticRotor:\n"
