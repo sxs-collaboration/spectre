@@ -8,9 +8,6 @@
 
 namespace GeneralizedHarmonic::ControlSystem {
 
-/*!
- * \brief Implements the thesis feedback loop regulating damping and gauge amplitudes.
- */
 class DampingGaugeFeedback {
  public:
   struct TimeConstant {
@@ -50,8 +47,9 @@ class DampingGaugeFeedback {
       const double nu_mu) const {
       
     const double f_m = 0.95; 
+    // Strict Interlock: freezes both relaxation and gain when outflow speed drops
     if (min_outflow_speed < f_m * baseline_outflow_speed) {
-        return; // Interlock engaged
+        return; 
     }
 
     const double log_c_ratio = std::log(current_constraint_norm / constraint_threshold_);

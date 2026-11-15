@@ -9,16 +9,15 @@ Evolution:
 
 PhaseChangeAndTriggers:
   - Trigger:
-      Slabs:
-        EvenlySpaced:
-          Interval: 10
-          Offset: 0
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Interval: 10.0
     PhaseChanges:
       - EvaluateDampingGaugeFeedback
 
 DomainCreator:
   Sphere:
-    InnerRadius: 0.792
+    InnerRadius: 2.0
     OuterRadius: 600.0
     Interior:
       ExciseWithBoundaryCondition: DirichletAnalytic
@@ -29,14 +28,16 @@ GeneralizedHarmonic:
   GaugeCondition:
     RollOnStartTime: 0.0
     RollOnTimeWindow: 10.0
-    SpatialDecayWidth: 17.13
+    SpatialDecayWidth: 10.0
     Amplitudes: [1.0, 1.0, 0.0]
     Exponents: [2, 2, 2]
   ConstraintDamping:
-    Amplitudes: [0.1, 1.0, -1.0]
+    Amplitudes: [7.0, 0.1, 0.75, 8.0, 8.0]
+    Widths: [2.5, 100.0, 38.415, 3.5, 3.5]
+    Gamma1: -1.0
 
 ControlSystems:
   DampingGaugeFeedback:
-    TimeConstant: 395.0
+    TimeConstant: 1200.0
     MaxScaleFactor: 3.0
     ConstraintThreshold: 1.0e-8
