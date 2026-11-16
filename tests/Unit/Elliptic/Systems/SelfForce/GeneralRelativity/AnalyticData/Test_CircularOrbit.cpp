@@ -7,6 +7,7 @@
 #include <complex>
 #include <cstddef>
 #include <optional>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedTuple.hpp"
@@ -17,6 +18,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/AnalyticData/CircularOrbit.hpp"
 #include "Elliptic/Systems/SelfForce/GeneralRelativity/Equations.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -30,12 +32,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
   // computation in a very robust way: it ensures that the elliptic operator
   // applied to the singular field gives the effective source.
 
-  // Run twice: once in (r*, theta) coordinates (penetrating_horizon=false)
-  // and once in (r, cos_theta) coordinates (penetrating_horizon=true).
+  // Run three times: once in (r*, theta) coordinates
+  // (penetrating_horizon=false, version=None), and twice in (r, cos_theta)
+  // coordinates (penetrating_horizon=true) with version 2 and version 3 of the
+  // PDE coefficients and effective-source conversions.
   auto run_test = [](double coord0_lo, double coord0_hi, double coord1_lo,
                      double coord1_hi,
                      std::optional<std::array<double, 4>> transitions,
-                     bool penetrating_horizon) {
+                     bool penetrating_horizon,
+                     std::optional<int> version) {
     const size_t npoints = 20;
     const domain::creators::Rectangle domain_creator{
         {{coord0_lo, coord1_lo}},
@@ -57,10 +62,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
     CAPTURE(min(get<1>(x)));
     CAPTURE(max(get<1>(x)));
 
-    for (int m_mode_number = 0; m_mode_number < 3; ++m_mode_number) {
+    CAPTURE(penetrating_horizon);
+    INFO("version: " << (version.has_value() ? std::to_string(*version)
+                                             : std::string{"None"}));
+    for (int m_mode_number = 0; m_mode_number < 4; ++m_mode_number) {
       CAPTURE(m_mode_number);
-      const auto circular_orbit = CircularOrbit{
-          1., 0.9, 6., m_mode_number, transitions, penetrating_horizon};
+      const auto circular_orbit =
+          CircularOrbit{1., 0.9, 6., m_mode_number,
+                        transitions, penetrating_horizon, version};
+      test_serialization(circular_orbit);
       CAPTURE(circular_orbit.puncture_position());
       const auto background =
           circular_orbit.variables(x, CircularOrbit::background_tags{});
@@ -116,11 +126,34 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrSelfForce.CircularOrbit",
 
   // penetrating_horizon = false: (r*, theta) coordinates
   run_test(0., 5., M_PI_2 + M_PI / 8., M_PI_2 + M_PI / 8. + M_PI / 40.,
-           std::nullopt, false);
+           std::nullopt, false, std::nullopt);
 
   // penetrating_horizon = true: (r, cos_theta) coordinates
-  run_test(3., 5., -0.4, -0.2,
-           std::array<double, 4>{2., 2., 25., 25.}, true);
+  for (const int version : {2, 3}) {
+    run_test(3., 5., -0.4, -0.2, std::array<double, 4>{2., 2., 25., 25.}, true,
+             version);
+  }
+
+  // Invalid combinations of options
+  const std::array<double, 4> transitions{2., 2., 25., 25.};
+  CHECK_THROWS_WITH(
+      (CircularOrbit{1., 0.9, 6., 2, std::nullopt, true, 3}),
+      Catch::Matchers::ContainsSubstring(
+          "Hyperboloidal slicing must be enabled when penetrating_horizon is "
+          "true."));
+  CHECK_THROWS_WITH(
+      (CircularOrbit{1., 0.9, 6., 2, transitions, true, std::nullopt}),
+      Catch::Matchers::ContainsSubstring(
+          "Version must be specified (2 or 3) when penetrating_horizon is "
+          "true."));
+  CHECK_THROWS_WITH(
+      (CircularOrbit{1., 0.9, 6., 2, transitions, true, 1}),
+      Catch::Matchers::ContainsSubstring("Version must be 2 or 3, but got 1."));
+  CHECK_THROWS_WITH(
+      (CircularOrbit{1., 0.9, 6., 2, std::nullopt, false, 3}),
+      Catch::Matchers::ContainsSubstring(
+          "Version must be 'None' when penetrating_horizon is false, but got "
+          "3."));
 }
 
 }  // namespace GrSelfForce::AnalyticData

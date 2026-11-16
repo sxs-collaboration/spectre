@@ -91,9 +91,16 @@ class CircularOrbit : public elliptic::analytic_data::Background,
         "'cos(theta)'.";
     using type = bool;
   };
+  struct Version {
+    static constexpr Options::String help =
+        "Version of the GrSelfForce PDE coefficients (2 or 3) when "
+        "'PenetratingHorizon' is 'True'. Must be 'None' when "
+        "'PenetratingHorizon' is 'False'.";
+    using type = Options::Auto<int, Options::AutoLabel::None>;
+  };
   using options =
       tmpl::list<BlackHoleMass, BlackHoleSpin, OrbitalRadius, MModeNumber,
-                 HyperboloidalSlicingTransitions, PenetratingHorizon>;
+                 HyperboloidalSlicingTransitions, PenetratingHorizon, Version>;
   static constexpr Options::String help =
       "Quasicircular orbit of a point mass in Kerr spacetime";
 
@@ -108,7 +115,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
                 double orbital_radius, int m_mode_number,
                 const std::optional<std::array<double, 4>>&
                     hyperboloidal_slicing_transitions,
-                bool penetrating_horizon);
+                bool penetrating_horizon, std::optional<int> version);
 
   explicit CircularOrbit(CkMigrateMessage* m);
   using PUP::able::register_constructor;
@@ -125,6 +132,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
     return hyperboloidal_slicing_transitions_;
   }
   bool penetrating_horizon() const { return penetrating_horizon_; }
+  const std::optional<int>& version() const { return version_; }
 
   using background_tags =
       tmpl::list<Tags::Alpha, Tags::Beta, Tags::GammaRstar, Tags::GammaTheta>;
@@ -166,6 +174,7 @@ class CircularOrbit : public elliptic::analytic_data::Background,
   int m_mode_number_{};
   std::optional<std::array<double, 4>> hyperboloidal_slicing_transitions_{};
   bool penetrating_horizon_{false};
+  std::optional<int> version_{};
 };
 
 bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs);

@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.GrSelfForce.AmrCriteria.RefineAtPuncture",
       // Only orbital radius is relevant for the test
       1.0, 0.5, /* orbital radius */ 10.0, 2,
       /* hyperboloidal slicing transitions */ std::nullopt,
-      /* penetrating horizon */ false));
+      /* penetrating horizon */ false, /* version */ std::nullopt));
   CHECK_THROWS_WITH(test_criterion(std::make_unique<OtherBackground>()),
                     Catch::Matchers::ContainsSubstring(
                         "RefineAtPuncture only works with 'CircularOrbit'."));
