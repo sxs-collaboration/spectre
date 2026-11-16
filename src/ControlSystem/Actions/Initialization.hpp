@@ -46,7 +46,6 @@ struct get_center_tags<domain::object_list<>> {
  * - Uses:
  *   - `control_system::Tags::MeasurementTimescales`
  *   - `control_system::Tags::WriteDataToDisk`
- *   - `control_system::Tags::ObserveCenters`
  *   - `control_system::Tags::Verbosity`
  *   - `control_system::Tags::IsActiveMap`
  *   - `control_system::Tags::SystemToCombinedNames`
@@ -86,8 +85,7 @@ struct Initialize {
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       control_system::Tags::SystemToCombinedNames,
       control_system::Tags::MeasurementsPerUpdate,
-      control_system::Tags::WriteDataToDisk,
-      control_system::Tags::ObserveCenters, control_system::Tags::Verbosity,
+      control_system::Tags::WriteDataToDisk, control_system::Tags::Verbosity,
       typename detail::get_center_tags<
           typename ControlSystem::control_error::object_centers>::type>>;
 

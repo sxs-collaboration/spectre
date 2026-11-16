@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <tuple>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -42,7 +43,7 @@ namespace ah::callbacks {
  *
  * The centers will be written to a subfile with the name
  * `/ApparentHorizons/TargetName_Centers.dat` where `TargetName` is the
- * pretty_type::name of the \p HorizonMetavars template parameter.
+ * result of `HorizonMetavars::name()`.
  *
  * The columns of the dat file are:
  * - %Time
@@ -57,6 +58,8 @@ namespace ah::callbacks {
  * `::Frame::Distorted`. Even though the template parameter can be
  * `::Frame::Distorted`, we still write `GridCenter_?` because the centers of
  * the objects are the same in the Grid and Distorted frames.
+ *
+ * The centers are written every time the callback is invoked.
  *
  * \note Requires `ylm::Tags::Strahlkorper<Frame>` and
  * `ylm::Tags::CartesianCoords<Frame::Inertial>` and
@@ -84,11 +87,6 @@ struct ObserveCenters : tt::ConformsTo<ah::protocols::Callback> {
     static_assert(
         db::tag_is_retrievable_v<EuclideanAreaElementTag, db::DataBox<DbTags>>,
         "DataBox must contain ylm::Tags::EuclideanAreaElement<Frame>");
-
-    // Only print the centers if we want to.
-    if (not Parallel::get<ah::Tags::ObserveCenters>(cache)) {
-      return;
-    }
 
     const auto& grid_horizon = db::get<HorizonTag>(box);
     const std::array<double, 3> grid_center = grid_horizon.physical_center();

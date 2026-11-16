@@ -43,7 +43,7 @@ class TestEccentricityControlParams(unittest.TestCase):
         with spectre_h5.H5File(self.h5_filename, "w") as h5_file:
             for i, ab in enumerate("AB"):
                 dataset = h5_file.insert_dat(
-                    f"ApparentHorizons/ControlSystemAh{ab}_Centers.dat",
+                    f"ApparentHorizons/ObservationAh{ab}_Centers.dat",
                     legend=[
                         "Time",
                         "GridCenter_x",
