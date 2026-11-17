@@ -151,6 +151,13 @@ class H5File {
   /// @}
 
   /*!
+   * \brief The header of the file
+   */
+  std::string get_header() const {
+    return get<h5::Header>("/header").get_header();
+  }
+
+  /*!
    * \brief Insert an object into an H5 file.
    *
    * \requires `ObjectType` is a valid h5::Object derived class, `path` is a

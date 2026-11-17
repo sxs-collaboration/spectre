@@ -19,7 +19,6 @@
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/EosTable.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/SourceArchive.hpp"

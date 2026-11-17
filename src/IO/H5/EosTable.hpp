@@ -53,11 +53,6 @@ class EosTable : public h5::Object {
   ~EosTable() override = default;
 
   /*!
-   * \returns the header of the EosTable file
-   */
-  const std::string& get_header() const { return header_; }
-
-  /*!
    * \returns the user-specified version number of the EosTable file
    *
    * \note h5::Version returns a uint32_t, so we return one here too for the
@@ -118,7 +113,6 @@ class EosTable : public h5::Object {
   std::string path_{};
   uint32_t version_{};
   detail::OpenGroup eos_table_group_{};
-  std::string header_{};
 
   std::vector<std::string> independent_variable_names_{};
   std::vector<std::array<double, 2>> independent_variable_bounds_{};

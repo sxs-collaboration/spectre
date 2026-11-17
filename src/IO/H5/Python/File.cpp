@@ -47,6 +47,7 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
               },
               py::return_value_policy::reference, py::arg("path"),
               py::arg("l_max"))
+          .def("get_header", &H5File::get_header)
           .def("close_current_object", &H5File::close_current_object)
           .def("close", &H5File::close)
           .def("all_files",

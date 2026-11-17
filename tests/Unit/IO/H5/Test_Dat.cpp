@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <hdf5.h>
 #include <memory>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -25,13 +23,11 @@
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/SourceArchive.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
-#include "Informer/InfoFromBuild.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
@@ -246,16 +242,6 @@ void test_core_functionality() {
   // Check version info is correctly retrieved from Dat file
   CHECK(error_file.get_version() == version_number);
 
-  // Check getting the header from Dat file
-  std::stringstream ss;
-  ss << "# ";
-  auto build_info = info_from_build();
-  ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
-  const auto& header = error_file.get_header();
-  CHECK("#\n# File created on "s ==
-        header.substr(0, header.find("File created on ") + 16));
-  CHECK(ss.str() == header.substr(header.find("# SpECTRE")));
-
   CHECK(error_file.get_legend() == legend);
 
   // Check data is retrieved correctly from Dat file
@@ -349,16 +335,6 @@ void test_dat_read() {
 
   // Check version info is correctly retrieved from Dat file
   CHECK(error_file.get_version() == version_number);
-
-  // Check getting the header from Dat file
-  std::stringstream ss;
-  ss << "# ";
-  auto build_info = info_from_build();
-  ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
-  const auto& header = error_file.get_header();
-  CHECK("#\n# File created on "s ==
-        header.substr(0, header.find("File created on ") + 16));
-  CHECK(ss.str() == header.substr(header.find("# SpECTRE")));
 
   CHECK(error_file.get_legend() == legend);
 

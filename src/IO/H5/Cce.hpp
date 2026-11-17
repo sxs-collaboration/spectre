@@ -147,11 +147,6 @@ class Cce : public h5::Object {
       const std::string& bondi_variable_name) const;
 
   /*!
-   * \brief The header of the Cce file
-   */
-  const std::string& get_header() const { return header_; }
-
-  /*!
    * \brief The user-specified version number of the Cce file
    *
    * \note h5::Version returns a uint32_t, so we return one here too for the
@@ -174,7 +169,6 @@ class Cce : public h5::Object {
   size_t l_max_;
   std::vector<std::string> legend_{};
   detail::OpenGroup cce_group_{};
-  std::string header_;
   std::unordered_map<std::string, DataSet> bondi_datasets_;
   std::unordered_set<std::string> bondi_variables_{"EthInertialRetardedTime",
                                                    "News",

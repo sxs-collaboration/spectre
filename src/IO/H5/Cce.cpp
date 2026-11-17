@@ -16,7 +16,6 @@
 #include "DataStructures/Matrix.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Version.hpp"
@@ -71,14 +70,6 @@ Cce::Cce(const bool exists, detail::OpenGroup&& group, const hid_t /*location*/,
         version_ = open_version.get_version();
       }
     }
-    {
-      const htri_t header_exists = H5Aexists(cce_group_.id(), "header.hdr");
-      if (header_exists != 0) {
-        const Header header(true, detail::OpenGroup{}, cce_group_.id(),
-                            "header");
-        header_ = header.get_header();
-      }
-    }
 
     for (const std::string& bondi_var : bondi_variables_) {
       DataSet& dataset = bondi_datasets_.at(bondi_var);
@@ -112,10 +103,6 @@ Cce::Cce(const bool exists, detail::OpenGroup&& group, const hid_t /*location*/,
     {
       Version open_version(false, detail::OpenGroup{}, cce_group_.id(),
                            "version", version_);
-    }
-    {
-      Header header(false, detail::OpenGroup{}, cce_group_.id(), "header");
-      header_ = header.get_header();
     }
     // So this file is compatible with the sxs/scri python packages offered by
     // the SXS collaboration

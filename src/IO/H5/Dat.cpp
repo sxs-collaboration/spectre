@@ -12,7 +12,6 @@
 
 #include "DataStructures/Matrix.hpp"
 #include "IO/H5/CheckH5.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
@@ -50,13 +49,6 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
         version_ = open_version.get_version();
       }
     }
-    {
-      const htri_t header_exists = H5Aexists(dataset_id_, "header.hdr");
-      if (header_exists != 0) {
-        const Header header(true, detail::OpenGroup{}, dataset_id_, "header");
-        header_ = header.get_header();
-      }
-    }
 
     hid_t space_id = H5Dget_space(dataset_id_);
     std::array<hsize_t, 2> maxdims{};
@@ -76,10 +68,6 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
     {
       Version open_version(false, detail::OpenGroup{}, dataset_id_, "version",
                            version_);
-    }
-    {
-      Header header(false, detail::OpenGroup{}, dataset_id_, "header");
-      header_ = header.get_header();
     }
     // Capitalized for compatibility with SpEC output
     write_to_attribute(dataset_id_, "Legend"s, legend_);

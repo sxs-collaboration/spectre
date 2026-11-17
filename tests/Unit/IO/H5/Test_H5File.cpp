@@ -56,16 +56,24 @@ void test_core_functionality() {
   h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name, false,
                                                  input_source_yaml);
   // Check that the header was written correctly
-  const std::string header = my_file0.get<h5::Header>("/header").get_header();
+  const std::string header = my_file0.get_header();
   // [h5file_readwrite_get_header]
   my_file0.close_current_object();
 
-  const auto check_header = [&h5_file_name,
+  CHECK("#\n# File created on "s ==
+        header.substr(0, header.find("File created on ") + 16));
+  CHECK(header.substr(header.find("# SpECTRE Build Information:")) ==
+        std::string{MakeString{}
+                    << "# "
+                    << std::regex_replace(info_from_build(), std::regex{"\n"},
+                                          "\n# ")});
+
+  const auto check_header = [&h5_file_name, &header,
                              &input_source_yaml](const auto& my_file) {
     const auto& header_obj = my_file.template get<h5::Header>("/header");
     CHECK(header_obj.subfile_path() == "/header");
     // Check that the header was written correctly
-    const std::string& my_header = header_obj.get_header();
+    CHECK(header_obj.get_header() == header);
 
     CHECK(my_file.name() == h5_file_name);
 
@@ -73,13 +81,6 @@ void test_core_functionality() {
     std::vector<std::string> h5_file_groups{"src.tar.gz"};
     CHECK(my_file.groups() == h5_file_groups);
 
-    CHECK("#\n# File created on "s ==
-          my_header.substr(0, my_header.find("File created on ") + 16));
-    CHECK(my_header.substr(my_header.find("# SpECTRE Build Information:")) ==
-          std::string{MakeString{}
-                      << "# "
-                      << std::regex_replace(info_from_build(), std::regex{"\n"},
-                                            "\n# ")});
     CHECK(header_obj.get_env_variables() ==
           formaline::get_environment_variables());
     CHECK(header_obj.get_build_info() == formaline::get_build_info());

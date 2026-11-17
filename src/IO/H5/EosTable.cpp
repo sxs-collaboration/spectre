@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Version.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -52,10 +51,6 @@ EosTable::EosTable(
     Version open_version(false, detail::OpenGroup{}, eos_table_group_.id(),
                          "version", version_);
   }
-  {
-    Header header(false, detail::OpenGroup{}, eos_table_group_.id(), "header");
-    header_ = header.get_header();
-  }
 
   h5::write_to_attribute(eos_table_group_.id(), "independent variable names",
                          independent_variable_names_);
@@ -84,9 +79,6 @@ EosTable::EosTable(const bool /*subfile_exists*/, detail::OpenGroup&& group,
   const Version open_version(true, detail::OpenGroup{}, eos_table_group_.id(),
                              "version");
   version_ = open_version.get_version();
-  const Header header(true, detail::OpenGroup{}, eos_table_group_.id(),
-                      "header");
-  header_ = header.get_header();
 
   independent_variable_names_ = h5::read_rank1_attribute<std::string>(
       eos_table_group_.id(), "independent variable names");
