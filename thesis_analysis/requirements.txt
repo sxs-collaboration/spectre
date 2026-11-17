@@ -1,0 +1,5 @@
+h5py>=3.8.0
+numpy>=1.23.5
+scipy>=1.10.1
+matplotlib>=3.7.1
+sxs>=2023.0.0

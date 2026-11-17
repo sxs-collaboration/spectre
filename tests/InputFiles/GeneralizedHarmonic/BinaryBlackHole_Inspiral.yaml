@@ -1,0 +1,65 @@
+# Tier 1: Binary Black Hole Inspiral (2400M)
+# Serves as the template for runs B, Bh, S1, S2, Sx, and L.
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsMoulton:
+      Order: 4
+  StepChoosers:
+    - ErrorControl:
+        AbsoluteTolerance: 1.0e-10
+        RelativeTolerance: 1.0e-8
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 2400.0
+    PhaseChanges:
+      - Stop
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Interval: 10.0
+    PhaseChanges:
+      - EvaluateDampingGaugeFeedback
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.792
+      OuterRadius: 20.0
+      XCoord: 7.683
+      ExciseWithBoundaryCondition: DirichletAnalytic
+    ObjectB:
+      InnerRadius: 0.792
+      OuterRadius: 20.0
+      XCoord: -7.683
+      ExciseWithBoundaryCondition: DirichletAnalytic
+    EnvelopingCube:
+      Radius: 600.0
+
+GeneralizedHarmonic:
+  GaugeCondition:
+    RollOnStartTime: 0.0
+    RollOnTimeWindow: 10.0
+    SpatialDecayWidth: 17.13
+    Amplitudes: [1.0, 1.0, 0.0]
+    Exponents: [2, 2, 2]
+  ConstraintDamping:
+    Amplitudes: [0.01, 0.75, 8.0, 8.0]
+    Widths: [38.415, 3.5, 3.5]
+    Gamma1: -1.0
+
+ControlSystems:
+  DampingGaugeFeedback:
+    TimeConstant: 1200.0
+    MaxScaleFactor: 3.0
+    ConstraintThreshold: 1.0e-8
+
+Observers:
+  VolumeFileName: "BbhVolume"
+  ReductionFileName: "BbhReductions"
+  SurfaceFileName: "BbhSurfaces"
+  ExtractionRadius: 200.0

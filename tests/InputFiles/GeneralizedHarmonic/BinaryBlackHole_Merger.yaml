@@ -1,0 +1,53 @@
+# Tier 2: Binary Black Hole Full Merger
+# Implements the transition to the ringdown domain (Run B Baseline)
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsMoulton:
+      Order: 4
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    PhaseChanges:
+      - EvaluateDampingGaugeFeedback
+  - Trigger:
+      SeparationLessThan:
+        Value: 2.38
+    PhaseChanges:
+      - SwitchToRingdownDomain
+  - Trigger:
+      SeparationLessThan:
+        Value: 2.138
+    PhaseChanges:
+      - StopInspiral
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.792
+    ObjectB:
+      InnerRadius: 0.792
+  Ringdown:
+    ExcisionRadius: 1.45
+    OuterRadius: 600.0
+
+GeneralizedHarmonic:
+  GaugeCondition:
+    RollOnStartTime: 0.0
+    RollOnTimeWindow: 10.0
+    SpatialDecayWidth: 17.13
+    Amplitudes: [1.0, 1.0, 0.0]
+    Exponents: [2, 2, 2]
+  ConstraintDamping:
+    Amplitudes: [0.1, 1.0, -1.0]
+
+ControlSystems:
+  DampingGaugeFeedback:
+    TimeConstant: 0.0 # Baseline run disables feedback
+    MaxScaleFactor: 3.0
+    ConstraintThreshold: 1.0e-8

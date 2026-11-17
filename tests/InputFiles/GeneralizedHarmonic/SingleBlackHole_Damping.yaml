@@ -1,0 +1,43 @@
+# Tier 0: Single Black Hole Verification with Damping Gauge Feedback Loop
+# Maps to Chapter 4 Verification Test 1, 6, and 7
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforth:
+      Order: 4
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Interval: 10.0
+    PhaseChanges:
+      - EvaluateDampingGaugeFeedback
+
+DomainCreator:
+  Sphere:
+    InnerRadius: 2.0
+    OuterRadius: 600.0
+    Interior:
+      ExciseWithBoundaryCondition: DirichletAnalytic
+    InitialRefinement: 1
+    InitialGridPoints: [5, 5, 5]
+
+GeneralizedHarmonic:
+  GaugeCondition:
+    RollOnStartTime: 0.0
+    RollOnTimeWindow: 10.0
+    SpatialDecayWidth: 10.0
+    Amplitudes: [1.0, 1.0, 0.0]
+    Exponents: [2, 2, 2]
+  ConstraintDamping:
+    Amplitudes: [7.0, 0.1, 0.75, 8.0, 8.0]
+    Widths: [2.5, 100.0, 38.415, 3.5, 3.5]
+    Gamma1: -1.0
+
+ControlSystems:
+  DampingGaugeFeedback:
+    TimeConstant: 1200.0
+    MaxScaleFactor: 3.0
+    ConstraintThreshold: 1.0e-8
