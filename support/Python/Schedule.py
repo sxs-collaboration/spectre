@@ -644,7 +644,9 @@ def schedule(
             ]
         )
         if auto_provision:
-            run_command += ["+auto-provision"]
+            run_command += [
+                machine.AutoProvisionFlag if machine else "+auto-provision"
+            ]
         else:
             run_command += ["+p", str(num_procs)]
         if from_checkpoint:

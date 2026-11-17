@@ -60,6 +60,9 @@ class Machine(yaml.YAMLObject):
       LaunchCommandLoginNode: Command to launch an executable on a the
         login node. This is the counterpart to `LaunchCommandSingleNode` which
         is to be used as a prefix for commands run on non-compute (login) nodes.
+      AutoProvisionFlag: Optional. Charm++ flag that executables run directly
+        (not through the scheduler) get when no number of cores is specified.
+        (Default: "+auto-provision", which uses all hardware threads.)
     """
 
     yaml_tag = "!Machine"
@@ -73,6 +76,7 @@ class Machine(yaml.YAMLObject):
     DefaultTimeLimit: str
     LaunchCommandSingleNode: List[str]
     LaunchCommandLoginNode: List[str]
+    AutoProvisionFlag: str = "+auto-provision"
 
     def on_compute_node(self) -> bool:
         """Determines whether or not we are running on a compute node."""

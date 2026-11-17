@@ -27,6 +27,7 @@ class TestMachines(unittest.TestCase):
                         DefaultTimeLimit="1-00:00:00",
                         LaunchCommandSingleNode=["mpirun", "-n", "2"],
                         LaunchCommandLoginNode=["mpirun", "-n", "1"],
+                        AutoProvisionFlag="+oneWthPerCore",
                     )
                 ),
                 open_machinefile,
@@ -56,6 +57,7 @@ class TestMachines(unittest.TestCase):
                 else ["mpirun", "-n", "1"]
             ),
         )
+        self.assertEqual(machine.AutoProvisionFlag, "+oneWthPerCore")
 
 
 if __name__ == "__main__":
