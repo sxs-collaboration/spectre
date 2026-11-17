@@ -7,25 +7,22 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <exception>
 #include <hdf5.h>
 #include <memory>
-#include <ostream>
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <typeinfo>
+#include <utility>
 #include <vector>
 
 #include "IO/H5/AccessType.hpp"
-#include "IO/H5/CheckH5.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
-#include "Utilities/PrettyType.hpp"
 
 namespace h5 {
 /*!
@@ -114,12 +111,10 @@ class H5File {
   /// \endcond
 
   /// Get name of the H5 file
-  const std::string& name() const { return file_name_; }
+  const std::string& name() const;
 
   /// Get a std::vector of the names of all immediate subgroups of the file
-  const std::vector<std::string> groups() const {
-    return h5::get_group_names(file_id_, "/");
-  }
+  const std::vector<std::string> groups() const;
 
   /// \brief Return a vector of all filenames in the H5 file
   /// \tparam ObjectType Only return a vector that contains this type of file.
@@ -153,9 +148,7 @@ class H5File {
   /*!
    * \brief The header of the file
    */
-  std::string get_header() const {
-    return get<h5::Header>("/header").get_header();
-  }
+  std::string get_header() const;
 
   /*!
    * \brief Insert an object into an H5 file.
@@ -186,7 +179,7 @@ class H5File {
   /*!
    * \effects Closes the current object, if there is none then has no effect
    */
-  void close_current_object() const { current_object_ = nullptr; }
+  void close_current_object() const;
 
   /*!
    * \effects Closes the H5 file. No H5 operations are permitted after this
@@ -425,15 +418,5 @@ H5File<Access_t>::check_if_object_exists(std::string path) const {
 #pragma GCC diagnostic pop
   return std::make_tuple(object_exists, std::move(group), std::move(name_only));
 }
-
-template <>
-inline void H5File<AccessType::ReadWrite>::insert_header() {
-  insert<h5::Header>("/header");
-}
-// Not tested because it is only required to get code to compile, if statement
-// in constructor prevents call.
-template <>
-inline void H5File<AccessType::ReadOnly>::insert_header() {}  // LCOV_EXCL_LINE
-
 /// \endcond
 }  // namespace h5
