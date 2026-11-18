@@ -22,8 +22,10 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.GeneralRelativity.CurvatureScalars.ComputeTags",
     "[PointwiseFunctions][Unit]") {
   TestHelpers::db::test_compute_tag<
-      gr::Tags::PontryaginScalarCompute<DataVector, 3, Frame::Inertial>>(
+      gr::Tags::PontryaginScalarCompute<DataVector, Frame::Inertial>>(
       "PontryaginScalar");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::KretschmannScalarCompute<DataVector>>("KretschmannScalar");
   TestHelpers::db::test_compute_tag<
       gr::Tags::GaussBonnetScalarCompute<DataVector>>("GaussBonnetScalar");
   TestHelpers::db::test_compute_tag<
@@ -62,21 +64,26 @@ SPECTRE_TEST_CASE(
           gr::Tags::WeylElectricScalar<DataVector>,
           gr::Tags::WeylMagneticScalar<DataVector>>,
       db::AddComputeTags<
-          gr::Tags::PontryaginScalarCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::PontryaginScalarCompute<DataVector, Frame::Inertial>,
           gr::Tags::GaussBonnetScalarCompute<DataVector>,
+          gr::Tags::KretschmannScalarCompute<DataVector>,
           gr::Tags::CubicInvariantRealCompute<DataVector, 3, Frame::Inertial>,
           gr::Tags::CubicInvariantImagCompute<DataVector, 3, Frame::Inertial>>>(
       E, B, inv_metric, E_scalar, B_scalar);
 
   const auto expected_pontryagin =
-      gr::pontryagin_scalar_in_vacuum<Frame::Inertial>(E, B, inv_metric);
+      gr::pontryagin_scalar<DataVector, Frame::Inertial>(E, B, inv_metric);
+  const auto expected_kretschmann =
+      gr::kretschmann_scalar_in_vacuum<DataVector>(E_scalar, B_scalar);
   const auto expected_gb =
-      gr::gauss_bonnet_scalar_in_vacuum(E_scalar, B_scalar);
+      gr::gauss_bonnet_scalar_in_vacuum<DataVector>(E_scalar, B_scalar);
   const auto expected_cubic_real = gr::cubic_invariant_real(E, B, inv_metric);
   const auto expected_cubic_imag = gr::cubic_invariant_imag(E, B, inv_metric);
 
   CHECK_ITERABLE_APPROX((db::get<gr::Tags::PontryaginScalar<DataVector>>(box)),
                         expected_pontryagin);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::KretschmannScalar<DataVector>>(box)),
+                        expected_kretschmann);
   CHECK_ITERABLE_APPROX((db::get<gr::Tags::GaussBonnetScalar<DataVector>>(box)),
                         expected_gb);
   CHECK_ITERABLE_APPROX(
