@@ -203,10 +203,10 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       make_not_null(&tilde_b_flux), make_not_null(&tilde_phi_flux),
       make_not_null(&gamma1), make_not_null(&gamma2), make_not_null(&lapse),
       make_not_null(&shift), make_not_null(&spatial_velocity_one_form),
-      make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
-      make_not_null(&temperature), make_not_null(&spatial_velocity),
-      make_not_null(&inverse_spatial_metric), {}, {}, {}, coords,
-      interior_gamma1, interior_gamma2, time);
+      make_not_null(&spatial_metric), make_not_null(&rest_mass_density),
+      make_not_null(&electron_fraction), make_not_null(&temperature),
+      make_not_null(&spatial_velocity), make_not_null(&inverse_spatial_metric),
+      {}, {}, {}, coords, interior_gamma1, interior_gamma2, time);
   CHECK(not result.has_value());
 
   tmpl::for_each<typename Vars::tags_list>([&expected_vars, &vars](auto tag_v) {

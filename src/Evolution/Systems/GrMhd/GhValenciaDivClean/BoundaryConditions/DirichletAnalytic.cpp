@@ -122,6 +122,8 @@ std::optional<std::string> DirichletAnalytic<System>::dg_ghost(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         spatial_velocity_one_form,
+    const gsl::not_null<tnsr::ii<DataVector, 3, Frame::Inertial>*>
+        spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> temperature,
@@ -225,6 +227,8 @@ std::optional<std::string> DirichletAnalytic<System>::dg_ghost(
   *temperature = get<hydro::Tags::Temperature<DataVector>>(boundary_values);
   *spatial_velocity =
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values);
+  *spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(boundary_values);
   tenex::evaluate<ti::i>(
       spatial_velocity_one_form,
       (*spatial_velocity)(ti::J) * (get<gr::Tags::SpatialMetric<DataVector, 3>>(

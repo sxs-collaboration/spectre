@@ -563,6 +563,14 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
             &get<tmpl::at_c<dg_package_fields, 20>>(dg_packaged_data)),
         make_not_null(
             &get<tmpl::at_c<dg_package_fields, 21>>(dg_packaged_data)),
+        make_not_null(
+            &get<tmpl::at_c<dg_package_fields, 22>>(dg_packaged_data)),
+        make_not_null(
+            &get<tmpl::at_c<dg_package_fields, 23>>(dg_packaged_data)),
+        make_not_null(
+            &get<tmpl::at_c<dg_package_fields, 24>>(dg_packaged_data)),
+        make_not_null(
+            &get<tmpl::at_c<dg_package_fields, 25>>(dg_packaged_data)),
 
         // vars,
         get<tmpl::at_c<evolved_tags, 0>>(prims_to_reconstruct),
@@ -593,6 +601,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
         get<tmpl::at_c<dg_package_data_temporary_tags, 3>>(
             prims_to_reconstruct),
         get<tmpl::at_c<dg_package_data_temporary_tags, 4>>(
+            prims_to_reconstruct),
+        get<tmpl::at_c<dg_package_data_temporary_tags, 5>>(
             prims_to_reconstruct),
 
         // prims
