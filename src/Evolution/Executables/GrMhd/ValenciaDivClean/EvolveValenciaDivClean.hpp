@@ -258,6 +258,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   hydro::Tags::MagneticField<DataVector, volume_dim>,
                   ::Events::Tags::ObserverMesh<volume_dim>,
                   ::Events::Tags::ObserverInverseJacobian<
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+              ::Tags::DivVectorCompute<
+                  grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>,
+                  ::Events::Tags::ObserverMesh<volume_dim>,
+                  ::Events::Tags::ObserverInverseJacobian<
                       volume_dim, Frame::ElementLogical, Frame::Inertial>>>,
           error_tags,
           tmpl::conditional_t<
