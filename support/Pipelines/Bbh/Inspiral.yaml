@@ -270,11 +270,13 @@ DomainCreator:
         InitialValues: Spherical
       {% else %}
         InitialValues:
-          Mass: {{ ExcisionAShapeMass }}
-          Spin:
-            - {{ ExcisionAShapeSpin_x }}
-            - {{ ExcisionAShapeSpin_y }}
-            - {{ ExcisionAShapeSpin_z }}
+          H5Filename: "{{ HorizonsFile }}"
+          SubfileNames: [ "{{ AhASubfileName }}" ]
+          MatchTime: *InitialTime
+          MatchTimeEpsilon: 1.e-16
+          SetL1CoefsToZero: True
+          # There is no distorted frame in the initial data
+          CheckFrame: False
       {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
       {% if not UseCylindricalDomain %}
@@ -287,11 +289,13 @@ DomainCreator:
         InitialValues: Spherical
       {% else %}
         InitialValues:
-          Mass: {{ ExcisionBShapeMass }}
-          Spin:
-            - {{ ExcisionBShapeSpin_x }}
-            - {{ ExcisionBShapeSpin_y }}
-            - {{ ExcisionBShapeSpin_z }}
+          H5Filename: "{{ HorizonsFile }}"
+          SubfileNames: [ "{{ AhBSubfileName }}" ]
+          MatchTime: *InitialTime
+          MatchTimeEpsilon: 1.e-16
+          SetL1CoefsToZero: True
+          # There is no distorted frame in the initial data
+          CheckFrame: False
       {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
       {% if not UseCylindricalDomain %}
