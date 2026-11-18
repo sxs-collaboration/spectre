@@ -112,12 +112,10 @@ Scalar<DataType> specific_enthalpy_squared(
 template <typename DataType>
 void spatial_rotational_killing_vector(
     gsl::not_null<tnsr::I<DataType, 3>*> result, const tnsr::I<DataType, 3>& x,
-    double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric);
+    double orbital_angular_velocity);
 template <typename DataType>
 tnsr::I<DataType, 3> spatial_rotational_killing_vector(
-    const tnsr::I<DataType, 3>& x, double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric);
+    const tnsr::I<DataType, 3>& x, double orbital_angular_velocity);
 /// @}
 
 /// @{
@@ -129,9 +127,9 @@ template <typename DataType>
 void divergence_spatial_rotational_killing_vector(
     gsl::not_null<Scalar<DataType>*> result, const tnsr::I<DataType, 3>& x,
     double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric);
+    const tnsr::i<DataType, 3>& christoffel_second_kind_contracted);
 template <typename DataType>
 Scalar<DataType> divergence_spatial_rotational_killing_vector(
     const tnsr::I<DataType, 3>& x, double orbital_angular_velocity,
-    const Scalar<DataType>& sqrt_det_spatial_metric);
+    const tnsr::i<DataType, 3>& christoffel_second_kind_contracted);
 }  // namespace hydro::initial_data::irrotational_bns
