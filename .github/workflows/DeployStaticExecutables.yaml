@@ -123,12 +123,39 @@ jobs:
           rm CharacteristicExtractReduction.h5
 
           cd ../
+      - name: Copy exporter library from the container
+        run: |
+          mkdir -p SpectreExporter/lib
+          docker cp \
+          static-execs:/sxscollaboration/spectre/build/lib/libBundledExporter.so \
+          ./SpectreExporter/lib/
+          docker cp static-execs:/sxscollaboration/spectre/build/include \
+          ./SpectreExporter/
+          cp -r ./tests/Unit/IO/Exporter/BundledExporter ./SpectreExporter/Tests
+          cp ./tests/Unit/Visualization/Python/VolTestData0.h5 \
+          ./SpectreExporter/Tests/
+      # The runner has no SpECTRE dependencies installed, so this also checks
+      # that the library is self-contained
+      - name: Test exporter library outside of container
+        run: |
+          ldd ./SpectreExporter/lib/libBundledExporter.so
+          cmake -S ./SpectreExporter/Tests -B build-test-exporter \
+          -D SPECTRE_ROOT=$GITHUB_WORKSPACE/SpectreExporter
+          cmake --build build-test-exporter
+          for EXPORTER_TEST in TestSpectreExporter TestSpectreExporterC; do
+            ./build-test-exporter/$EXPORTER_TEST \
+            ./SpectreExporter/Tests/VolTestData0.h5 \
+            element_data 0 Psi 0 0 0 -0.07059806932542323
+          done
       - name: Create CCE executables release asset
         # Note: We use xz compression since it's much better than gzip, even
         # though it's a decent bit slower. Specifically, xz is two thirds the
         # size of gzip.
         run:  |
           tar cJf CceExecutables-${{ matrix.asset }}.tar.xz CceExecutables
+      - name: Create exporter library release asset
+        run: |
+          tar cJf SpectreExporter-${{ matrix.asset }}.tar.xz SpectreExporter
       - name: Upload to release
         uses: softprops/action-gh-release@v3
         with:
@@ -136,3 +163,4 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             CceExecutables-${{ matrix.asset }}.tar.xz
+            SpectreExporter-${{ matrix.asset }}.tar.xz

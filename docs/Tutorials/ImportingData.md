@@ -60,7 +60,16 @@ once, which is faster if you need to interpolate repeatedly. See
 
 ## C++, C, and other languages
 
-Compile the `BundledExporter` library to link into your program:
+Every SpECTRE
+[release](https://github.com/sxs-collaboration/spectre/releases) includes the
+exporter library for Linux (x86-64 and arm64) in the `SpectreExporter-*.tar.xz`
+assets. The library is self-contained, so you don't
+need to install SpECTRE or its dependencies. It contains
+`lib/libBundledExporter.so`, the headers in `include/spectre/`, and test
+programs with instructions in `Tests/` that you can also use as examples.
+
+Alternatively, compile the `BundledExporter` library from SpECTRE's build
+directory:
 
 ```sh
 make BundledExporter
@@ -69,7 +78,8 @@ make BundledExporter
 This creates `lib/libBundledExporter` and the headers in `include/spectre/` in
 the build directory. The test project in
 `tests/Unit/IO/Exporter/BundledExporter` shows how to find and link them with
-CMake.
+CMake (set `SPECTRE_ROOT` to the build directory or the extracted release
+asset).
 
 The C++ interface is `spectre::Exporter::interpolate_to_points` in
 `spectre/Exporter.hpp`:
@@ -108,8 +118,9 @@ interface block using the `iso_c_binding` module.
 ## Mathematica
 
 The `SpectreExporter.wl` package calls the C interface via
-`ForeignFunctionLoad`. After compiling the `BundledExporter` library (see
-above), load the package from the build directory:
+`ForeignFunctionLoad`. After downloading or compiling the `BundledExporter`
+library (see above), load the package from the extracted release asset or the
+build directory:
 
 ```
 Get["/path/to/spectre/build/include/spectre/SpectreExporter.wl"];
