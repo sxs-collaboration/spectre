@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/StartsOnSubcellGrid.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -51,7 +52,6 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/History.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
@@ -159,17 +159,9 @@ struct TciAndRollback {
           return false;
         }());
 
-    const bool bordering_dg_block =
-        evolution::dg::borders_only_dg_block(element, only_dg_block_ids);
-
-    // Subcell is allowed in the element if 3 conditions are met:
-    // (i)   The DG mesh topology supports subcell
-    // (ii)  The current element block id is not marked as DG only
-    // (iii) The current element is not bordering a DG only block.
     const bool subcell_allowed_in_element =
-        fd::dg_mesh_supports_subcell(dg_mesh) and
-        not alg::found(only_dg_block_ids, element.id().block_id()) and
-        not bordering_dg_block;
+        evolution::dg::subcell::subcell_allowed_in_element(element, dg_mesh,
+                                                           only_dg_block_ids);
 
     // Elements that can never use subcell (e.g. non-hypercube topology or
     // DG-only blocks) should skip the TCI entirely, since the TCI projects

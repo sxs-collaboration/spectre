@@ -23,6 +23,7 @@
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "Evolution/DgSubcell/StartsOnSubcellGrid.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -95,9 +96,8 @@ struct SetInterpolators {
       const std::vector<size_t>& only_dg_block_ids) {
     // Skip for elements that are DG-only: either in a DG-only block,
     // bordering a DG-only block, or on a non-subcell-compatible mesh.
-    if (not fd::dg_mesh_supports_subcell(my_dg_mesh) or
-        alg::found(only_dg_block_ids, element.id().block_id()) or
-        evolution::dg::borders_only_dg_block(element, only_dg_block_ids)) {
+    if (not subcell_allowed_in_element(element, my_dg_mesh,
+                                       only_dg_block_ids)) {
       return;
     }
     const bool enable_extension_directions =
