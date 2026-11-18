@@ -474,6 +474,13 @@ void test_fd(const U& boundary_condition) {
          lorentz_factor_times_spatial_velocity, magnetic_field,
          divergence_cleaning_field, spacetime_metric, pi, phi] = vars;
 
+  using flux_variables =
+      typename grmhd::ValenciaDivClean::System::flux_variables;
+  using FluxVars =
+      Variables<db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<3>,
+                                 Frame::Inertial>>;
+  std::optional<FluxVars> cell_centered_ghost_fluxes{};
+
   CHECK_THROWS_WITH(
       boundary_condition.fd_ghost(
           make_not_null(&spacetime_metric), make_not_null(&pi),
@@ -481,7 +488,8 @@ void test_fd(const U& boundary_condition) {
           make_not_null(&electron_fraction), make_not_null(&pressure),
           make_not_null(&lorentz_factor_times_spatial_velocity),
           make_not_null(&magnetic_field),
-          make_not_null(&divergence_cleaning_field), direction),
+          make_not_null(&divergence_cleaning_field),
+          make_not_null(&cell_centered_ghost_fluxes), direction),
       Catch::Matchers::ContainsSubstring(
           "Not implemented because it's not trivial to figure out what the"));
 }

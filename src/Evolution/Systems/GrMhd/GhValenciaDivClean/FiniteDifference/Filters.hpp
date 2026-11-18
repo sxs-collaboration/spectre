@@ -34,11 +34,13 @@ namespace grmhd::GhValenciaDivClean::fd {
  * \brief Apply a Kreiss-Oliger filter to \f$g_{ab}\f$, \f$\Phi_{iab}\f$, and
  * \f$\Pi_{ab}\f$.
  */
-template <typename VariableTags>
+template <typename System>
 void spacetime_kreiss_oliger_filter(
-    gsl::not_null<Variables<VariableTags>*> result,
-    const Variables<VariableTags>& volume_evolved_variables,
+    gsl::not_null<Variables<typename System::variables_tag::tags_list>*> result,
+    const Variables<typename System::variables_tag::tags_list>&
+        volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,
-    const Mesh<3>& volume_mesh, size_t order, double epsilon);
+    const Mesh<3>& volume_mesh, size_t order, double epsilon,
+    bool compute_cell_centered_flux);
 }  // namespace grmhd::GhValenciaDivClean::fd

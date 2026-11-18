@@ -123,9 +123,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
                        &neighbor_data_for_reconstruction, subcell_mesh,
                        logical_coords, 4, 3);
 
-  grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter(
+  grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter<System>(
       make_not_null(&result), volume_evolved_variables,
-      neighbor_data_for_reconstruction, subcell_mesh, 4, 1.0);
+      neighbor_data_for_reconstruction, subcell_mesh, 4, 1.0, false);
 
   tmpl::for_each<
       grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>(

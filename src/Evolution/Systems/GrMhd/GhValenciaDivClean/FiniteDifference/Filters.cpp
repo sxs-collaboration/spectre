@@ -18,13 +18,16 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-template <typename VariableTags>
+template <typename System>
 void spacetime_kreiss_oliger_filter(
-    const gsl::not_null<Variables<VariableTags>*> result,
-    const Variables<VariableTags>& volume_evolved_variables,
+    const gsl::not_null<Variables<typename System::variables_tag::tags_list>*>
+        result,
+    const Variables<typename System::variables_tag::tags_list>&
+        volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,
-    const Mesh<3>& volume_mesh, const size_t order, const double epsilon) {
+    const Mesh<3>& volume_mesh, const size_t order, const double epsilon,
+    const bool compute_cell_centered_flux) {
   if (UNLIKELY(result->number_of_grid_points() !=
                volume_evolved_variables.number_of_grid_points())) {
     result->initialize(volume_evolved_variables.number_of_grid_points());
@@ -35,15 +38,26 @@ void spacetime_kreiss_oliger_filter(
       number_of_independent_components;
 
   DirectionMap<3, gsl::span<const double>> ghost_cell_spacetime_vars{};
-  using NeighborVariables =
-      Variables<grmhd::GhValenciaDivClean::Tags::
-                    primitive_grmhd_and_spacetime_reconstruction_tags>;
   using FirstGhTag = tmpl::front<
       grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>;
-
-  fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
-      make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
-      number_of_gh_components);
+  if (not compute_cell_centered_flux) {
+    using NeighborVariables =
+        Variables<grmhd::GhValenciaDivClean::Tags::
+                      primitive_grmhd_and_spacetime_reconstruction_tags>;
+    fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
+        make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
+        number_of_gh_components);
+  } else {
+    using flux_variables = typename System::flux_variables;
+    using NeighborVariables = Variables<
+        tmpl::append<grmhd::GhValenciaDivClean::Tags::
+                         primitive_grmhd_and_spacetime_reconstruction_tags,
+                     db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                      tmpl::size_t<3>, Frame::Inertial>>>;
+    fill_neighbor_spacetime_variables<NeighborVariables, FirstGhTag>(
+        make_not_null(&ghost_cell_spacetime_vars), all_ghost_data,
+        number_of_gh_components);
+  }
 
   const auto volume_gh_vars =
       gsl::make_span(get<FirstGhTag>(volume_evolved_variables)[0].data(),
@@ -61,17 +75,19 @@ void spacetime_kreiss_oliger_filter(
 
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                             \
-  template void spacetime_kreiss_oliger_filter(                            \
-      const gsl::not_null<                                                 \
-          Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(   \
-              data)>::variables_tag::tags_list>*>                          \
-          result,                                                          \
-      const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO( \
-          data)>::variables_tag::tags_list>& volume_evolved_variables,     \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
-          all_ghost_data,                                                  \
-      const Mesh<3>& volume_mesh, const size_t order, const double epsilon);
+#define INSTANTIATION(r, data)                                              \
+  template void spacetime_kreiss_oliger_filter<                             \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>(                   \
+      const gsl::not_null<                                                  \
+          Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(    \
+              data)>::variables_tag::tags_list>*>                           \
+          result,                                                           \
+      const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(  \
+          data)>::variables_tag::tags_list>& volume_evolved_variables,      \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
+          all_ghost_data,                                                   \
+      const Mesh<3>& volume_mesh, const size_t order, const double epsilon, \
+      const bool compute_cell_centered_flux);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (RadiationTransport::NoNeutrinos::System))
