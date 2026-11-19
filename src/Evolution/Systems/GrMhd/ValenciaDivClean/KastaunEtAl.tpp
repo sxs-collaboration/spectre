@@ -386,16 +386,30 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     return std::nullopt;
   }
 
-  // Try to recover primitves
-  // NOLINTNEXTLINE(clang-analyzer-core)
-  const auto root = RootFinder::toms748(f_of_mu, bracket->first,
-                                        bracket->second, absolute_tolerance_,
-                                        relative_tolerance_, max_iterations_);
-  if (not root.has_value()) {
-    return std::nullopt;
-  }
+  // The master function is >= 0 at the upper bound of the bracket (Sec. II.F).
+  // It can be exactly zero at the upper bound, e.g. when the specific internal
+  // energy is at its lower bound, so roundoff can make it slightly negative:
+  // treat such a value as a root at the upper bound.
+  const double f_at_upper_bound = f_of_mu(bracket->second);
+  const bool root_is_at_upper_bound =
+      f_at_upper_bound <= 0.0 and
+      f_at_upper_bound >=
+          -(absolute_tolerance_ + relative_tolerance_ * bracket->second);
+
   // mu is 1 / (h W) see Equation (26)
-  const double one_over_specific_enthalpy_times_lorentz_factor = root.value();
+  double one_over_specific_enthalpy_times_lorentz_factor = bracket->second;
+  if (not root_is_at_upper_bound) {
+    // Try to recover primitives
+    // NOLINTNEXTLINE(clang-analyzer-core)
+    const auto root = RootFinder::toms748(
+        f_of_mu, bracket->first, bracket->second, f_of_mu(bracket->first),
+        f_at_upper_bound, absolute_tolerance_, relative_tolerance_,
+        max_iterations_);
+    if (not root.has_value()) {
+      return std::nullopt;
+    }
+    one_over_specific_enthalpy_times_lorentz_factor = root.value();
+  }
 
   const auto [rest_mass_density, lorentz_factor, pressure,
               specific_internal_energy, q_bar, r_bar_squared] =
