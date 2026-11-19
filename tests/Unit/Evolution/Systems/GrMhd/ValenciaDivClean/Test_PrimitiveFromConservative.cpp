@@ -607,38 +607,46 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       false>(&generator, wrapped_ideal_fluid, dv);
-  INFO("3D EoS Kastaun");
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
-      true>(&generator, wrapped_3d_polytrope, dv);
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
-      false>(&generator, wrapped_3d_polytrope, dv);
-  INFO("3D EoS Kastaun Hydro");
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
-      false>(&generator, wrapped_3d_polytrope, dv);
-  INFO("3D EoS Newman-Hamlin");
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
-      true>(&generator, wrapped_3d_polytrope, dv);
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
-      false>(&generator, wrapped_3d_polytrope, dv);
-  INFO("3D EoS Palenzuela");
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-      true>(&generator, wrapped_3d_polytrope, dv);
-  test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-      false>(&generator, wrapped_3d_polytrope, dv);
+  {
+    INFO("3D EoS Kastaun");
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+        true>(&generator, wrapped_3d_polytrope, dv);
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+        false>(&generator, wrapped_3d_polytrope, dv);
+  }
+  {
+    INFO("3D EoS Kastaun Hydro");
+    test_primitive_from_conservative_random<
+        tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                       KastaunEtAlHydro>,
+        false>(&generator, wrapped_3d_polytrope, dv);
+  }
+  {
+    INFO("3D EoS Newman-Hamlin");
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+        true>(&generator, wrapped_3d_polytrope, dv);
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+        false>(&generator, wrapped_3d_polytrope, dv);
+  }
+  {
+    INFO("3D EoS Palenzuela");
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+        true>(&generator, wrapped_3d_polytrope, dv);
+    test_primitive_from_conservative_random<
+        tmpl::list<
+            grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+        false>(&generator, wrapped_3d_polytrope, dv);
+  }
 
   test_potentially_eos_dependent_primitive_corrections<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(
