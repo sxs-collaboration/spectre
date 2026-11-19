@@ -373,7 +373,12 @@ FunctionsOfTimeMap get_shape_and_size(
 
         for (int l = 0; l <= static_cast<int>(file_l_max.value()); l++) {
           for (int m = -l; m <= l; m++) {
-            ss >> coefficients[file_iter.set(static_cast<size_t>(l), m)()];
+            double spec_coefficient = 0.0;
+            ss >> spec_coefficient;
+            // SpEC writes (-1)^m sqrt(pi/2) times the Spherepack
+            // coefficient in its surface dat files.
+            coefficients[file_iter.set(static_cast<size_t>(l), m)()] =
+                (m % 2 == 0 ? 1.0 : -1.0) * sqrt(2.0 / M_PI) * spec_coefficient;
           }
         }
       }
@@ -394,8 +399,10 @@ FunctionsOfTimeMap get_shape_and_size(
           -1.0 * file_strahlkorper.ylm_spherepack().prolong_or_restrict(
                      file_strahlkorper.coefficients(),
                      this_strahlkorper.ylm_spherepack());
-      // Transform from SPHEREPACK to actual Ylm for size func
-      size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI);
+      // Transform from SPHEREPACK to actual Ylm for size func and account
+      // for the original sphere, since the map specifies a deformation.
+      size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI) +
+                         deformed_radius * 2.0 * sqrt(M_PI);
       // Set l=0 for shape map to 0 because size control will adjust l=0
       shape_funcs[0][0] = 0.0;
       if (set_l1_coefs_to_zero) {
