@@ -136,7 +136,7 @@ SPECTRE_TEST_CASE("Unit.GrSelfForce.Events.ObserveFlux", "[Unit][Elliptic]") {
   const int m_mode = 2;
   const GrSelfForce::AnalyticData::CircularOrbit circular_orbit{
       1.0, 0.0, orbital_radius, m_mode, std::array{5.0, 5.0, 15.0, 15.0},
-      true};
+      true, 2};
 
   // Two elements in r: [9, 10] and [10, 11]. The outer boundary is r = 11.
   const domain::creators::Rectilinear<2> domain_creator{

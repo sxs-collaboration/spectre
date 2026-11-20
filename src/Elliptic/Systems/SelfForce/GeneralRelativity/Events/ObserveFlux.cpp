@@ -33,17 +33,40 @@ std::pair<double, double> extract_flux(
   const size_t num_face_pts = get<0>(face_coords).size();
   DataVector integrand_multiplier{num_face_pts};
   if (penetrating_horizon) {
+    sin_theta = sqrt(1. - square(get<1>(face_coords)));
     integrand_multiplier = 1.0;
   } else {
     sin_theta = sin(get<1>(face_coords));
     integrand_multiplier = sin_theta;
   }
+  int n_psi7{};
+  int n_psi8{};
+  int n_psi9{};
+  if (circular_orbit.version() == 3) {
+    if (m_mode == 0) {
+      n_psi7 = -2;
+      n_psi8 = 2;
+      n_psi9 = 2;
+    } else if (m_mode == 1) {
+      n_psi7 = -1;
+      n_psi8 = 1;
+      n_psi9 = 3;
+    } else {
+      n_psi7 = -2 + (m_mode - 2);
+      n_psi8 = (m_mode - 2);
+      n_psi9 = 2 + (m_mode - 2);
+    }
+  } else {
+    n_psi7 = -2;
+    n_psi8 = 0;
+    n_psi9 = 2;
+  }
   const double energy_flux =
       square(m_mode * omega) * 0.03125 *
       definite_integral(
-        (square(abs(get<2, 2>(field_on_face) -
-                    get<3, 3>(field_on_face))) +
-        4. * square(abs(get<2, 3>(field_on_face)))) *
+        (square(abs(get<2, 2>(field_on_face) * pow(sin_theta, n_psi7 + 2)-
+                    get<3, 3>(field_on_face) * pow(sin_theta, n_psi9 - 2))) +
+        4. * square(abs(get<2, 3>(field_on_face)* pow(sin_theta, n_psi8)))) *
         get(face_jacobian) * integrand_multiplier,
           mesh.slice_away(0));
   const double surface_area = definite_integral(
