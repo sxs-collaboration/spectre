@@ -25,6 +25,12 @@ You can cite this BibTeX entry in your publication:
 
 \include citation.bib
 
+Please also cite SpECTRE if your work uses code that is derived from SpECTRE's
+source code, e.g., by porting, translating, or reimplementing parts of it with
+reference to SpECTRE's source, whether by hand or with the help of AI tools.
+Where such code includes substantial portions of SpECTRE, the MIT license also
+requires that it retains SpECTRE's copyright and license notice.
+
 To aid reproducibility of your scientific results with SpECTRE, we recommend you
 keep track of the version(s) you used and report this information in your
 publication. We also recommend you supply the YAML input files and, if
