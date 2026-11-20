@@ -14,6 +14,7 @@ from rich.pretty import pretty_repr
 import spectre.Evolution.Ringdown as Ringdown
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import ModalVector
+from spectre.SphericalHarmonics import Spherepack
 from spectre.Strahlkorper import (
     Frame,
     Strahlkorper,
@@ -88,6 +89,12 @@ def compute_ringdown_shape_and_translation_fot(
     functions of time and the Inertial-frame AhC strahlkorper measured from the
     inspiral.
 
+    If the selected AhC finds have different LMax values, the fit is performed
+    at the minimum LMax among those finds. Higher-resolution coefficient sets
+    are restricted to that common resolution so the fit only uses modes
+    available at every selected time, rather than padding missing higher modes
+    with zeros.
+
     Arguments:
     path_to_volume_data: The full path to any volume data containing the
     functions of time at the time of AhC finds.
@@ -110,12 +117,10 @@ def compute_ringdown_shape_and_translation_fot(
     """
 
     ahc_times = []
-    ahc_lmax = 0
     with spectre_h5.H5File(ahc_reductions_path, "r") as h5file:
         datfile = h5file.get_dat(ahc_subfile)
         datfile_np = np.array(datfile.get_data())
         ahc_times = datfile_np[:, 0]
-        ahc_lmax = int(datfile_np[0][4])
 
     # Transform AhC coefs to ringdown distorted frame and get other data
     # needed to start a ringdown, such as initial values for functions of time
@@ -135,15 +140,54 @@ def compute_ringdown_shape_and_translation_fot(
         trans_func_and_2_derivs=evaluated_fot_dict["Translation"],
     )
 
-    shape_coefs_at_different_times_for_fit = np.array(
-        shape_and_translation_coefs[0]
-    )
-    ahc_inertial_centers_for_fit = np.array(shape_and_translation_coefs[1])
     ahc_times_for_fit_list = []
-    for i, time in enumerate(ahc_times[-number_of_ahc_finds_for_fit:]):
+    ahc_lmax_for_fit_list = []
+    for row in datfile_np[-number_of_ahc_finds_for_fit:]:
+        time = row[0]
         if time <= match_time:
             ahc_times_for_fit_list.append(time)
+            ahc_lmax_for_fit_list.append(int(row[4]))
+
+    if len(shape_and_translation_coefs[0]) != len(ahc_lmax_for_fit_list):
+        raise ValueError(
+            "The number of AhC coefficient sets does not match the number "
+            "of AhC L values selected for the ringdown fit: "
+            f"{len(shape_and_translation_coefs[0])} coefficient sets and "
+            f"{len(ahc_lmax_for_fit_list)} L values."
+        )
+
     ahc_times_for_fit = np.array(ahc_times_for_fit_list)
+    if len(ahc_lmax_for_fit_list) == 0:
+        raise ValueError(
+            "No AhC finds were selected for the ringdown fit. Check that "
+            "`number_of_ahc_finds_for_fit` includes AhC times at or before "
+            "`match_time`."
+        )
+
+    # Fit only modes that are present at every selected AhC time. Prolonging to
+    # the maximum LMax would introduce discontinuous time derivatives for modes
+    # that are absent from lower-resolution AhC finds.
+    fit_lmax = min(ahc_lmax_for_fit_list)
+
+    shape_coefs_for_fit_list = []
+    for coefs, lmax in zip(
+        shape_and_translation_coefs[0], ahc_lmax_for_fit_list
+    ):
+        if lmax > fit_lmax:
+            logger.debug(
+                "Restricting AhC coefficients from LMax %s to %s for the "
+                "ringdown fit.",
+                lmax,
+                fit_lmax,
+            )
+        shape_coefs_for_fit_list.append(
+            Spherepack.prolong_or_restrict(
+                coefs, lmax, lmax, fit_lmax, fit_lmax
+            )
+        )
+
+    shape_coefs_at_different_times_for_fit = np.array(shape_coefs_for_fit_list)
+    ahc_inertial_centers_for_fit = np.array(shape_and_translation_coefs[1])
 
     logger.debug("AhC times available: " + str(ahc_times.shape[0]))
     logger.debug(
@@ -182,25 +226,25 @@ def compute_ringdown_shape_and_translation_fot(
     fit_ahc_dt_coef_mv = ModalVector(fit_ahc_dt_coefs)
     fit_ahc_dt2_coef_mv = ModalVector(fit_ahc_dt2_coefs)
     fit_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax, ahc_lmax, fit_ahc_coef_mv, ahc_inertial_centers_for_fit[-1]
+        fit_lmax, fit_lmax, fit_ahc_coef_mv, ahc_inertial_centers_for_fit[-1]
     )
     fit_ahc_dt_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax, ahc_lmax, fit_ahc_dt_coef_mv, ahc_inertial_centers_for_fit[-1]
+        fit_lmax, fit_lmax, fit_ahc_dt_coef_mv, ahc_inertial_centers_for_fit[-1]
     )
     fit_ahc_dt2_strahlkorper = Strahlkorper[Frame.Inertial](
-        ahc_lmax,
-        ahc_lmax,
+        fit_lmax,
+        fit_lmax,
         fit_ahc_dt2_coef_mv,
         ahc_inertial_centers_for_fit[-1],
     )
     legend_ahc, fit_ahc_ylm_coefs_to_write = ylm_legend_and_data(
-        fit_ahc_strahlkorper, match_time, ahc_lmax
+        fit_ahc_strahlkorper, match_time, fit_lmax
     )
     legend_ahc_dt, fit_ahc_dt_ylm_coefs_to_write = ylm_legend_and_data(
-        fit_ahc_dt_strahlkorper, match_time, ahc_lmax
+        fit_ahc_dt_strahlkorper, match_time, fit_lmax
     )
     legend_ahc_dt2, fit_ahc_dt2_ylm_coefs_to_write = ylm_legend_and_data(
-        fit_ahc_dt2_strahlkorper, match_time, ahc_lmax
+        fit_ahc_dt2_strahlkorper, match_time, fit_lmax
     )
 
     ringdown_ylm_coefs = [

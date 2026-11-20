@@ -32,6 +32,22 @@ def convert_coef_to_spherepack(complex_coef, l, m):
 
 
 class TestStrahlkorper(unittest.TestCase):
+    def test_prolong_or_restrict(self):
+        source = np.zeros(Spherepack(3, 3).spectral_size)
+        source_iterator = SpherepackIterator(3, 3)
+        source_iterator.set(2, -2)
+        source[source_iterator()] = 1.5
+        source_iterator.set(3, -3)
+        source[source_iterator()] = 7.0
+
+        expected = np.zeros(Spherepack(2, 2).spectral_size)
+        target_iterator = SpherepackIterator(2, 2)
+        target_iterator.set(2, -2)
+        expected[target_iterator()] = 1.5
+
+        restricted = Spherepack.prolong_or_restrict(source, 3, 3, 2, 2)
+        npt.assert_array_equal(np.asarray(restricted), expected)
+
     def test_sizes(self):
         for l in range(2, 6):
             for m in range(2, l + 1):
