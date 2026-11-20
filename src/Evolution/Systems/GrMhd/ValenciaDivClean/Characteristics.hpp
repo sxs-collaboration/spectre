@@ -302,9 +302,90 @@ void flux_jacobian_hydro(
  *
  * \see `find_real_eigensystem` for the index conventions and for how this
  * eigensystem is computed at each grid point.
+ *
+ * \see `grmhd::ValenciaDivClean::analytic_characteristics` for the same
+ * characteristics from closed-form expressions.
  */
 template <size_t ThermodynamicDim>
 void numerical_characteristics(
+    gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,
+    gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,
+    gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors,
+
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+
+/*!
+ * \brief Compute analytic characteristic speeds (eigenvalues), characteristic
+ * projectors (left eigenvectors), and characteristic modes (right eigenvectors)
+ * in a given direction, from the primitive variables.
+ *
+ * \note Currently, this function only supports relativistic hydrodynamics (no
+ * magnetic field) with composition dependence ($Y_e$).
+ *
+ * It returns the characteristic speeds, modes, and projectors with the same
+ * types and ordering as `grmhd::ValenciaDivClean::numerical_characteristics`,
+ * from the closed-form expressions of \cite Teukolsky2025erz. The eigenvectors
+ * are normalized so that $\sum_m L^{im} R_{jm} = \delta^{i}_{j}$.
+ *
+ * The speeds are $\lambda_-$, $v_n$ (four times), and $\lambda_+$, with $v_n$,
+ * $\lambda_\pm$, $W$, $h$, $c_s$, and $d$ as in `characteristic_speeds_hydro`.
+ * In the order $(D, S_j, \tau, D Y_e)$ of `flux_jacobian_hydro`, the modes and
+ * projectors are $R_{(0)} = R_-$, $R_{(5)} = R_+$, $L^{(0)} = L^-$,
+ * $L^{(5)} = L^+$, and
+ *
+ * \begin{align}
+ *   R_\pm &= \left(1,\ h W \left(v_j \pm \frac{c_s}{d} s_j\right),\
+ *     h W \left(1 \pm \frac{c_s v_n}{d}\right) - 1,\ Y_e\right), \\
+ *   R_{(1,2)} &= \left(W v_{(1,2)},\
+ *     h \left(t^{(1,2)}_j + 2 W^2 v_{(1,2)} v_j\right),\
+ *     W (2 h W - 1) v_{(1,2)},\ W v_{(1,2)} Y_e\right), \\
+ *   R_{(3)} &= \left(\kappa,\ h W (\kappa - \rho c_s^2) v_j,\
+ *     h W (\kappa - \rho c_s^2) - \kappa,\ \kappa Y_e\right), \\
+ *   R_{(4)} &= (0,\ -\zeta W v_j / \kappa,\ -\zeta W / \kappa,\ 1), \\
+ *   L^\pm &= \frac{1}{2 \rho h W c_s^2 (1 - v_n^2)} \left(b_\pm - h W
+ *     \left(\kappa - \rho c_s^2 + \frac{\zeta Y_e}{h}\right) (1 - v_n^2),\
+ *     -a v^j + \rho c_s (c_s v_n \pm d) s^j,\ b_\pm,\
+ *     \zeta W (1 - v_n^2)\right), \\
+ *   L^{(1,2)} &= \frac{1}{h (1 - v_n^2)} \left(-v_{(1,2)},\
+ *     v_{(1,2)} v_n s^j + (1 - v_n^2) t^{(1,2)j},\ -v_{(1,2)},\ 0\right), \\
+ *   L^{(3)} &= \frac{1}{\rho h c_s^2} \left(h - W + \frac{\zeta Y_e}{\kappa},\
+ *     W v^j,\ -W,\ -\frac{\zeta}{\kappa}\right), \\
+ *   L^{(4)} &= (-Y_e,\ 0,\ 0,\ 1),
+ * \end{align}
+ *
+ * where $s_j$ is the unit normal, $t^{(1)}_j$ and $t^{(2)}_j$ are unit
+ * one-forms orthogonal to each other and to $s_j$ (see `orthonormal_oneform`),
+ * $v_{(1,2)} = t^{(1,2)}_j v^j$, $a = W^2 (1 - v_n^2) (\kappa + \rho c_s^2)$,
+ * $b_\pm = a - \rho c_s (c_s \pm v_n d)$,
+ * $\kappa = \partial p / \partial \epsilon |_{\rho, Y_e}$, and
+ * $\zeta = \partial p / \partial Y_e |_{\rho, \epsilon}$.
+ *
+ * $R_{(4)}$ and $L^{(4)}$ are those of \cite Teukolsky2025erz times
+ * $-\zeta W / \kappa$ and its inverse, which keeps them finite as
+ * $\zeta \to 0$. Where $\zeta = 0$, as for any equation of state with fewer
+ * than three thermodynamic variables, we take $\zeta / \kappa = 0$.
+ *
+ * \note The arguments must satisfy the conditions of `flux_jacobian_hydro`,
+ * and $\kappa$ must be nonzero where $\zeta \neq 0$, or the function stops with
+ * an error. Only `EquationsOfState::Tabulated3D` has $\zeta \neq 0$.
+ * `ConvertComposeTable` floors negative $\kappa$ in its tables at a small
+ * positive value, but writes $\kappa = 0$ if the CompOSE table lacks it.
+ */
+template <size_t ThermodynamicDim>
+void analytic_characteristics(
     gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,
     gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,
     gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors,
