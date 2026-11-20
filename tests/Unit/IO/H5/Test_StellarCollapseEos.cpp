@@ -9,7 +9,6 @@
 #include "DataStructures/BoostMultiArray.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/StellarCollapseEos.hpp"
 #include "Informer/InfoFromBuild.hpp"
 

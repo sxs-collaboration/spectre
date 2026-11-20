@@ -150,9 +150,9 @@ Often only data from the simulation is retained, not the entire executable. In
 order to make simulations reproducible from only the HDF5 output, any HDF5 files
 written with SpECTRE's HDF5 wrappers contain the info about the run, output of
 `printenv` at link time, the contents of `BuildInfo.txt`, and an archive
-of the source tree. These are inside the `header.hdr` group with names
-`SimulationInfo`, `EnvironmentVariablesAtCompilation`, `BuildInfo`, and
-`src.tar.gz`. The source archive can be extracted by running the command
+of the source tree. The textual metadata is in the `header.hdr` attribute on
+the root group in each h5 file. The source archive can be extracted by running
+the command
 ```
 h5dump -d /src.tar.gz -b LE -o src.tar.gz /path/to/hdf5/file.h5
 ```

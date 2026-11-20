@@ -25,7 +25,6 @@
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/ExtendConnectivityHelpers.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/SpectralIo.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -538,20 +537,12 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
     const Version open_version(true, detail::OpenGroup{},
                                volume_data_group_.id(), "version");
     version_ = open_version.get_version();
-    const Header header(true, detail::OpenGroup{}, volume_data_group_.id(),
-                        "header");
-    header_ = header.get_header();
   } else {  // file does not exist
     // Subfiles are closed as they go out of scope, so we have the extra
     // braces here to add the necessary scope
     {
       Version open_version(false, detail::OpenGroup{}, volume_data_group_.id(),
                            "version", version_);
-    }
-    {
-      Header header(false, detail::OpenGroup{}, volume_data_group_.id(),
-                    "header");
-      header_ = header.get_header();
     }
   }
 }

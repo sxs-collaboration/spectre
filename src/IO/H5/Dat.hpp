@@ -108,11 +108,6 @@ class Dat : public h5::Object {
   const std::array<hsize_t, 2>& get_dimensions() const { return size_; }
 
   /*!
-   * \returns the header of the Dat file
-   */
-  const std::string& get_header() const { return header_; }
-
-  /*!
    * \returns the user-specified version number of the Dat file
    *
    * \note h5::Version returns a uint32_t, so we return one here too for the
@@ -130,7 +125,6 @@ class Dat : public h5::Object {
   uint32_t version_;
   std::vector<std::string> legend_;
   std::array<hsize_t, 2> size_;
-  std::string header_;
   hid_t dataset_id_{-1};
   /// \endcond HIDDEN_SYMBOLS
 };

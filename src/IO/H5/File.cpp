@@ -3,17 +3,18 @@
 
 #include "IO/H5/File.hpp"
 
-#include <algorithm>
 #include <charm++.h>
 #include <exception>
 #include <hdf5.h>
+#include <ios>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
-#include "IO/H5/Object.hpp"
 #include "IO/H5/SourceArchive.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -137,6 +138,31 @@ H5File<Access_t>::~H5File() {
 }
 
 template <AccessType Access_t>
+const std::string& H5File<Access_t>::name() const {
+  return file_name_;
+}
+
+template <AccessType Access_t>
+const std::vector<std::string> H5File<Access_t>::groups() const {
+  return h5::get_group_names(file_id_, "/");
+}
+
+template <AccessType Access_t>
+std::string H5File<Access_t>::input_source() const {
+  return h5::read_value_attribute<std::string>(file_id_, "InputSource.yaml"s);
+}
+
+template <AccessType Access_t>
+std::string H5File<Access_t>::get_header() const {
+  return get<h5::Header>("/header").get_header();
+}
+
+template <AccessType Access_t>
+void H5File<Access_t>::close_current_object() const {
+  current_object_ = nullptr;
+}
+
+template <AccessType Access_t>
 void H5File<Access_t>::close() const {
   // Need to close current object because `H5Fclose` keeps the file open
   // internally until all objects are closed
@@ -147,10 +173,14 @@ void H5File<Access_t>::close() const {
   }
 }
 
-template <AccessType Access_t>
-std::string H5File<Access_t>::input_source() const {
-  return h5::read_value_attribute<std::string>(file_id_, "InputSource.yaml"s);
+template <>
+void H5File<AccessType::ReadWrite>::insert_header() {
+  insert<h5::Header>("/header");
 }
+// Not tested because it is only required to get code to compile, if statement
+// in constructor prevents call.
+template <>
+void H5File<AccessType::ReadOnly>::insert_header() {}  // LCOV_EXCL_LINE
 
 template <>
 void H5File<AccessType::ReadWrite>::insert_source_archive() {

@@ -36,7 +36,6 @@ void bind_h5dat(py::module& m) {
            py::arg("columns"), py::arg("first_row") = 0,
            py::arg("num_rows") = 1)
       .def("get_dimensions", &h5::Dat::get_dimensions)
-      .def("get_header", &h5::Dat::get_header)
       .def("get_version", &h5::Dat::get_version);
 }
 }  // namespace py_bindings

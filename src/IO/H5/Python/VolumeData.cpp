@@ -18,7 +18,6 @@ void bind_h5vol(py::module& m) {
   // Wrapper for basic H5VolumeData operations
   py::class_<h5::VolumeData>(m, "H5Vol")
       .def_static("extension", &h5::VolumeData::extension)
-      .def("get_header", &h5::VolumeData::get_header)
       .def("get_version", &h5::VolumeData::get_version)
       .def("get_dimension", &h5::VolumeData::get_dimension)
       .def("write_volume_data", &h5::VolumeData::write_volume_data,

@@ -179,15 +179,7 @@ class TestIOH5File(unittest.TestCase):
     # The header is not universal, just checking the part that is predictable
     def test_get_header(self):
         with spectre_h5.H5File(file_name=self.file_name, mode="a") as h5file:
-            datfile = h5file.insert_dat(
-                path="/element_data", legend=["Time", "Value"], version=0
-            )
-            self.assertEqual(datfile.get_header()[0:16], "#\n# File created")
-            h5file.close_current_object()
-            ccefile = h5file.insert_cce(
-                path="/cce_data", l_max=self.l_max, version=0
-            )
-            self.assertEqual(ccefile.get_header()[0:16], "#\n# File created")
+            self.assertEqual(h5file.get_header()[0:16], "#\n# File created")
 
     def test_all_files(self):
         with spectre_h5.H5File(file_name=self.file_name, mode="a") as h5file:

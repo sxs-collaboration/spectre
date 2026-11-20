@@ -94,11 +94,6 @@ class VolumeData : public h5::Object {
   ~VolumeData() override = default;
 
   /*!
-   * \returns the header of the VolumeData file
-   */
-  const std::string& get_header() const { return header_; }
-
-  /*!
    * \returns the user-specified version number of the VolumeData file
    *
    * \note h5::Version returns a uint32_t, so we return one here too for the
@@ -269,7 +264,6 @@ class VolumeData : public h5::Object {
   std::string path_{};
   uint32_t version_{};
   detail::OpenGroup volume_data_group_{};
-  std::string header_{};
 };
 
 /*!

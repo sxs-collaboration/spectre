@@ -9,8 +9,6 @@
 #include <hdf5.h>
 #include <memory>
 #include <random>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <typeinfo>
 #include <utility>
@@ -28,13 +26,11 @@
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/SourceArchive.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
-#include "Informer/InfoFromBuild.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
@@ -292,15 +288,6 @@ void check_written_data(
     const std::vector<std::string>& legend, const size_t version_number) {
   // Check version info is correctly retrieved from Cce file
   CHECK(cce_file.get_version() == version_number);
-
-  // Check getting the header from Cce file
-  std::stringstream ss;
-  ss << "# ";
-  auto build_info = info_from_build();
-  ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
-  const auto& header = cce_file.get_header();
-  CHECK(header.starts_with("#\n# File created on "));
-  CHECK(header.ends_with(ss.str()));
 
   CHECK(cce_file.get_legend() == legend);
 

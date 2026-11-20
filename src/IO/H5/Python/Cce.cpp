@@ -39,7 +39,6 @@ void bind_h5cce(py::module& m) {
            py::arg("bondi_variable_name"), py::arg("ell"),
            py::arg("first_row") = 0, py::arg("num_rows") = 1)
       .def("get_dimensions", &h5::Cce::get_dimensions)
-      .def("get_header", &h5::Cce::get_header)
       .def("get_version", &h5::Cce::get_version);
 }
 }  // namespace py_bindings
