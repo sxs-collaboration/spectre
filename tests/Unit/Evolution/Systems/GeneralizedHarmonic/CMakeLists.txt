@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(AmrCriteria)
 add_subdirectory(GaugeSourceFunctions)
 add_subdirectory(Python)
 
