@@ -31,7 +31,7 @@ class Mesh;
 namespace gh::gauges {
 /*!
  * \brief Imposes the analytic gauge condition,
- * \f$H_a=\Gamma_a^{\mathrm{analytic}}\f$ from an analytic solution or analytic
+ * \f$H_a=-\Gamma_a^{\mathrm{analytic}}\f$ from an analytic solution or analytic
  * data.
  *
  * \warning Assumes \f$\partial_t \Gamma_a=0\f$ i.e. the solution is static or
@@ -43,7 +43,6 @@ class AnalyticChristoffel final : public GaugeCondition {
   using solution_tags =
       tmpl::list<gh::Tags::Pi<DataVector, SpatialDim>,
                  gh::Tags::Phi<DataVector, SpatialDim>,
-                 gr::Tags::SpacetimeMetric<DataVector, SpatialDim>,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, SpatialDim>,
                  gr::Tags::SpatialMetric<DataVector, SpatialDim>>;
@@ -59,7 +58,7 @@ class AnalyticChristoffel final : public GaugeCondition {
   using options = tmpl::list<AnalyticPrescription>;
 
   static constexpr Options::String help{
-      "Apply the analytic gauge condition H_a = Gamma_a, where Gamma_a comes "
+      "Apply the analytic gauge condition H_a = -Gamma_a, where Gamma_a comes "
       "from the AnalyticPrescription."};
 
   AnalyticChristoffel() = default;

@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -66,8 +67,7 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords,
     const tuples::tagged_tuple_from_typelist<solution_tags<SpatialDim>>&
         solution_vars) const {
-  const auto [pi, phi, spacetime_metric, lapse, shift, spatial_metric] =
-      solution_vars;
+  const auto& [pi, phi, lapse, shift, spatial_metric] = solution_vars;
   // Now compute Gamma_a
   Variables<
       tmpl::list<gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim>,
@@ -90,10 +90,14 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
     determinant_and_inverse(make_not_null(&det_buffer),
                             make_not_null(&inverse_spatial_metric),
                             spatial_metric);
-    determinant_and_inverse(make_not_null(&det_buffer),
-                            make_not_null(&inverse_spacetime_metric),
-                            spacetime_metric);
   }
+  // In a direct, 4D numerical inverse, determinant_and_inverse divides by
+  // \f$g_{tt}g_{xx}-g_{tx}^2\f$. A nearly zero divisor can cause a loss of
+  // accuracy even for a nonsingular metric. Computing the inverse spacetime
+  // metric from the inverse spatial metric, lapse, and shift avoids this
+  // division.
+  gr::inverse_spacetime_metric(make_not_null(&inverse_spacetime_metric), lapse,
+                               shift, inverse_spatial_metric);
   gr::spacetime_normal_one_form(make_not_null(&spacetime_normal_one_form),
                                 lapse);
   gr::spacetime_normal_vector(make_not_null(&spacetime_normal_vector), lapse,
