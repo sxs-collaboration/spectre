@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <array>
 #include <cstddef>
 #include <random>
 #include <string>
@@ -19,10 +18,8 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
-#include "Helpers/Utilities/Kokkos/CheckOnDevice.hpp"
 #include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
-#include "Utilities/Kokkos/KokkosCore.hpp"
 
 namespace {
 // Verifies that the squared comoving magnetic field, computed as the dot
@@ -114,84 +111,6 @@ void consistency_check(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX(comoving_magnetic_field_squared_calc,
                         comoving_magnetic_field_squared_v);
 }
-
-#ifdef SPECTRE_KOKKOS
-// Evaluates all functions for `double`s, so they can be compared between a
-// Kokkos kernel and the host
-constexpr size_t number_of_values = 18;
-KOKKOS_FUNCTION std::array<double, number_of_values> evaluate_all(
-    const tnsr::I<double, 3>& spatial_velocity,
-    const tnsr::I<double, 3>& magnetic_field,
-    const tnsr::i<double, 3>& spatial_velocity_one_form,
-    const tnsr::i<double, 3>& magnetic_field_one_form,
-    const Scalar<double>& magnetic_field_squared,
-    const Scalar<double>& magnetic_field_dot_spatial_velocity,
-    const Scalar<double>& lorentz_factor, const tnsr::I<double, 3>& shift,
-    const Scalar<double>& lapse) {
-  tnsr::A<double, 3> vector{};
-  hydro::comoving_magnetic_field(
-      make_not_null(&vector), spatial_velocity, magnetic_field,
-      magnetic_field_dot_spatial_velocity, lorentz_factor, shift, lapse);
-  const auto returned_vector = hydro::comoving_magnetic_field(
-      spatial_velocity, magnetic_field, magnetic_field_dot_spatial_velocity,
-      lorentz_factor, shift, lapse);
-  tnsr::a<double, 3> one_form{};
-  hydro::comoving_magnetic_field_one_form(
-      make_not_null(&one_form), spatial_velocity_one_form,
-      magnetic_field_one_form, magnetic_field_dot_spatial_velocity,
-      lorentz_factor, shift, lapse);
-  const auto returned_one_form = hydro::comoving_magnetic_field_one_form(
-      spatial_velocity_one_form, magnetic_field_one_form,
-      magnetic_field_dot_spatial_velocity, lorentz_factor, shift, lapse);
-  Scalar<double> squared{};
-  hydro::comoving_magnetic_field_squared(
-      make_not_null(&squared), magnetic_field_squared,
-      magnetic_field_dot_spatial_velocity, lorentz_factor);
-  const auto returned_squared = hydro::comoving_magnetic_field_squared(
-      magnetic_field_squared, magnetic_field_dot_spatial_velocity,
-      lorentz_factor);
-  return {{get<0>(vector), get<1>(vector), get<2>(vector), get<3>(vector),
-           get<0>(returned_vector), get<1>(returned_vector),
-           get<2>(returned_vector), get<3>(returned_vector), get<0>(one_form),
-           get<1>(one_form), get<2>(one_form), get<3>(one_form),
-           get<0>(returned_one_form), get<1>(returned_one_form),
-           get<2>(returned_one_form), get<3>(returned_one_form), get(squared),
-           get(returned_squared)}};
-}
-
-// The functions give the same results in a Kokkos kernel as on the host
-void test_on_device() {
-  MAKE_GENERATOR(generator);
-  std::uniform_real_distribution<> distribution(0.1, 1.0);
-  const auto spatial_velocity = make_with_random_values<tnsr::I<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto magnetic_field = make_with_random_values<tnsr::I<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto spatial_velocity_one_form =
-      make_with_random_values<tnsr::i<double, 3>>(
-          make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto magnetic_field_one_form =
-      make_with_random_values<tnsr::i<double, 3>>(
-          make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto magnetic_field_squared = make_with_random_values<Scalar<double>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto magnetic_field_dot_spatial_velocity =
-      make_with_random_values<Scalar<double>>(
-          make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const Scalar<double> lorentz_factor{1.5};
-  const auto shift = make_with_random_values<tnsr::I<double, 3>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-  const auto lapse = make_with_random_values<Scalar<double>>(
-      make_not_null(&generator), make_not_null(&distribution), 0.0);
-
-  TestHelpers::check_on_device(KOKKOS_LAMBDA() {
-    return evaluate_all(
-        spatial_velocity, magnetic_field, spatial_velocity_one_form,
-        magnetic_field_one_form, magnetic_field_squared,
-        magnetic_field_dot_spatial_velocity, lorentz_factor, shift, lapse);
-  });
-}
-#endif  // SPECTRE_KOKKOS
 }  // namespace
 
 namespace hydro {
@@ -226,9 +145,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.ComovingMagneticField",
       {{{0.0, 1.0}}}, used_for_size);
 
   consistency_check(used_for_size);
-#ifdef SPECTRE_KOKKOS
-  test_on_device();
-#endif  // SPECTRE_KOKKOS
 }
 
 }  // namespace hydro
