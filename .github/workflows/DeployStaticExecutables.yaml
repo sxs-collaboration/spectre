@@ -10,8 +10,10 @@ on:
     inputs:
       tag_name:
         type: string
-        required: true
-        description: The name of the release tag
+        required: false
+        description: >-
+          The name of the release tag to upload to. Leave empty to only upload
+          the assets as workflow artifacts, e.g. for testing.
 
 jobs:
   deploy_static_execs:
@@ -156,7 +158,16 @@ jobs:
       - name: Create exporter library release asset
         run: |
           tar cJf SpectreExporter-${{ matrix.asset }}.tar.xz SpectreExporter
+      - name: Upload as workflow artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ matrix.asset }}
+          if-no-files-found: error
+          path: |
+            CceExecutables-${{ matrix.asset }}.tar.xz
+            SpectreExporter-${{ matrix.asset }}.tar.xz
       - name: Upload to release
+        if: env.RELEASE_TAG_NAME != ''
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG_NAME }}
