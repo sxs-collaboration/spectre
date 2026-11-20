@@ -1,0 +1,320 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveValenciaDivClean
+Testing:
+  Check: parse;execute
+  Timeout: 180
+ExpectedOutput:
+  - AlfvenWave-2period-p9Volume0.h5
+  - AlfvenWave-2period-p9Reductions.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+  UseSubcellGridPointsForDistribution: False
+
+ResourceInfo:
+  AvoidGlobalProc0: False
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: &initial_time_step 0.00063916845428464231
+  InitialSlabSize: *initial_time_step
+  MinimumTimeStep: 1e-7
+  LocalTimeStepping: Off
+  TimeStepper:
+    # Both RK3 and AM-PC 3 should work. These are the "standard" time steppers
+    # for spectre for hydro right now.
+    Rk3HesthavenSsp:
+    # AdamsMoultonPc:
+    #   Order: 3
+  LtsStepChoosers:
+  VariableOrderAlgorithm:
+    GoalOrder: 3
+
+PhaseChangeAndTriggers: []
+
+InitialData: &InitialData
+  AlfvenWave:
+    WaveNumber: 6.2831853071795862
+    Pressure: 1.0
+    RestMassDensity: 1.0
+    ElectronFraction: 0.1
+    AdiabaticIndex: 1.3333333333333333
+    BkgdMagneticField: [1.0, 0.0, 0.0]
+    WaveMagneticField: [0.0, 1.0, 0.0]
+
+EquationOfState:
+
+
+  FromInitialData
+# Fixed Minkowski, unit periodic box. Length unit L_box=1; c=1; time in L_box/c.
+DomainCreator:
+  Brick:
+    LowerBound: [0.0, 0.0, 0.0]
+    UpperBound: [1.0, 1.0, 1.0]
+    Distribution: [Linear, Linear, Linear]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [9, 9, 9]
+    TimeDependence: None
+    BoundaryConditions: [Periodic, Periodic, Periodic]
+
+VariableFixing:
+
+
+  FixConservatives:
+    Enable: False # Only needed when not using Kastaun for recovery
+    CutoffD: &CutoffD 1.1e-15
+    MinimumValueOfD: &MinimumD 1.0e-15
+    CutoffYe: 0.0
+    MinimumValueOfYe: 0.0
+    SafetyFactorForB: &BSafetyFactor 1.0e-12
+    SafetyFactorForS: 1.0e-12
+    SafetyFactorForSCutoffD: 1.0e-8
+    SafetyFactorForSSlope: 0.0001
+    MagneticField: AssumeNonZero
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    VelocityLimiting:
+      AtmosphereMaxVelocity: 0.0
+      NearAtmosphereMaxVelocity: 1.0e-4
+      AtmosphereDensityCutoff: 3.0e-15
+      TransitionDensityBound: 3.0e-14
+    KappaLimiting:
+      DensityLowerBound: 2.0e-14
+      EplisonKappaMinus: 1.0e-3
+      DensityUpperBound: 2.0e-13
+      EpsilonKappaMax: 0.01
+      LimitAboveDensityUpperBound: False
+      MinTemperature: FromEos
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
+  KastaunMaxLorentzFactor: 10.0
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    Hll:
+      MagneticFieldMagnitudeForHydro: 1.0e-30
+      LightSpeedDensityCutoff: 1.0e-8
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Filtering:
+      - None:
+          BlocksToFilter: All
+    OnlyDgBlocksAndGroups: [Brick]
+    Subcell:
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: False # Enable to test FD convergence
+        EnableExtensionDirections: False
+        UseHalo: False
+      SubcellToDgReconstructionMethod: DimByDim
+      FiniteDifferenceDerivativeOrder: 2
+      FdInterpolationOrder: 3 # Can be reduced for simpler domains
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      AtmosphereDensity: *AtmosphereDensityCutoff
+      SafetyFactorForB: *BSafetyFactor
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      PositivityPreservingAdaptiveOrderPrim:
+        Alpha5: 3.8
+        Alpha7: None
+        Alpha9: None
+        LowOrderReconstructor: MonotonisedCentral
+        ReconstructRhoTimesTemperature: True
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger: Always
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: 0.25
+            - LimitIncrease:
+                Factor: 1.5
+            - Maximum: 0.0051133476342771385
+            - StepToTimes:
+                Times:
+                  EvenlySpaced:
+                    Interval: 0.16362712429686843
+                    Offset: 0.0
+  - Trigger:
+      Times:
+        EvenlySpaced:
+          Interval: 0.16362712429686843
+          Offset: 0.0
+    Events:
+      - ObserveTimeStep:
+          SubfileName: Time
+          PrintTimeToTerminal: True
+          ObservePerCore: False
+      - ObserveNorms:
+          SubfileName: EvolutionNorms
+          TensorsToObserve:
+            - Name: RestMassDensity
+              NormType: L2Norm
+              Components: Sum
+            - Name: Pressure
+              NormType: L2Norm
+              Components: Sum
+            - Name: SpecificInternalEnergy
+              NormType: L2Norm
+              Components: Sum
+            - Name: SpatialVelocity
+              NormType: L2Norm
+              Components: Sum
+            - Name: MagneticField
+              NormType: L2Norm
+              Components: Sum
+            - Name: LorentzFactor
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(RestMassDensity)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pressure)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpecificInternalEnergy)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpatialVelocity)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(MagneticField)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(LorentzFactor)
+              NormType: L2Norm
+              Components: Sum
+            - Name: DivergenceCleaningField
+              NormType: L2Norm
+              Components: Individual
+            - Name: RestMassDensity
+              NormType: Min
+              Components: Individual
+            - Name: Pressure
+              NormType: Min
+              Components: Individual
+            - Name: TildeD
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: TildeTau
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: TildeYe
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: TildeS
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: TildeS
+              NormType: L2Norm
+              Components: Sum
+            - Name: TildeB
+              NormType: VolumeIntegral
+              Components: Individual
+            - Name: div(MagneticField)
+              NormType: L2Norm
+              Components: Individual
+            - Name: div(TildeB)
+              NormType: L2Norm
+              Components: Individual
+            - Name: TildeB
+              NormType: L2Norm
+              Components: Sum
+          BlocksToObserve: All
+          ReductionScope: WholeDomain
+  - Trigger:
+      Times:
+        EvenlySpaced:
+          Interval: 0.65450849718747373
+          Offset: 0.0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - RestMassDensity
+            - Pressure
+            - SpecificInternalEnergy
+            - SpatialVelocity
+            - MagneticField
+            - DivergenceCleaningField
+            - div(MagneticField)
+            - LorentzFactor
+            - TildeD
+            - TildeTau
+            - TildeS
+            - TildeYe
+            - Temperature
+            - ElectronFraction
+            - TildeB
+            - div(TildeB)
+            - SqrtDetSpatialMetric
+            - Lapse
+            - Shift
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 5.2360679774997898
+    Events:
+      - Completion
+
+EventsAndTriggersAtSteps:
+
+Observers:
+  VolumeFileName: "AlfvenWave-2period-p9Volume"
+  ReductionFileName: "AlfvenWave-2period-p9Reductions"
+
+EventsAndDenseTriggers:
+
+EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:
+    - ObserveFields:
+        SubfileName: VolumeDataOnFailure
+        VariablesToObserve:
+          - RestMassDensity
+          - Error(RestMassDensity)
+          - TildeD
+          - SpatialVelocity
+          - SpecificInternalEnergy
+          - TildeTau
+          - Pressure
+          - TciStatus
+        InterpolateToMesh: None
+        ProjectToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+        BlocksToObserve: All
