@@ -3,15 +3,21 @@
 
 #pragma once
 
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstddef>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -19,6 +25,8 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -31,11 +39,128 @@
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg::subcell {
+namespace SetInterpolators_detail {
+// Offset from the neighbor's coordinates to the element's on their shared
+// face: zero for touching blocks, the period for periodic ones. Errors if the
+// faces aren't related by a translation or the offset is too small to be a
+// period.
+template <size_t Dim, typename ElementMapType, typename NeighborElementMapType>
+std::array<double, Dim> periodic_offset(
+    const ElementId<Dim>& element_id, const ElementId<Dim>& neighbor_id,
+    const Direction<Dim>& direction, const OrientationMap<Dim>& orientation,
+    const ElementMapType& element_map,
+    const NeighborElementMapType& neighbor_element_map) {
+  const auto element_to_block_map =
+      domain::element_to_block_logical_map(element_id);
+  const auto neighbor_element_to_block_map =
+      domain::element_to_block_logical_map(neighbor_id);
+  double scale = 1.0;
+  const auto offset_at =
+      [&](const tnsr::I<double, Dim, Frame::ElementLogical>& face_point) {
+        // The same point in the neighbor's block logical coordinates
+        const auto block_point = (*element_to_block_map)(face_point);
+        tnsr::I<double, Dim, Frame::BlockLogical> neighbor_block_point{};
+        for (size_t d = 0; d < Dim; ++d) {
+          const Direction<Dim> neighbor_axis =
+              orientation(Direction<Dim>{d, Side::Upper});
+          neighbor_block_point.get(neighbor_axis.dimension()) =
+              neighbor_axis.sign() * block_point.get(d);
+        }
+        const size_t neighbor_face_dimension =
+            orientation(direction).dimension();
+        neighbor_block_point.get(neighbor_face_dimension) =
+            -neighbor_block_point.get(neighbor_face_dimension);
+        const auto neighbor_face_point =
+            neighbor_element_to_block_map->inverse(neighbor_block_point);
+        ASSERT(neighbor_face_point.has_value(),
+               "The element to block logical map of " << neighbor_id
+                                                      << " has no inverse.");
+
+        const auto point = element_map(face_point);
+        const auto neighbor_point =
+            neighbor_element_map(neighbor_face_point.value());
+        std::array<double, Dim> offset{};
+        for (size_t d = 0; d < Dim; ++d) {
+          gsl::at(offset, d) = point.get(d) - neighbor_point.get(d);
+          scale = std::max(
+              {scale, std::abs(point.get(d)), std::abs(neighbor_point.get(d))});
+        }
+        return offset;
+      };
+
+  // Offsets at the face center and corners
+  tnsr::I<double, Dim, Frame::ElementLogical> face_center{0.0};
+  face_center.get(direction.dimension()) = direction.sign();
+  std::array<double, Dim> offset = offset_at(face_center);
+  std::vector<std::array<double, Dim>> corner_offsets{};
+  for (FaceCornerIterator<Dim> fci(direction); fci; ++fci) {
+    tnsr::I<double, Dim, Frame::ElementLogical> face_corner{};
+    for (size_t d = 0; d < Dim; ++d) {
+      face_corner.get(d) = fci().get(d);
+    }
+    corner_offsets.push_back(offset_at(face_corner));
+  }
+
+  constexpr double relative_tolerance = 1.0e-10;
+  const double tolerance = relative_tolerance * scale;
+  for (const auto& corner_offset : corner_offsets) {
+    for (size_t d = 0; d < Dim; ++d) {
+      if (std::abs(gsl::at(corner_offset, d) - gsl::at(offset, d)) >
+          tolerance) {
+        ERROR("The face of element "
+              << element_id << " in direction " << direction
+              << " and the face of its neighbor " << neighbor_id
+              << " are not related by a translation: the offset between them "
+                 "is "
+              << offset << " at the center of the face but " << corner_offset
+              << " at a corner. Only neighbors that touch or that are "
+                 "identified by periodic boundary conditions are supported.");
+      }
+    }
+  }
+  if (alg::all_of(offset, [&tolerance](const double component) {
+        return std::abs(component) < tolerance;
+      })) {
+    return make_array<Dim>(0.0);
+  }
+
+  // A period is at least the width of the element
+  auto opposite_face_center = face_center;
+  opposite_face_center.get(direction.dimension()) = -direction.sign();
+  const auto face_center_coords = element_map(face_center);
+  const auto opposite_face_center_coords = element_map(opposite_face_center);
+  double width_squared = 0.0;
+  double offset_squared = 0.0;
+  for (size_t d = 0; d < Dim; ++d) {
+    width_squared +=
+        square(face_center_coords.get(d) - opposite_face_center_coords.get(d));
+    offset_squared += square(gsl::at(offset, d));
+  }
+  if (offset_squared < width_squared) {
+    ERROR("The face of element "
+          << element_id << " in direction " << direction
+          << " and the face of its neighbor " << neighbor_id
+          << " are offset by " << offset
+          << ", which is neither zero, as for neighbors that touch, nor at "
+             "least the width of the element ("
+          << sqrt(width_squared)
+          << "), as for neighbors identified by periodic boundary conditions. "
+             "Check that the maps of the blocks agree on their shared face.");
+  }
+  return offset;
+}
+}  // namespace SetInterpolators_detail
+
 /*!
  * \brief Sets the `intrp::IrregularInterpolant`s for interpolating to ghost
  * zone data at block boundaries.
@@ -121,6 +246,21 @@ struct SetInterpolators {
           continue;
         }
         const auto& neighbor_block = domain.blocks()[neighbor_block_id];
+        // Nonzero across periodic boundaries
+        const std::array<double, Dim> offset = [&]() {
+          if (neighbor_block.is_time_dependent()) {
+            return SetInterpolators_detail::periodic_offset(
+                element.id(), neighbor_id, direction, orientation, element_map,
+                ElementMap(neighbor_id,
+                           neighbor_block.moving_mesh_logical_to_grid_map()
+                               .get_clone()));
+          } else {
+            return SetInterpolators_detail::periodic_offset(
+                element.id(), neighbor_id, direction, orientation, element_map,
+                ElementMap(neighbor_id,
+                           neighbor_block.stationary_map().get_clone()));
+          }
+        }();
         // InterpolatorsFromFdToNeighborFd &
         // InterpolatorsFromDgToNeighborFd
         // 1. Compute the grid coordinates of my neighbor's ghost zones.
@@ -189,6 +329,9 @@ struct SetInterpolators {
             neighbor_grid_ghost_zone_coords[i] =
                 neighbor_inertial_ghost_zone_coords[i];
           }
+        }
+        for (size_t d = 0; d < Dim; ++d) {
+          neighbor_grid_ghost_zone_coords.get(d) += gsl::at(offset, d);
         }
         // Map the ghost zone grid coordinates back to our logical
         // coordinates.
@@ -337,8 +480,12 @@ struct SetInterpolators {
             direction.sign() * delta_xi * number_of_ghost_zones;
         my_logical_ghost_zone_coords.get(direction.dimension()) +=
             coordinate_shift;
-        const tnsr::I<DataVector, Dim, Frame::Grid> my_grid_ghost_zone_coords =
+        tnsr::I<DataVector, Dim, Frame::Grid> my_grid_ghost_zone_coords =
             element_map(my_logical_ghost_zone_coords);
+        // Into the coordinates of the neighbor (see `offset`)
+        for (size_t d = 0; d < Dim; ++d) {
+          my_grid_ghost_zone_coords.get(d) -= gsl::at(offset, d);
+        }
         if (neighbor_block.is_time_dependent()) {
           const ElementMap neighbor_element_map(
               neighbor_id,
