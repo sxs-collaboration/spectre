@@ -21,6 +21,7 @@ spectre_target_sources(
   OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
+  SimpleProfiler.cpp
   SnakeCase.cpp
   UtcTime.cpp
   WrapText.cpp
@@ -75,6 +76,7 @@ spectre_target_headers(
   Requires.hpp
   RuntimeCache.hpp
   SetNumberOfGridPoints.hpp
+  SimpleProfiler.hpp
   SnakeCase.hpp
   Spherepack.hpp
   SplitTuple.hpp

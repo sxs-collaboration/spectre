@@ -11,6 +11,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -62,4 +63,7 @@ SPECTRE_TEST_CASE("Unit.Actions.MutateApply", "[Unit][Actions]") {
 
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK(ActionTesting::get_databox_tag<component, TestValue>(runner, 0) == 4);
+
+  CHECK(pretty_type::name<::Actions::MutateApply<AddTheNumber>>() ==
+        "AddTheNumber");
 }

@@ -38,6 +38,7 @@
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
@@ -347,6 +348,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
   }
 
   using component_list = tmpl::flatten<tmpl::list<
+      profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
       ::amr::Component<EvolutionMetavars>,
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,

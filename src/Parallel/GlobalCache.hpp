@@ -850,6 +850,24 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) {
 
 /// @{
 /// \ingroup ParallelGroup
+/// \brief Check if a parallel component exists (or is mocked)
+template <typename Metavariables, typename Component>
+struct component_exists
+    : tmpl::any<typename Metavariables::component_list,
+                std::is_same<
+                    GlobalCache_detail::get_component_being_mocked_or_default<
+                        tmpl::_1, tmpl::_1>,
+                    tmpl::pin<Component>>> {};
+template <typename Metavariables, typename Component>
+using component_exists_t =
+    typename component_exists<Metavariables, Component>::type;
+template <typename Metavariables, typename Component>
+constexpr bool component_exists_v =
+    component_exists<Metavariables, Component>::value;
+/// @}
+
+/// @{
+/// \ingroup ParallelGroup
 /// \brief Access the Charm++ proxy associated with a ParallelComponent
 ///
 /// \requires ParallelComponentTag is a tag in component_list

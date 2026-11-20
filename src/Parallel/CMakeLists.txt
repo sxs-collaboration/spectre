@@ -11,6 +11,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AlgorithmExecution.cpp
   ArrayComponentId.cpp
   CharmRegistration.cpp
   ExitCode.cpp
@@ -19,6 +20,7 @@ spectre_target_sources(
   NodeLock.cpp
   Phase.cpp
   Reduction.cpp
+  SimpleProfilerDataComponent.cpp
   )
 
 spectre_target_headers(
@@ -53,6 +55,7 @@ spectre_target_headers(
   NodeLock.hpp
   OutputInbox.hpp
   ParallelComponentHelpers.hpp
+  ParallelSimpleProfilerData.hpp
   Phase.hpp
   PhaseControlReductionHelpers.hpp
   PhaseDependentActionList.hpp
@@ -60,6 +63,7 @@ spectre_target_headers(
   ReductionDeclare.hpp
   ResourceInfo.hpp
   Section.hpp
+  SimpleProfilerDataComponent.hpp
   Spinlock.hpp
   StaticSpscQueue.hpp
   TypeTraits.hpp
