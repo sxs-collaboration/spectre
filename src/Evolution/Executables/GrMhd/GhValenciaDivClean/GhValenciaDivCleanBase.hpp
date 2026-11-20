@@ -763,8 +763,6 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::list<evolution::dg::NonconformingEqualRateRegions<volume_dim>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
-      dg::Actions::SpectralFilter<volume_dim,
-                                  typename system::variables_tag::tags_list>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
@@ -782,6 +780,8 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::dg::Actions::ApplyLtsBoundaryCorrections<
           volume_dim, use_dg_element_collection>,
       Actions::MutateApply<ChangeTimeStepperOrder<system>>,
+      dg::Actions::SpectralFilter<volume_dim,
+                                  typename system::variables_tag::tags_list>,
       tmpl::conditional_t<
           use_dg_subcell,
           // Note: The primitive variables are computed as part of the TCI, or
