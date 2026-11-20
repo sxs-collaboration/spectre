@@ -9,6 +9,7 @@ Machine:
     Contact Geoffrey Lovelace for more information.
   DefaultTasksPerNode: 6
   DefaultProcsPerTask: 32
+  LoginNodeRegex: '^ocean2\.fullerton\.edu$'
   DefaultQueue: "normal"
   DefaultTimeLimit: "01-00:00:00"
   LaunchCommandSingleNode: []

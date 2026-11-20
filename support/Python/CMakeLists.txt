@@ -5,8 +5,6 @@ if (NOT ENABLE_PYTHON)
   return()
 endif()
 
-option(MACHINE "Select a machine that we know how to run on, such as a \
-particular supercomputer" OFF)
 spectre_python_add_module(
   support
   PYTHON_FILES
@@ -22,7 +20,6 @@ spectre_python_add_module(
 )
 
 if(MACHINE)
-  message(STATUS "Selected machine: ${MACHINE}")
   configure_file(
     ${CMAKE_SOURCE_DIR}/support/Machines/${MACHINE}.yaml
     ${SPECTRE_PYTHON_PREFIX}/support/Machine.yaml
