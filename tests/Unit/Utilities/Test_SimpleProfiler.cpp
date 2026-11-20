@@ -22,9 +22,23 @@ const std::uint64_t timing_slop = 5;
 std::uint64_t nanosec(const std::uint64_t msec) { return 1'000'000u * msec; }
 
 void msleep(const std::uint64_t msec) {
-  // Test shouldn't be sleeping for a full second.
-  const timespec spec{.tv_sec = 0, .tv_nsec = static_cast<long>(nanosec(msec))};
-  nanosleep(&spec, nullptr);
+  timespec sleep_end_time{};
+  clock_gettime(CLOCK_MONOTONIC, &sleep_end_time);
+  sleep_end_time.tv_nsec += static_cast<long>(nanosec(msec));
+  while (sleep_end_time.tv_nsec >= 1'000'000'000u) {
+    sleep_end_time.tv_sec += 1;
+    sleep_end_time.tv_nsec -= 1'000'000'000u;
+  }
+
+  // Do a busy wait.  The CI macOS test runners were found to take an
+  // insanely long time to come back from a nanosleep() call.  Doing
+  // 14 sleeps of 10ms each consistently accumulated over 500ms of
+  // real time.
+  timespec now{};
+  do {
+    clock_gettime(CLOCK_MONOTONIC, &now);
+  } while (now.tv_sec < sleep_end_time.tv_sec or
+           now.tv_nsec < sleep_end_time.tv_nsec);
 }
 
 struct Plain {
