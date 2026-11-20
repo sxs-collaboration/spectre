@@ -44,12 +44,13 @@ namespace Solutions {
  * where $\eta_{\mu\nu}$ is the Minkowski metric, $H$ is a scalar
  * function, and $l_\mu$ is the outgoing null vector.
  * $H$ and $l_\mu$ are known functions of the coordinates
- * and of the mass and spin vector.
+ * and of the mass $M$ and spin vector $\vec{a}$.
  *
  * The following are input file options that can be specified:
- *  - Mass (default: 1.)
- *  - Center (default: {0,0,0})
- *  - Spin (default: {0,0,0})
+ *  - Mass
+ *  - Spin (dimensionless spin $\chi = \vec{a} / M$)
+ *  - Center
+ *  - Velocity
  *
  * ## Kerr-Schild Coordinates
  *
@@ -105,24 +106,25 @@ namespace Solutions {
  *
  * ## Kerr Spacetime
  *
- * ### Zero spin expressions
- * For $\vec{a} = 0$, some curvature quantities are more conveniently computed
- * from simpler expressions:
- * \begin{align}
- * \partial_i \alpha
+ * ### Zero spin and zero velocity expressions
+ * For an unboosted Schwarzschild spacetime (vanishing spin and velocity
+ * $\vec{a} = 0 = \vec{v}$), some quantities are more conveniently computed from
+ * simpler expressions: \begin{align} \partial_i \alpha
  * &= \frac{M X_i}{r^3}
  *      \left(1 + \frac{2M}{r}\right)^{-3/2}, \\
  *   K
  *   &= \frac{2M(r + 3M)}{\left[r(r + 2M)\right]^{3/2}}, \\
  *   \gamma^{jk}\Gamma^i{}_{jk}
- *   &= \frac{M(3r + 8M)}{r^2(r + 2M)^2}\,X^i.
+ *   &= \frac{M(3r + 8M)}{r^2(r + 2M)^2}\,X^i,
  * \end{align}
+ * where $M$ is the mass, $X^{i} = x^{i} - x^{i}_\text{center}$ and
+ * $ r = \sqrt{\delta_{ij}X^{i}X^{j}} $.
  *
  * ### Spin in the z direction
  *
- * Assume Cartesian coordinates $(t,x,y,z)$. Then for stationary Kerr
- * spacetime with mass $M$ and angular momentum $a M$
- * in the $z$ direction,
+ * Assume Cartesian coordinates $(t,x,y,z)$, with centered spatial components
+ * $(x, y, z) = X^{i}$. Then for stationary Kerr spacetime with mass $M$ and
+ * angular momentum $a M$ in the $z$ direction,
  * \begin{align}
  * H     &= {M r^3 \over r^4 + a^2 z^2},\\
  * l_\mu &=
@@ -172,7 +174,7 @@ namespace Solutions {
  * \begin{equation}
  * {\partial_{i} H \over H} =
  *  {3\partial_{i}r\over r} - {4 r^3 \partial_{i}r +
- *                     2(\vec{a}\cdot\vec{x})\vec{a}
+ *                     2(\vec{a}\cdot\vec{x}) a_{i}
  *                     \over r^4 + (\vec{a}\cdot\vec{x})^2},
  * \end{equation}
  * \begin{equation}
@@ -223,10 +225,11 @@ namespace Solutions {
  * the Minkowski metric, a scalar function and a one form, we construct the
  * metric in the rest frame of the black hole and then apply an inverse boost to
  * each of the covariant objects individually. Notice that we also need to
- * appropriately boost the coordinates to the to the rest frame before computing
+ * appropriately boost the coordinates to the rest frame before computing
  * the metric.
  *
- * The time derivatives of the metric components are given by:
+ * Since the solution is stationary in the rest-frame, the time derivatives of
+ * the metric components are given by:
  * \begin{align}
  *   \partial_t \alpha &= - v^{i}\partial_{i}\alpha, \\
  *   \partial_t \beta^{i} &= - v^{j}\partial_{j}\beta^{i},\\
@@ -237,14 +240,6 @@ namespace Solutions {
  * both the time and space coordinates, we have implemented it only at $t = 0$
  * as in SpEC. Therefore it is technically not an analytic solution and should
  * not be used to compute errors with respect to it.
- *
- * Moreover, since the boosted solution is intended for use as initial data,
- * we do not compute the time derivatives of the lapse and shift in the boosted
- * frame but set them to zero.
- *
- * Consequently, the gr::Tags::SpacetimeChristoffelSecondKind computed here,
- * corresponds to the boosted Kerr-Schild for the gauge where lapse and shift
- * have vanishing derivatives.
  *
  */
 class KerrSchild : public AnalyticSolution<3_st>,
@@ -604,10 +599,6 @@ class KerrSchild : public AnalyticSolution<3_st>,
    private:
     const KerrSchild& solution_;
     const tnsr::I<DataType, 3, Frame>& x_;
-    // Here null_vector_0 is simply -1, but if you have a boosted solution,
-    // then null_vector_0 can be something different, so we leave it coded
-    // in instead of eliminating it.
-    static constexpr double null_vector_0_ = -1.0;
   };
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
@@ -648,12 +639,6 @@ class KerrSchild : public AnalyticSolution<3_st>,
     tnsr::Abb<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame> /*meta*/);
-
-   private:
-    // Here null_vector_0 is simply -1, but if you have a boosted solution,
-    // then null_vector_0 can be something different, so we leave it coded
-    // in instead of eliminating it.
-    static constexpr double null_vector_0_ = -1.0;
   };
 
  private:
