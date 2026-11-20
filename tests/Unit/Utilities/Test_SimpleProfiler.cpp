@@ -119,7 +119,8 @@ void check_columns(const profiling::SimpleProfilerData::TimingData& data,
   }
 }
 
-bool test(const bool enable) {
+// Returns time taken if too long, otherwise 0.
+std::uint64_t test(const bool enable) {
   std::uint64_t unprofiled = 0;
   std::uint64_t unprofiled_calls = 0;
   std::uint64_t plain = 0;
@@ -234,7 +235,7 @@ bool test(const bool enable) {
   if (not enable) {
     // Testing that the interface works passing a null pointer for the
     // data.  There is no actual output to test.
-    return true;
+    return 0;
   }
 
   const auto timing_data = data->timing_data();
@@ -251,7 +252,7 @@ bool test(const bool enable) {
   const std::uint64_t expected_total_time =
       unprofiled + plain + file3_ex + colA_ex + file7 + bothA_ex + bothC;
   if (test_run_time > nanosec(expected_total_time + timing_slop)) {
-    return false;
+    return test_run_time;
   }
 
   CHECK(timing_data.size() == 6);
@@ -265,10 +266,11 @@ bool test(const bool enable) {
   check_columns(timing_data, "Both2",
                 {{"A", bothA_calls, bothA_ex, bothA_in},
                  {"C", bothC_calls, bothC, bothC}});
-  return true;
+  return 0;
 }
 
-bool test_serialization() {
+// Returns time taken if too long, otherwise 0.
+std::uint64_t test_serialization() {
   std::uint64_t unprofiled = 0;
   std::uint64_t unprofiled_calls = 0;
   std::uint64_t plain = 0;
@@ -317,7 +319,7 @@ bool test_serialization() {
 
   const std::uint64_t expected_total_time = unprofiled + plain;
   if (test_run_time > nanosec(expected_total_time + timing_slop)) {
-    return false;
+    return test_run_time;
   }
 
   CHECK(timing_data.size() == 2);
@@ -340,30 +342,40 @@ bool test_serialization() {
     CHECK(get<0>(tuple_copy) == 1234);
     CHECK(get<2>(tuple_copy) == 5678);
   }
-  return true;
+  return 0;
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.SimpleProfiler", "[Utilities][Unit]") {
   // The test it timing based, so it will occasionally fail because
   // the system is busy.  Allow a few retries if the timed portion ran
   // for too long.
-  for (size_t attempt = 0;; ++attempt) {
-    if (test(true)) {
+  std::vector<std::uint64_t> failures{};
+  for (;;) {
+    failures.push_back(test(true));
+    if (failures.back() == 0) {
+      failures.clear();
       break;
     }
-    REQUIRE(attempt < 5);
+    CAPTURE(failures);
+    REQUIRE(failures.size() < 5);
   }
-  for (size_t attempt = 0;; ++attempt) {
-    if (test(false)) {
+  for (;;) {
+    failures.push_back(test(false));
+    if (failures.back() == 0) {
+      failures.clear();
       break;
     }
-    REQUIRE(attempt < 5);
+    CAPTURE(failures);
+    REQUIRE(failures.size() < 5);
   }
-  for (size_t attempt = 0;; ++attempt) {
-    if (test_serialization()) {
+  for (;;) {
+    failures.push_back(test_serialization());
+    if (failures.back() == 0) {
+      failures.clear();
       break;
     }
-    REQUIRE(attempt < 5);
+    CAPTURE(failures);
+    REQUIRE(failures.size() < 5);
   }
 }
 }  // namespace
