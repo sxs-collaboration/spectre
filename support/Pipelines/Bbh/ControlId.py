@@ -11,7 +11,11 @@ import yaml
 
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import to_dataframe
-from spectre.Pipelines.Bbh.InitialData import TargetParams, generate_id
+from spectre.Pipelines.Bbh.InitialData import (
+    ComovingShift,
+    TargetParams,
+    generate_id,
+)
 from spectre.support.DirectoryStructure import Segment
 
 logger = logging.getLogger(__name__)
@@ -61,6 +65,7 @@ def control_id(
     refinement_level: int = 1,
     polynomial_order: int = 6,
     negative_expansion_bc: bool = True,
+    comoving_shift: ComovingShift = "Orthogonal",
 ):
     """Control BBH physical parameters.
 
@@ -121,6 +126,11 @@ def control_id(
       refinement_level: h-refinement used in control loop.
       polynomial_order: p-refinement used in control loop.
       negative_expansion_bc: Place the excisions inside of apparent horizons.
+      comoving_shift: How the shift of the negative-expansion solutions is
+        imposed at the excisions, 'Orthogonal' or 'AnalyticGuess'. With
+        'AnalyticGuess', the tangential part of the comoving shift of
+        the solutions includes the frame dragging of the spin, so the horizon
+        rotation acts as a correction around zero.
     """
 
     assert (
@@ -151,14 +161,24 @@ def control_id(
 
     # Get initial horizon rotations
     orbital_angular_velocity = binary_data["AngularVelocity"]
+    # The orbital angular velocity is only added to the horizon rotation when
+    # the tangential shift of the negative-expansion solution is not imposed
+    # (see `id_parameters`). With the tangential shift, the frame dragging of
+    # the spin is also imposed through the solution, so the horizon rotation
+    # read here is a correction around zero (see `generate_id`).
+    rotation_offset = (
+        0.0
+        if negative_expansion_bc and comoving_shift == "AnalyticGuess"
+        else orbital_angular_velocity
+    )
     horizon_rotation_a = domain_data["ObjectA"]["Interior"][
         "ExciseWithBoundaryCondition"
     ]["ApparentHorizon"]["Rotation"]
-    horizon_rotation_a[2] -= orbital_angular_velocity
+    horizon_rotation_a[2] -= rotation_offset
     horizon_rotation_b = domain_data["ObjectB"]["Interior"][
         "ExciseWithBoundaryCondition"
     ]["ApparentHorizon"]["Rotation"]
-    horizon_rotation_b[2] -= orbital_angular_velocity
+    horizon_rotation_b[2] -= rotation_offset
 
     # Combine initial choices of free data in a dictionary
     initial_free_data = dict(
@@ -233,6 +253,7 @@ def control_id(
                 refinement_level=refinement_level,
                 polynomial_order=polynomial_order,
                 negative_expansion_bc=negative_expansion_bc,
+                comoving_shift=comoving_shift,
             )
             control_run_dir = str(Segment.last(id_dir).path)
 
@@ -354,7 +375,10 @@ def control_id(
     # The expressions below come from differentiating the Kerr expressions
     # chi = - 2 r Omega and r = M (1 + sqrt(1 - chi^2)), where chi is the
     # dimensionless spin, r is the horizon radius, Omega is the horizon
-    # rotation, and M is the mass.
+    # rotation, and M is the mass. With the tangential shift of the
+    # negative-expansion solution, the spin is carried by the solution and the
+    # horizon rotation starts at zero, so the mass derivative vanishes and the
+    # spin derivative is the response to an additional rigid rotation.
     for spin_key, mass_key, horizon_rotation in zip(
         ["DimensionlessSpinA", "DimensionlessSpinB"],
         ["conformal_mass_a", "conformal_mass_b"],

@@ -41,6 +41,7 @@ class TestInitialData(unittest.TestCase):
             refinement_level=1,
             polynomial_order=5,
             negative_expansion_bc=True,
+            comoving_shift="Orthogonal",
             target_params={
                 "MassA": 0.6,
                 "MassB": 0.4,
@@ -80,6 +81,25 @@ class TestInitialData(unittest.TestCase):
             [params[f"HorizonRotationLeft_{xyz}"] for xyz in "xyz"],
             [-0.3, -0.4, -0.4 + 0.01],
         )
+        # Boost velocities are the background shift at the centers,
+        # Omega0 z x c + adot0 c + v0 with c = (x, y_offset, z_offset)
+        npt.assert_allclose(
+            [params[f"ConformalVelocityRight_{xyz}"] for xyz in "xyz"],
+            [
+                0.1 - 0.01 * 0.2 - 1.0e-5 * 8.1,
+                0.2 + 0.01 * 8.1 - 1.0e-5 * 0.2,
+                0.3 - 1.0e-5 * 0.3,
+            ],
+        )
+        npt.assert_allclose(
+            [params[f"ConformalVelocityLeft_{xyz}"] for xyz in "xyz"],
+            [
+                0.1 - 0.01 * 0.2 + 1.0e-5 * 11.9,
+                0.2 - 0.01 * 11.9 - 1.0e-5 * 0.2,
+                0.3 - 1.0e-5 * 0.3,
+            ],
+        )
+        self.assertEqual(params["ComovingShift"], "Orthogonal")
         self.assertAlmostEqual(params["FalloffWidthRight"], 6.479672589667676)
         self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
         self.assertEqual(params["L"], 1)
@@ -90,6 +110,32 @@ class TestInitialData(unittest.TestCase):
             + params["ConformalMassLeft"] * (params["XLeft"] - 0.1),
             0.0,
         )
+        self.assertEqual(params["HorizonLMax"], 20)
+
+    def test_horizon_l_max_for_large_boost(self):
+        # Low spins but a boost above 0.9 increase the horizon l_max
+        params = id_parameters(
+            conformal_mass_a=0.6,
+            conformal_mass_b=0.4,
+            horizon_rotation_a=[0.0, 0.0, 0.0],
+            horizon_rotation_b=[0.0, 0.0, 0.0],
+            center_of_mass_offset=[0.0, 0.0, 0.0],
+            linear_velocity=[0.0, 0.95, 0.0],
+            separation=20.0,
+            orbital_angular_velocity=0.0,
+            radial_expansion_velocity=0.0,
+            refinement_level=1,
+            polynomial_order=5,
+            negative_expansion_bc=True,
+            comoving_shift="Orthogonal",
+            target_params={
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.1, 0.2, 0.3],
+                "DimensionlessSpinB": [0.4, 0.5, 0.6],
+            },
+        )
+        self.assertEqual(params["HorizonLMax"], 40)
 
     def test_cli(self):
         common_args = [
@@ -130,9 +176,18 @@ class TestInitialData(unittest.TestCase):
             )
         except SystemExit as e:
             self.assertEqual(e.code, 0)
-        self.assertTrue(
-            (self.test_dir / "0000_InitialData/InitialData.yaml").exists()
-        )
+        with open(
+            self.test_dir / "0000_InitialData/InitialData.yaml", "r"
+        ) as open_input_file:
+            _, input_file = yaml.safe_load_all(open_input_file)
+        domain = input_file["DomainCreator"]["BinaryCompactObject"]
+        for obj in ["ObjectA", "ObjectB"]:
+            horizon_bc = domain[obj]["Interior"]["ExciseWithBoundaryCondition"][
+                "ApparentHorizon"
+            ]
+            self.assertEqual(
+                horizon_bc["NegativeExpansion"]["ComovingShift"], "Orthogonal"
+            )
         # Test with pipeline directory
         try:
             generate_id_command(
@@ -194,6 +249,7 @@ class TestInitialData(unittest.TestCase):
                     "evolve": True,
                     "eccentricity_control": True,
                     "negative_expansion_bc": True,
+                    "comoving_shift": "Orthogonal",
                     "scheduler": "None",
                     "copy_executable": "None",
                     "submit_script_template": "None",
@@ -201,6 +257,40 @@ class TestInitialData(unittest.TestCase):
                 },
             },
         )
+        # Test with the tangential shift of the negative-expansion solution.
+        # It already includes the frame dragging of the spins and the orbital
+        # frame rotation, so the horizon rotations must start at zero.
+        try:
+            generate_id_command(
+                common_args
+                + [
+                    "-o",
+                    str(self.test_dir / "TangentialShift"),
+                    "--comoving-shift",
+                    "AnalyticGuess",
+                    "--no-submit",
+                ]
+            )
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+        with open(
+            self.test_dir / "TangentialShift/0000_InitialData/InitialData.yaml",
+            "r",
+        ) as open_input_file:
+            metadata, input_file = yaml.safe_load_all(open_input_file)
+        self.assertEqual(
+            metadata["Next"]["With"]["comoving_shift"], "AnalyticGuess"
+        )
+        domain = input_file["DomainCreator"]["BinaryCompactObject"]
+        for obj in ["ObjectA", "ObjectB"]:
+            horizon_bc = domain[obj]["Interior"]["ExciseWithBoundaryCondition"][
+                "ApparentHorizon"
+            ]
+            npt.assert_allclose(horizon_bc["Rotation"], [0.0, 0.0, 0.0])
+            self.assertEqual(
+                horizon_bc["NegativeExpansion"]["ComovingShift"],
+                "AnalyticGuess",
+            )
 
 
 if __name__ == "__main__":

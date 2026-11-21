@@ -26,6 +26,7 @@ Next:
     evolve: {{ evolve }}
     eccentricity_control: {{ eccentricity_control }}
     negative_expansion_bc: {{ negative_expansion_bc }}
+    comoving_shift: {{ ComovingShift }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
@@ -50,7 +51,10 @@ Background: &background
           - {{ ConformalSpinLeft_y }}
           - {{ ConformalSpinLeft_z }}
         Center: [0., 0., 0.]
-        Velocity: [0., 0., 0.]
+        Velocity:
+          - {{ ConformalVelocityLeft_x }}
+          - {{ ConformalVelocityLeft_y }}
+          - {{ ConformalVelocityLeft_z }}
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: &mass_right {{ ConformalMassRight }}
@@ -59,7 +63,10 @@ Background: &background
           - {{ ConformalSpinRight_y }}
           - {{ ConformalSpinRight_z }}
         Center: [0., 0., 0.]
-        Velocity: [0., 0., 0.]
+        Velocity:
+          - {{ ConformalVelocityRight_x }}
+          - {{ ConformalVelocityRight_y }}
+          - {{ ConformalVelocityRight_z }}
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
     LinearVelocity:
@@ -90,7 +97,7 @@ DomainCreator:
             {% if negative_expansion_bc %}
             NegativeExpansion:
               Solution: *kerr_right
-              ComovingShift: None
+              ComovingShift: {{ ComovingShift }}
             {% else %}
             NegativeExpansion: None
             {% endif %}
@@ -112,7 +119,7 @@ DomainCreator:
             {% if negative_expansion_bc %}
             NegativeExpansion:
               Solution: *kerr_left
-              ComovingShift: None
+              ComovingShift: {{ ComovingShift }}
             {% else %}
             NegativeExpansion: None
             {% endif %}

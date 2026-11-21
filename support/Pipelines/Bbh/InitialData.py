@@ -44,6 +44,12 @@ DEFAULT_TARGET_PARAMS: Dict[TargetParams, float] = {
     "EccentricityAbsoluteTolerance": 1e-3,
 }
 
+# How the shift of the negative-expansion solutions is imposed at the
+# excisions. These are the values of the 'ComovingShift' option of the
+# 'ApparentHorizon' boundary condition that the pipeline supports.
+ComovingShift = Literal["Orthogonal", "AnalyticGuess"]
+COMOVING_SHIFT_VALUES = ["Orthogonal", "AnalyticGuess"]
+
 
 def L1_distance(m1, m2, separation):
     """Distance of the L1 Lagrangian point from m1, in Newtonian gravity"""
@@ -63,6 +69,7 @@ def id_parameters(
     refinement_level: int,
     polynomial_order: int,
     negative_expansion_bc: bool,
+    comoving_shift: ComovingShift,
     target_params: Dict[TargetParams, Union[float, Sequence[float]]],
 ):
     """Determine initial data parameters from options.
@@ -83,8 +90,18 @@ def id_parameters(
       polynomial_order: p-refinement level.
       negative_expansion_bc: Place the excision boundaries inside of the
         apparent horizons.
+      comoving_shift: How the shift of the negative-expansion solutions is
+        imposed at the excisions, 'Orthogonal' or 'AnalyticGuess'.
+        Only used if 'negative_expansion_bc' is True.
       target_params: Target parameters for the initial data control loop.
     """
+    assert comoving_shift in COMOVING_SHIFT_VALUES, (
+        f"Invalid 'comoving_shift' {comoving_shift!r}. Must be one of "
+        f"{COMOVING_SHIFT_VALUES}."
+    )
+    imposes_tangential_shift = (
+        negative_expansion_bc and comoving_shift == "AnalyticGuess"
+    )
     for required_target in [
         "MassA",
         "MassB",
@@ -107,11 +124,16 @@ def id_parameters(
     chi_A = np.asarray(target_params["DimensionlessSpinA"])
     r_plus_A = conformal_mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
     Omega_A = horizon_rotation_a
-    Omega_A[2] += orbital_angular_velocity
+    # Do not add orbital_angular_velocity if imposing the tangential shift
+    # of the negative-expansion solution, since it already includes it (as
+    # well as the frame dragging of the spin)
+    Omega_A[2] += 0.0 if imposes_tangential_shift else orbital_angular_velocity
     chi_B = np.asarray(target_params["DimensionlessSpinB"])
     r_plus_B = conformal_mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = horizon_rotation_b
-    Omega_B[2] += orbital_angular_velocity
+    # Do not add orbital_angular_velocity if imposing the tangential shift
+    # of the negative-expansion solution (see above)
+    Omega_B[2] += 0.0 if imposes_tangential_shift else orbital_angular_velocity
     if negative_expansion_bc:
         # For high spins, we need to place the excisions closer to the outer
         # horizon in order to avoid the inner horizon.
@@ -136,9 +158,36 @@ def id_parameters(
     assert (
         polynomial_order + 2 + extra_radial_refinement_p <= 20
     ), "The polynomial order + extra radial points exceeds the maximum of 20."
-    horizon_l_max = (
-        40 if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9 else 20
+
+    # Boost each black hole with the background shift at its center,
+    # Omega0 z cross c + adot0 c + v0
+    omega_vector = np.array([0.0, 0.0, orbital_angular_velocity])
+    center_A = np.array(
+        [x_A, center_of_mass_offset[1], center_of_mass_offset[2]]
     )
+    center_B = np.array(
+        [x_B, center_of_mass_offset[1], center_of_mass_offset[2]]
+    )
+    velocity_A = (
+        np.cross(omega_vector, center_A)
+        + radial_expansion_velocity * center_A
+        + np.asarray(linear_velocity, dtype=float)
+    )
+    velocity_B = (
+        np.cross(omega_vector, center_B)
+        + radial_expansion_velocity * center_B
+        + np.asarray(linear_velocity, dtype=float)
+    )
+
+    # Highly spinning or highly boosted black holes have horizons with more
+    # structure, so they need a higher l_max to resolve
+    horizon_l_max = (
+        40
+        if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9
+        or max(np.linalg.norm(velocity_A), np.linalg.norm(velocity_B)) > 0.9
+        else 20
+    )
+
     return {
         "ConformalMassRight": conformal_mass_a,
         "ConformalMassLeft": conformal_mass_b,
@@ -178,6 +227,13 @@ def id_parameters(
         "ExtraRadRef": extra_radial_refinement_l,
         "ExtraRadPoints": extra_radial_refinement_p,
         "HorizonLMax": horizon_l_max,
+        "ConformalVelocityRight_x": velocity_A[0],
+        "ConformalVelocityRight_y": velocity_A[1],
+        "ConformalVelocityRight_z": velocity_A[2],
+        "ConformalVelocityLeft_x": velocity_B[0],
+        "ConformalVelocityLeft_y": velocity_B[1],
+        "ConformalVelocityLeft_z": velocity_B[2],
+        "ComovingShift": comoving_shift,
     }
 
 
@@ -203,6 +259,7 @@ def generate_id(
     evolve: bool = False,
     eccentricity_control: bool = False,
     negative_expansion_bc: bool = True,
+    comoving_shift: ComovingShift = "Orthogonal",
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -253,6 +310,18 @@ def generate_id(
         be inside of the apparent horizons. This helps to find horizons and
         start an evolution from the initial data without extrapolation.
         (default: True)
+      comoving_shift: How the shift of the boosted Kerr solutions is imposed
+        at the excisions if 'negative_expansion_bc' is True. 'Orthogonal':
+        impose the orthogonal part of the comoving shift.
+        'AnalyticGuess': correct both the orthogonal and the tangential shift
+        with the comoving shift of the boosted Kerr-Schild solutions, which
+        includes their frame dragging and the orbital frame rotation. So the
+        horizon rotation starts at zero (unless 'horizon_rotation_a/b' are
+        given) and the orbital angular velocity is not added to it. This may
+        be useful for highly boosted, spinning black holes, for which the
+        boost makes the rotation rate non-uniform across the horizon, so it
+        can't be imposed by a rigid rotation.
+        (default: 'Orthogonal')
       pipeline_dir: Directory of the simulation, in which the pipeline
         creates its runs. Required when 'evolve' is set to True. The initial
         data runs in the 'ID' directory of the next eccentricity-control
@@ -325,6 +394,19 @@ def generate_id(
     if conformal_mass_b is None:
         conformal_mass_b = mass_initial_guess_factor * target_params["MassB"]
 
+    # With the tangential shift of the negative-expansion solution, the frame
+    # dragging of the spinning Kerr solutions is already imposed through the
+    # comoving shift of the solutions, so the horizon rotation starts at zero.
+    # Otherwise the spin would be counted twice in the initial guess. The
+    # control loop can still adjust the rotation as a small correction.
+    # The tangential correction may be useful for highly boosted, spinning
+    # black holes, for which the frame dragging seen in the comoving frame is
+    # not a rigid rotation with the rest-frame value -chi / (2 r_+).
+    if negative_expansion_bc and comoving_shift == "AnalyticGuess":
+        if horizon_rotation_a is None:
+            horizon_rotation_a = np.zeros(3)
+        if horizon_rotation_b is None:
+            horizon_rotation_b = np.zeros(3)
     # The 0.9 is an empirical factor that avoids an ill-posed elliptic problem
     # for very high spins.
     if horizon_rotation_a is None:
@@ -364,6 +446,7 @@ def generate_id(
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
         negative_expansion_bc=negative_expansion_bc,
+        comoving_shift=comoving_shift,
         target_params=target_params,
     )
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
@@ -552,6 +635,25 @@ def generate_id(
         "boundaries are inside of the apparent horizons. This helps to find"
         "horizons and start an evolution from the initial data without"
         "extrapolation."
+    ),
+)
+@click.option(
+    "--comoving-shift",
+    type=click.Choice(COMOVING_SHIFT_VALUES),
+    default="Orthogonal",
+    show_default=True,
+    help=(
+        "How the shift of the boosted Kerr solutions is imposed at the "
+        "excisions with the negative expansion boundary condition. "
+        "'Orthogonal': impose the orthogonal part of the comoving shift. "
+        "'AnalyticGuess': correct both the orthogonal and the tangential "
+        "shift with the comoving shift of the boosted Kerr-Schild solutions, "
+        "which includes their frame dragging and the orbital frame rotation. "
+        "So the initial horizon rotation is zero and the orbital angular "
+        "velocity is not added to it. May be useful for highly boosted, "
+        "spinning black holes, for which the boost makes the rotation rate "
+        "non-uniform across the horizon, so it can't be imposed by a rigid "
+        "rotation."
     ),
 )
 @click.option(
