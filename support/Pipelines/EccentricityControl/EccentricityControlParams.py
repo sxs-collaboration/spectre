@@ -228,6 +228,15 @@ def eccentricity_control_params_options(f):
         help="Input file with initial data parameters.",
     )
     @click.option(
+        "--inspiral-input-file",
+        "inspiral_input_file_path",
+        required=True,
+        help=(
+            "Input file for with the paramters used for the run to extract"
+            " eccentricity from."
+        ),
+    )
+    @click.option(
         "--tmin",
         type=float,
         help=(
