@@ -32,6 +32,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Tabulated3d.hpp"
+#include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -678,6 +679,214 @@ void test_hydro_numerical_characteristics(const DataVector& used_for_size) {
       tabulated_specific_internal_energy, tabulated_electron_fraction);
 }
 
+void test_mhd_characteristic_speeds(const DataVector& used_for_size) {
+  namespace MhdSpeed = grmhd::ValenciaDivClean::MhdSpeed;
+  namespace HydroSpeed = grmhd::ValenciaDivClean::HydroSpeed;
+
+  // Initialize number generator
+  MAKE_GENERATOR(generator);
+  const auto nn_gen = make_not_null(&generator);
+
+  // Generate random quantities
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<3>(nn_gen, used_for_size);
+  const auto lorentz_factor =
+      TestHelpers::hydro::random_lorentz_factor(nn_gen, used_for_size);
+  const auto spatial_velocity = TestHelpers::hydro::random_velocity(
+      nn_gen, lorentz_factor, spatial_metric);
+  const auto random_rest_mass_density =
+      TestHelpers::hydro::random_density(nn_gen, used_for_size);
+  const auto random_specific_internal_energy =
+      TestHelpers::hydro::random_specific_internal_energy(nn_gen,
+                                                          used_for_size);
+  const auto random_electron_fraction =
+      TestHelpers::hydro::random_electron_fraction(nn_gen, used_for_size);
+  const auto inv_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+
+  // Define equations of state with each thermodynamic dimension
+  const EquationsOfState::PolytropicFluid<true> equation_of_state_1d(100.0,
+                                                                     2.0);
+  const auto equation_of_state_2d =
+      EquationsOfState::IdealFluid<true>(1.5, 0.0);
+  const auto equation_of_state_3d = equation_of_state_2d.promote_to_3d_eos();
+  const auto equation_of_state_tabulated = tabulated_equation_of_state();
+
+  // Generate the states for each equation of state
+  const auto specific_internal_energy_1d =
+      equation_of_state_1d.specific_internal_energy_from_density(
+          random_rest_mass_density);
+  const auto [tabulated_rest_mass_density, tabulated_specific_internal_energy,
+              tabulated_electron_fraction] =
+      random_tabulated_state(nn_gen, equation_of_state_tabulated,
+                             used_for_size);
+
+  // Tolerance for the checks below
+  constexpr double tolerance = 1e-10;
+
+  // Check the speeds with a given equation of state
+  const auto check_with_equation_of_state =
+      [&](const auto& equation_of_state,
+          const Scalar<DataVector>& rest_mass_density,
+          const Scalar<DataVector>& specific_internal_energy,
+          const Scalar<DataVector>& electron_fraction) {
+        constexpr size_t thermodynamic_dim =
+            std::decay_t<decltype(equation_of_state)>::thermodynamic_dim;
+
+        // Compute derived quantities
+        Scalar<DataVector> pressure{};
+        if constexpr (thermodynamic_dim == 1) {
+          pressure = equation_of_state.pressure_from_density(rest_mass_density);
+        } else if constexpr (thermodynamic_dim == 2) {
+          pressure = equation_of_state.pressure_from_density_and_energy(
+              rest_mass_density, specific_internal_energy);
+        } else {
+          pressure = equation_of_state.pressure_from_density_and_energy(
+              rest_mass_density, specific_internal_energy, electron_fraction);
+        }
+        const auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
+            rest_mass_density, specific_internal_energy, pressure);
+        const auto magnetic_field = TestHelpers::hydro::random_magnetic_field(
+            nn_gen, pressure, spatial_metric);
+        const tnsr::I<DataVector, 3> zero_magnetic_field{used_for_size.size(),
+                                                         0.0};
+
+        // Quantities entering N(lambda), the magnetosonic factor of the
+        // characteristic determinant
+        Scalar<DataVector> sound_speed_squared{};
+        if constexpr (thermodynamic_dim == 3) {
+          const auto& eos = equation_of_state;
+          sound_speed_squared =
+              eos.sound_speed_squared_from_density_and_temperature(
+                  rest_mass_density,
+                  eos.temperature_from_density_and_energy(
+                      rest_mass_density, specific_internal_energy,
+                      electron_fraction),
+                  electron_fraction);
+        } else {
+          sound_speed_squared = hydro::sound_speed_squared(
+              rest_mass_density, specific_internal_energy, specific_enthalpy,
+              equation_of_state);
+        }
+        const DataVector& cs2 = get(sound_speed_squared);
+        const DataVector& w = get(lorentz_factor);
+        const DataVector rho_h =
+            get(rest_mass_density) * get(specific_enthalpy);
+        const DataVector b_dot_v =
+            get(dot_product(magnetic_field, spatial_velocity, spatial_metric));
+        const DataVector b2 =
+            get(dot_product(magnetic_field, magnetic_field, spatial_metric)) /
+                square(w) +
+            square(b_dot_v);
+
+        // Note: the speeds are left unsized to check that
+        //       characteristic_speeds_mhd sizes them.
+        tnsr::i<DataVector, 7> speeds{};
+        tnsr::i<DataVector, 7> speeds_without_magnetic_field{};
+
+        // Loop over directions
+        for (const auto& direction : Direction<3>::all_directions()) {
+          const auto unit_normal =
+              unit_basis_form(direction, inv_spatial_metric);
+          const DataVector normal_velocity =
+              get(dot_product(spatial_velocity, unit_normal));
+
+          grmhd::ValenciaDivClean::characteristic_speeds_mhd(
+              make_not_null(&speeds), spatial_velocity, magnetic_field,
+              rest_mass_density, specific_internal_energy, electron_fraction,
+              lorentz_factor, specific_enthalpy, spatial_metric, unit_normal,
+              equation_of_state);
+
+          // Check that the speeds are in increasing order
+          for (size_t i = 0; i + 1 < 7; ++i) {
+            CHECK(max(speeds.get(i) - speeds.get(i + 1)) <= tolerance);
+          }
+
+          // Check that the magnetosonic speeds are roots of N(lambda), up to
+          // round-off. Evaluating N has an error of order epsilon times the
+          // size of its terms, and each speed is itself rounded, by about
+          // epsilon |lambda|, which changes N by about epsilon
+          // |lambda N'(lambda)|. This is the usual bound on the residual of a
+          // computed root (see, e.g., Higham, "Accuracy and Stability of
+          // Numerical Algorithms", Ch. 5). The second part dominates for speeds
+          // close to v_n, where the terms are small.
+          const DataVector normal_magnetic_field =
+              get(dot_product(magnetic_field, unit_normal));
+          for (const size_t i :
+               {MhdSpeed::FastMagnetosonicMinus,
+                MhdSpeed::SlowMagnetosonicMinus, MhdSpeed::SlowMagnetosonicPlus,
+                MhdSpeed::FastMagnetosonicPlus}) {
+            const DataVector& lambda = speeds.get(i);
+
+            // Factors of the determinant and their derivatives in lambda
+            const DataVector a = w * (normal_velocity - lambda);
+            const DataVector b = normal_magnetic_field / w -
+                                 w * b_dot_v * (lambda - normal_velocity);
+            const DataVector g = (1.0 - lambda) * (1.0 + lambda);
+            const DataVector da = -w;
+            const DataVector db = -w * b_dot_v;
+            const DataVector dg = -2.0 * lambda;
+
+            // N(lambda), the size of its terms, and N'(lambda)
+            const DataVector n =
+                square(a) * g * b2 - rho_h * square(square(a)) +
+                cs2 * (rho_h * square(a) * (square(a) + g) - square(b) * g);
+            const DataVector size_of_terms =
+                abs(square(a) * g * b2) + rho_h * square(square(a)) +
+                cs2 * (rho_h * square(a) * abs(square(a) + g) +
+                       abs(square(b) * g));
+            const DataVector dn =
+                (2.0 * a * da * g + square(a) * dg) * b2 -
+                4.0 * rho_h * square(a) * a * da +
+                cs2 * (rho_h * (2.0 * a * da * (square(a) + g) +
+                                square(a) * (2.0 * a * da + dg)) -
+                       2.0 * b * db * g - square(b) * dg);
+
+            CHECK(max(abs(n) -
+                      tolerance * (size_of_terms + abs(lambda * dn))) <= 0.0);
+          }
+
+          // Check that, without a magnetic field, the fast speeds are the
+          // hydro speeds and all others are the normal velocity
+          grmhd::ValenciaDivClean::characteristic_speeds_mhd(
+              make_not_null(&speeds_without_magnetic_field), spatial_velocity,
+              zero_magnetic_field, rest_mass_density, specific_internal_energy,
+              electron_fraction, lorentz_factor, specific_enthalpy,
+              spatial_metric, unit_normal, equation_of_state);
+          const tnsr::i<DataVector, 3> hydro_speeds =
+              grmhd::ValenciaDivClean::characteristic_speeds_hydro(
+                  spatial_velocity, rest_mass_density, specific_internal_energy,
+                  electron_fraction, lorentz_factor, specific_enthalpy,
+                  spatial_metric, unit_normal, equation_of_state);
+          const Approx custom_approx = Approx::custom().epsilon(tolerance);
+          CHECK_ITERABLE_CUSTOM_APPROX(
+              get<MhdSpeed::FastMagnetosonicMinus>(
+                  speeds_without_magnetic_field),
+              get<HydroSpeed::LambdaMinus>(hydro_speeds), custom_approx);
+          CHECK_ITERABLE_CUSTOM_APPROX(
+              get<MhdSpeed::FastMagnetosonicPlus>(
+                  speeds_without_magnetic_field),
+              get<HydroSpeed::LambdaPlus>(hydro_speeds), custom_approx);
+          for (size_t i = 1; i < 6; ++i) {
+            CHECK_ITERABLE_CUSTOM_APPROX(speeds_without_magnetic_field.get(i),
+                                         normal_velocity, custom_approx);
+          }
+        }
+      };
+  check_with_equation_of_state(equation_of_state_1d, random_rest_mass_density,
+                               specific_internal_energy_1d,
+                               random_electron_fraction);
+  check_with_equation_of_state(equation_of_state_2d, random_rest_mass_density,
+                               random_specific_internal_energy,
+                               random_electron_fraction);
+  check_with_equation_of_state(*equation_of_state_3d, random_rest_mass_density,
+                               random_specific_internal_energy,
+                               random_electron_fraction);
+  check_with_equation_of_state(
+      equation_of_state_tabulated, tabulated_rest_mass_density,
+      tabulated_specific_internal_energy, tabulated_electron_fraction);
+}
+
 void test_hydro_characteristics_match_unoptimized_version(
     const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
@@ -826,6 +1035,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
   test_with_normal_along_coordinate_axes(dv);
   test_hydro_characteristic_speed(dv);
   test_hydro_numerical_characteristics(dv);
+  test_mhd_characteristic_speeds(dv);
   test_hydro_characteristics_match_unoptimized_version(dv);
 
   // Disable benchmark by default
