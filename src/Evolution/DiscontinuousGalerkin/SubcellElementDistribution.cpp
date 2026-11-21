@@ -13,6 +13,8 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/Topology.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -27,6 +29,7 @@ compute_weighting_extents_override(
     const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const std::array<int, 3>& number_of_points_coefficients,
     const bool subcell_enabled_at_external_boundary) {
   ASSERT(blocks.size() == initial_extents.size() and
              blocks.size() == initial_refinement_levels.size(),
@@ -46,9 +49,14 @@ compute_weighting_extents_override(
                  << block.id() << " in dimension " << d
                  << " must be non-zero, but are zero.");
       // This must match the subcell mesh built by
-      // `evolution::dg::subcell::fd::mesh`, which we cannot call here
-      // because the `DgSubcell` library links this one.
-      gsl::at(weighting_extents, d) = 2 * gsl::at(weighting_extents, d) - 1;
+      // `evolution::dg::subcell::fd::mesh`, which keeps the single grid point
+      // of Cartoon dimensions.
+      const domain::Topology topology = gsl::at(block.topologies(), d);
+      if (topology != domain::Topology::CartoonSphere and
+          topology != domain::Topology::CartoonCylinder) {
+        gsl::at(weighting_extents, d) = number_of_subcell_points(
+            gsl::at(weighting_extents, d), number_of_points_coefficients);
+      }
     }
     for (const auto& element_id : initial_element_ids(
              block.id(), initial_refinement_levels[block.id()])) {
@@ -79,6 +87,7 @@ compute_weighting_extents_override(
       const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
+      const std::array<int, 3>& number_of_points_coefficients,               \
       bool subcell_enabled_at_external_boundary);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

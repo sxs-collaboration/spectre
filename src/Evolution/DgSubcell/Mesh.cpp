@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -79,7 +80,8 @@ void verify_subcell_mesh(const Mesh<Dim>& subcell_mesh, const bool neighbor) {
 }
 
 template <size_t Dim>
-Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
+Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh,
+               const std::array<int, 3>& number_of_points_coefficients) {
   if (not dg_mesh_supports_subcell(dg_mesh)) {
     // Non-hypercube topology.  Return uninitialized mesh: subcell should never
     // be used on this element.
@@ -102,7 +104,16 @@ Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
   }
   std::array<size_t, Dim> extents{};
   for (size_t d = 0; d < Dim; ++d) {
-    gsl::at(extents, d) = 2 * dg_mesh.extents(d) - 1;
+    if (dg_mesh.basis(d) == Spectral::Basis::Cartoon) {
+      ASSERT(dg_mesh.extents(d) == 1,
+             "A Cartoon dimension of the DG mesh must have exactly one grid "
+             "point, but dimension "
+                 << d << " of the DG mesh is " << dg_mesh);
+      gsl::at(extents, d) = 1;
+    } else {
+      gsl::at(extents, d) = evolution::dg::number_of_subcell_points(
+          dg_mesh.extents(d), number_of_points_coefficients);
+    }
   }
   if constexpr (Dim == 3) {
     if (dg_mesh.basis(1) == Spectral::Basis::Cartoon and
@@ -173,7 +184,10 @@ template void verify_subcell_mesh(const Mesh<2>& subcell_mesh,
                                   const bool neighbor);
 template void verify_subcell_mesh(const Mesh<3>& subcell_mesh,
                                   const bool neighbor);
-template Mesh<1> mesh(const Mesh<1>& dg_mesh);
-template Mesh<2> mesh(const Mesh<2>& dg_mesh);
-template Mesh<3> mesh(const Mesh<3>& dg_mesh);
+template Mesh<1> mesh(const Mesh<1>& dg_mesh,
+                      const std::array<int, 3>& number_of_points_coefficients);
+template Mesh<2> mesh(const Mesh<2>& dg_mesh,
+                      const std::array<int, 3>& number_of_points_coefficients);
+template Mesh<3> mesh(const Mesh<3>& dg_mesh,
+                      const std::array<int, 3>& number_of_points_coefficients);
 }  // namespace evolution::dg::subcell::fd

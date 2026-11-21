@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <optional>
 
@@ -44,7 +45,9 @@ void insert_or_update_neighbor_volume_data_impl(
     size_t number_of_rdmp_vars_in_buffer,
     const DirectionalId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones,
+    const Mesh<Dim>& subcell_mesh,
+    const std::array<int, 3>& number_of_points_coefficients,
+    size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants,
     gsl::span<const size_t> parity_list, size_t num_even, size_t num_odd);
@@ -70,7 +73,9 @@ void insert_or_update_neighbor_volume_data(
     const size_t number_of_rdmp_vars_in_buffer,
     const DirectionalId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
+    const Mesh<Dim>& subcell_mesh,
+    const std::array<int, 3>& number_of_points_coefficients,
+    const size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants,
     VolumeFields /*meta*/) {
@@ -80,14 +85,16 @@ void insert_or_update_neighbor_volume_data(
     detail::insert_or_update_neighbor_volume_data_impl<InsertIntoMap, Dim>(
         ghost_data_ptr, neighbor_subcell_data, number_of_rdmp_vars_in_buffer,
         directional_element_id, neighbor_mesh, element, subcell_mesh,
-        number_of_ghost_zones, neighbor_dg_to_fd_interpolants,
+        number_of_points_coefficients, number_of_ghost_zones,
+        neighbor_dg_to_fd_interpolants,
         gsl::span<const size_t>{parity_list.data(), parity_list.size()},
         std::get<1>(parity_info), std::get<2>(parity_info));
   } else {
     detail::insert_or_update_neighbor_volume_data_impl<InsertIntoMap, Dim>(
         ghost_data_ptr, neighbor_subcell_data, number_of_rdmp_vars_in_buffer,
         directional_element_id, neighbor_mesh, element, subcell_mesh,
-        number_of_ghost_zones, neighbor_dg_to_fd_interpolants, {}, 0, 0);
+        number_of_points_coefficients, number_of_ghost_zones,
+        neighbor_dg_to_fd_interpolants, {}, 0, 0);
   }
 }
 
@@ -109,7 +116,9 @@ void insert_neighbor_rdmp_and_volume_data(
     const size_t number_of_rdmp_vars,
     const DirectionalId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
+    const Mesh<Dim>& subcell_mesh,
+    const std::array<int, 3>& number_of_points_coefficients,
+    const size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants,
     VolumeFields volume_fields) {
@@ -136,6 +145,7 @@ void insert_neighbor_rdmp_and_volume_data(
   insert_or_update_neighbor_volume_data<true>(
       ghost_data_ptr, received_neighbor_subcell_data, number_of_rdmp_vars,
       directional_element_id, neighbor_mesh, element, subcell_mesh,
-      number_of_ghost_zones, neighbor_dg_to_fd_interpolants, volume_fields);
+      number_of_points_coefficients, number_of_ghost_zones,
+      neighbor_dg_to_fd_interpolants, volume_fields);
 }
 }  // namespace evolution::dg::subcell

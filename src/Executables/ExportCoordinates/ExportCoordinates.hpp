@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <optional>
 #include <pup.h>
 #include <string>
@@ -22,6 +23,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
@@ -264,9 +266,12 @@ namespace Initialization {
 template <size_t Dim>
 struct SetMeshType {
   using const_global_cache_tags =
-      tmpl::list<evolution::dg::subcell::Tags::ActiveGrid>;
+      tmpl::list<evolution::dg::subcell::Tags::ActiveGrid,
+                 evolution::dg::Tags::NumberOfSubcellPointsCoefficients>;
   using mutable_global_cache_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<evolution::dg::subcell::Tags::ActiveGrid>;
+  using argument_tags =
+      tmpl::list<evolution::dg::subcell::Tags::ActiveGrid,
+                 evolution::dg::Tags::NumberOfSubcellPointsCoefficients>;
   using simple_tags_from_options = tmpl::list<>;
   using default_initialized_simple_tags = tmpl::list<>;
   using return_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
@@ -274,10 +279,12 @@ struct SetMeshType {
   using compute_tags = tmpl::list<>;
 
   static void apply(const gsl::not_null<::Mesh<Dim>*> mesh,
-                    const evolution::dg::subcell::ActiveGrid active_grid) {
+                    const evolution::dg::subcell::ActiveGrid active_grid,
+                    const std::array<int, 3>& number_of_points_coefficients) {
     // Originally the mesh is DG so switch it to FD if we aren't using a DG grid
     if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
-      *mesh = evolution::dg::subcell::fd::mesh(*mesh);
+      *mesh = evolution::dg::subcell::fd::mesh(*mesh,
+                                               number_of_points_coefficients);
     }
   }
 };

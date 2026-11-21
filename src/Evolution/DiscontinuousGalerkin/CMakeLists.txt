@@ -21,6 +21,7 @@ spectre_target_headers(
   MortarInfo.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
+  NumberOfSubcellPoints.hpp
   OnlyDgBlockIds.hpp
   OptionTags.hpp
   SubcellElementDistribution.hpp
@@ -42,6 +43,7 @@ spectre_target_sources(
   MortarData.cpp
   MortarDataHolder.cpp
   MortarInfo.cpp
+  NumberOfSubcellPoints.cpp
   OnlyDgBlockIds.cpp
   SubcellElementDistribution.cpp
   )

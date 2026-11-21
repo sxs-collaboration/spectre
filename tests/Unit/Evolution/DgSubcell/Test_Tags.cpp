@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -44,6 +45,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -200,7 +202,8 @@ void test(const bool moving_mesh) {
                         ::domain::Tags::Mesh<Dim>, subcell::Tags::ActiveGrid,
                         subcell::Tags::TciDecision,
                         subcell::Tags::ReconstructionOrder<Dim>,
-                        subcell::Tags::SubcellOptions<Dim>>,
+                        subcell::Tags::SubcellOptions<Dim>,
+                        evolution::dg::Tags::NumberOfSubcellPointsCoefficients>,
       db::AddComputeTags<
           domain::Tags::LogicalCoordinates<Dim>,
           domain::Tags::MappedCoordinates<
@@ -253,7 +256,8 @@ void test(const bool moving_mesh) {
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-7, 1.0e-7, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          ::fd::DerivativeOrder::Two, 1, 1, 1});
+          ::fd::DerivativeOrder::Two, 1, 1, 1},
+      evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto check_box = [&active_coords_box, &grid_to_inertial_map,
                           &moving_mesh,
                           &tci_decision](const Mesh<Dim>& expected_mesh) {
@@ -419,6 +423,31 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_compute_tag<subcell::Tags::ObserverMeshCompute<Dim>>(
       "ObserverMesh");
 }
+void test_mesh_compute_number_of_points() {
+  // The subcell mesh uses the number of FD grid points from
+  // `evolution::dg::Tags::NumberOfSubcellPointsCoefficients`
+  const Mesh<3> dg_mesh{4, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const auto make_box = [&dg_mesh](const std::array<int, 3>& coefficients) {
+    return db::create<
+        tmpl::list<::domain::Tags::Mesh<3>,
+                   evolution::dg::Tags::NumberOfSubcellPointsCoefficients>,
+        db::AddComputeTags<subcell::Tags::MeshCompute<3>>>(dg_mesh,
+                                                           coefficients);
+  };
+  CHECK(db::get<subcell::Tags::Mesh<3>>(make_box(
+            evolution::dg::auto_number_of_subcell_points_coefficients)) ==
+        Mesh<3>{7, Spectral::Basis::FiniteDifference,
+                Spectral::Quadrature::CellCentered});
+  CHECK(db::get<subcell::Tags::Mesh<3>>(make_box(std::array{1, -1, 2})) ==
+        Mesh<3>{14, Spectral::Basis::FiniteDifference,
+                Spectral::Quadrature::CellCentered});
+  CHECK_THROWS_WITH(
+      db::get<subcell::Tags::Mesh<3>>(make_box(std::array{0, 1, -1})),
+      Catch::Matchers::ContainsSubstring(
+          "must be at least the number of DG grid points (4)"));
+}
+
 void test_logical_coordinates_zero_mesh() {
   // LogicalCoordinatesCompute must return empty (zero-size) coordinates when
   // the subcell mesh is the uninitialized sentinel (zero extents), as used for
@@ -466,4 +495,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
     test<3>(moving_mesh);
   }
   test_logical_coordinates_zero_mesh();
+  test_mesh_compute_number_of_points();
 }

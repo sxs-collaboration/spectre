@@ -353,21 +353,28 @@ Matrix compute_reconstruction_matrix(const size_t num_dg_points_1d,
 template <Spectral::Quadrature QuadratureType, size_t Dim>
 const Matrix& reconstruction_matrix_impl(const Mesh<Dim>& dg_mesh,
                                          const Index<Dim>& subcell_extents) {
-  ASSERT(subcell_extents == Index<Dim>(2 * dg_mesh.extents(0) - 1),
-         "The subcell extents must be 2N-1 for N = " << dg_mesh.extents(0)
-                                                     << " DG grid points, "
-                                                        "but got "
-                                                     << subcell_extents);
+  ASSERT(subcell_extents == Index<Dim>(subcell_extents[0]),
+         "The subcell extents must be isotropic for the reconstruction "
+         "matrix, but got "
+             << subcell_extents);
   static const auto cache = make_runtime_cache<
       CacheRange<Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                                     QuadratureType>,
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre,
                                                     QuadratureType> +
-                     1>>([](const size_t num_dg_points) {
-    return compute_reconstruction_matrix<QuadratureType>(
-        num_dg_points, Index<Dim>(2 * num_dg_points - 1));
-  });
-  return cache(dg_mesh.extents(0));
+                     1>,
+      CacheRange<Spectral::minimum_number_of_points<
+                     Spectral::Basis::FiniteDifference,
+                     Spectral::Quadrature::CellCentered>,
+                 Spectral::maximum_number_of_points<
+                     Spectral::Basis::FiniteDifference,
+                     Spectral::Quadrature::CellCentered> +
+                     1>>(
+      [](const size_t num_dg_points, const size_t num_fd_points) {
+        return compute_reconstruction_matrix<QuadratureType>(
+            num_dg_points, Index<Dim>(num_fd_points));
+      });
+  return cache(dg_mesh.extents(0), subcell_extents[0]);
 }
 }  // namespace
 
@@ -381,6 +388,18 @@ const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
              << dg_mesh);
   verify_subcell_mesh(dg_mesh);
   verify_subcell_extents(subcell_extents);
+  ASSERT(([&dg_mesh, &subcell_extents]() {
+           for (size_t d = 0; d < Dim; ++d) {
+             if (subcell_extents[d] < dg_mesh.extents(d)) {
+               return false;
+             }
+           }
+           return true;
+         }()),
+         "Subcell extents (" << subcell_extents
+                             << ") must be >= DG extents in every dimension ("
+                             << dg_mesh.extents()
+                             << ") for the reconstruction to be well-posed");
 
   switch (dg_mesh.quadrature(0)) {
     case Spectral::Quadrature::GaussLobatto:

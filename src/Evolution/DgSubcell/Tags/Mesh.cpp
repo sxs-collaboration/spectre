@@ -10,8 +10,10 @@ namespace evolution::dg::subcell::Tags {
 template <size_t VolumeDim>
 void MeshCompute<VolumeDim>::function(
     const gsl::not_null<return_type*> subcell_mesh,
-    const ::Mesh<VolumeDim>& dg_mesh) {
-  *subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+    const ::Mesh<VolumeDim>& dg_mesh,
+    const std::array<int, 3>& number_of_points_coefficients) {
+  *subcell_mesh =
+      evolution::dg::subcell::fd::mesh(dg_mesh, number_of_points_coefficients);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

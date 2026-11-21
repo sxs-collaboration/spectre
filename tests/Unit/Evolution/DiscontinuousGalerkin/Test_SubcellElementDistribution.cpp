@@ -13,12 +13,14 @@
 #include <vector>
 
 #include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/CartoonSphere1D.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/SubcellElementDistribution.hpp"
 #include "Framework/TestCreation.hpp"
@@ -60,6 +62,7 @@ void test_compute_weighting_extents_override() {
                            const bool subcell_enabled_at_external_boundary) {
     return evolution::dg::compute_weighting_extents_override(
         only_dg_block_ids, blocks, initial_refinement_levels, initial_extents,
+        evolution::dg::auto_number_of_subcell_points_coefficients,
         subcell_enabled_at_external_boundary);
   };
   using StartOnSubcell = std::function<bool(size_t, size_t)>;
@@ -118,11 +121,47 @@ void test_compute_weighting_extents_override() {
   const auto overrides_1d = evolution::dg::compute_weighting_extents_override(
       std::vector<size_t>{}, domain_creator_1d.create_domain().blocks(),
       domain_creator_1d.initial_refinement_levels(),
-      domain_creator_1d.initial_extents(), true);
+      domain_creator_1d.initial_extents(),
+      evolution::dg::auto_number_of_subcell_points_coefficients, true);
   CHECK(overrides_1d.size() == 2);
   for (const auto& [element_id, extents] : overrides_1d) {
     CHECK(element_id.block_id() == 0);
     CHECK(extents == std::array<size_t, 1>{{7}});
+  }
+
+  // A different number of subcell grid points: N^2 + 1 maps the 3x4 DG grid
+  // points to 10x17 FD grid points
+  const auto overrides_squared =
+      evolution::dg::compute_weighting_extents_override(
+          std::vector<size_t>{}, blocks, initial_refinement_levels,
+          initial_extents, std::array{1, 0, 1}, true);
+  CHECK(overrides_squared.size() == 3_st * 16_st);
+  for (const auto& [element_id, extents] : overrides_squared) {
+    CHECK(extents == std::array<size_t, 2>{{10, 17}});
+  }
+  // A non-Cartoon dimension with a single DG grid point gets subcell points
+  // like any other, as in `evolution::dg::subcell::fd::mesh`
+  const auto overrides_single_point =
+      evolution::dg::compute_weighting_extents_override(
+          std::vector<size_t>{}, blocks, initial_refinement_levels,
+          std::vector<std::array<size_t, 2>>(3, {{3, 1}}), std::array{1, 0, 1},
+          true);
+  CHECK(overrides_single_point.size() == 3_st * 16_st);
+  for (const auto& [element_id, extents] : overrides_single_point) {
+    CHECK(extents == std::array<size_t, 2>{{10, 2}});
+  }
+
+  // Cartoon dimensions keep their single grid point
+  const auto cartoon_creator =
+      domain::creators::CartoonSphere1D(1.0, 2.0, 1_st, 4_st);
+  const auto overrides_cartoon =
+      evolution::dg::compute_weighting_extents_override(
+          std::vector<size_t>{}, cartoon_creator.create_domain().blocks(),
+          cartoon_creator.initial_refinement_levels(),
+          cartoon_creator.initial_extents(), std::array{1, 0, 1}, true);
+  CHECK(overrides_cartoon.size() == 2);
+  for (const auto& [element_id, extents] : overrides_cartoon) {
+    CHECK(extents == std::array<size_t, 3>{{17, 1, 1}});
   }
 
 #ifdef SPECTRE_DEBUG
@@ -130,13 +169,14 @@ void test_compute_weighting_extents_override() {
       evolution::dg::compute_weighting_extents_override(
           std::vector<size_t>{}, blocks, initial_refinement_levels,
           std::vector<std::array<size_t, 2>>{{{3, 4}}, {{3, 0}}, {{3, 4}}},
-          true),
+          evolution::dg::auto_number_of_subcell_points_coefficients, true),
       Catch::Matchers::ContainsSubstring(
           "The initial extents of block 1 in dimension 1 must be non-zero"));
   CHECK_THROWS_WITH(
       evolution::dg::compute_weighting_extents_override(
           std::vector<size_t>{}, blocks, initial_refinement_levels,
-          std::vector<std::array<size_t, 2>>{{{3, 4}}}, true),
+          std::vector<std::array<size_t, 2>>{{{3, 4}}},
+          evolution::dg::auto_number_of_subcell_points_coefficients, true),
       Catch::Matchers::ContainsSubstring(
           "The number of blocks (3), initial extents (1), and initial "
           "refinement levels (3) must be the same."));
@@ -193,7 +233,8 @@ static_assert(
         evolution::dg::element_distribution_cache_tags<Metavars<true>, 2>,
         tmpl::list<domain::Tags::Domain<2>, domain::Tags::ElementDistribution,
                    evolution::dg::Tags::UseSubcellGridPointsForDistribution,
-                   evolution::dg::Tags::OnlyDgBlockIds<2>>>);
+                   evolution::dg::Tags::OnlyDgBlockIds<2>,
+                   evolution::dg::Tags::NumberOfSubcellPointsCoefficients>>);
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SubcellElementDistribution",
                   "[Unit][Evolution]") {

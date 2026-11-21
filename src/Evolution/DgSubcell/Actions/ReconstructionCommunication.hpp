@@ -54,6 +54,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -714,6 +715,8 @@ struct ReceiveDataForReconstruction {
     inbox.messages.erase(received);
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
+    const auto& number_of_points_coefficients =
+        db::get<evolution::dg::Tags::NumberOfSubcellPointsCoefficients>(box);
     const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(box);
 
     db::mutate<Tags::GhostDataForReconstruction<Dim>, Tags::DataForRdmpTci,
@@ -724,7 +727,8 @@ struct ReceiveDataForReconstruction {
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         [&element,
          ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
-         &received_data, &subcell_mesh, &mortar_meshes](
+         &received_data, &subcell_mesh, &number_of_points_coefficients,
+         &mortar_meshes](
             const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
@@ -816,7 +820,8 @@ struct ReceiveDataForReconstruction {
                 *boundary_data.ghost_cell_data, number_of_rdmp_vars,
                 directional_element_id,
                 mesh_for_ghost_data->at(directional_element_id), element,
-                subcell_mesh, ghost_zone_size, neighbor_dg_to_fd_interpolants,
+                subcell_mesh, number_of_points_coefficients, ghost_zone_size,
+                neighbor_dg_to_fd_interpolants,
                 typename Metavariables::SubcellOptions::GhostVariables::
                     ghost_variables_tag_list{});
             if (neighbor_tci_decisions->contains(directional_element_id)) {

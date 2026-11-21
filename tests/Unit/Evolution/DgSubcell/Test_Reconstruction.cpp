@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -26,6 +27,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Helpers/Evolution/DgSubcell/ProjectionTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
@@ -229,23 +231,79 @@ void test_reconstruct_fd(const std::vector<double>& eps,
   }
 }
 
+template <size_t MaxPts, size_t Dim, Spectral::Quadrature QuadratureType>
+void test_reconstruct_other_numbers_of_subcell_points(
+    const evolution::dg::subcell::fd::ReconstructionMethod
+        reconstruction_method) {
+  CAPTURE(Dim);
+  CAPTURE(QuadratureType);
+  CAPTURE(reconstruction_method);
+  const Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.);
+  // Numbers of subcell points close to N make the reconstruction less
+  // accurate, so they aren't tested here
+  for (const auto& coefficients :
+       {std::array{0, 2, -2}, std::array{0, 2, 0}, std::array{0, 3, -2}}) {
+    CAPTURE(coefficients);
+    for (size_t num_pts_1d = 2; num_pts_1d <= MaxPts; ++num_pts_1d) {
+      CAPTURE(num_pts_1d);
+      const Mesh<Dim> dg_mesh{num_pts_1d, Spectral::Basis::Legendre,
+                              QuadratureType};
+      const Mesh<Dim> subcell_mesh(
+          evolution::dg::number_of_subcell_points(num_pts_1d, coefficients),
+          Spectral::Basis::FiniteDifference,
+          Spectral::Quadrature::CellCentered);
+      if (subcell_mesh.extents(0) < 5) {
+        continue;
+      }
+      CAPTURE(subcell_mesh);
+      const DataVector expected_nodal_values =
+          TestHelpers::evolution::dg::subcell::cell_values(
+              std::min(num_pts_1d - 2, 6_st), logical_coordinates(dg_mesh));
+      const DataVector subcell_values =
+          TestHelpers::evolution::dg::subcell::cell_values(
+              std::min(num_pts_1d - 2, 6_st),
+              logical_coordinates(subcell_mesh));
+      CHECK_ITERABLE_CUSTOM_APPROX(
+          evolution::dg::subcell::fd::reconstruct(subcell_values, dg_mesh,
+                                                  subcell_mesh.extents(),
+                                                  reconstruction_method),
+          expected_nodal_values, local_approx);
+    }
+  }
+}
+
 void test_zernike_b1_reconstruct() {
   constexpr Spectral::Basis zernike_basis = Spectral::Basis::ZernikeB1;
   constexpr Spectral::Quadrature zernike_quad =
       Spectral::Quadrature::GaussRadauUpper;
   const Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.);
 
+  std::vector<std::pair<size_t, size_t>> n_r_and_n_fd{};
   for (size_t n_r = std::max(
            size_t{2},
            Spectral::minimum_number_of_points<zernike_basis, zernike_quad>);
        n_r <= 5; ++n_r) {
+    for (const auto& coefficients :
+         {evolution::dg::auto_number_of_subcell_points_coefficients,
+          std::array{0, 2, -2}, std::array{0, 2, 0}, std::array{0, 3, -2}}) {
+      const size_t n_fd =
+          evolution::dg::number_of_subcell_points(n_r, coefficients);
+      // Conservation needs the FD integration to be exact for the degree-4
+      // basis function used for n_r >= 3, so at least 5 subcell points
+      if (n_fd >= 5 or (n_r == 2 and n_fd >= 3)) {
+        n_r_and_n_fd.emplace_back(n_r, n_fd);
+      }
+    }
+  }
+  for (const auto& [n_r, n_fd] : n_r_and_n_fd) {
     CAPTURE(n_r);
+    CAPTURE(n_fd);
     const Mesh<3> dg_mesh{
         {{n_r, 1, 1}},
         {zernike_basis, Spectral::Basis::Cartoon, Spectral::Basis::Cartoon},
         {zernike_quad, Spectral::Quadrature::SphericalSymmetry,
          Spectral::Quadrature::SphericalSymmetry}};
-    const Index<3> subcell_extents{2 * n_r - 1, 1, 1};
+    const Index<3> subcell_extents{n_fd, 1, 1};
     const Mesh<1> dg_mesh_1d{n_r, zernike_basis, zernike_quad};
     const auto xi_dg = get<0>(logical_coordinates(dg_mesh_1d));
 
@@ -358,6 +416,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
     test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
                         Spectral::Quadrature::Gauss>(
         {1.0e-14, 1.0e-14, 1.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
+
+    test_reconstruct_other_numbers_of_subcell_points<
+        10, 1, Spectral::Quadrature::GaussLobatto>(reconstruction_method);
+    test_reconstruct_other_numbers_of_subcell_points<
+        10, 1, Spectral::Quadrature::Gauss>(reconstruction_method);
+    test_reconstruct_other_numbers_of_subcell_points<
+        7, 2, Spectral::Quadrature::GaussLobatto>(reconstruction_method);
+    test_reconstruct_other_numbers_of_subcell_points<
+        5, 3, Spectral::Quadrature::Gauss>(reconstruction_method);
   }
   test_zernike_b1_reconstruct();
 }

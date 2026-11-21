@@ -44,6 +44,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -231,7 +232,10 @@ struct TciAndRollback {
     db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
                Tags::ActiveGrid, Tags::DidRollback,
                subcell::Tags::GhostDataForReconstruction<Dim>>(
-        [&dg_mesh, &element, &subcell_mesh](
+        [&dg_mesh, &element, &subcell_mesh,
+         &number_of_points_coefficients =
+             db::get<evolution::dg::Tags::NumberOfSubcellPointsCoefficients>(
+                 box)](
             const auto active_vars_ptr, const auto active_history_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
@@ -271,8 +275,8 @@ struct TciAndRollback {
                        ghost_data_ptr->at(directional_element_id)
                            .neighbor_ghost_data_for_reconstruction(),
                        0, directional_element_id, mesh_for_ghost_data, element,
-                       subcell_mesh, ghost_zone_size,
-                       neighbor_dg_to_fd_interpolants,
+                       subcell_mesh, number_of_points_coefficients,
+                       ghost_zone_size, neighbor_dg_to_fd_interpolants,
                        typename Metavariables::SubcellOptions::GhostVariables::
                            ghost_variables_tag_list{});
           }
