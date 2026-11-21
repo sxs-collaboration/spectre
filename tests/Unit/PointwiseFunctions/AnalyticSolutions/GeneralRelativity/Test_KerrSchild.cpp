@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <string>
@@ -502,6 +503,245 @@ void test_boosted_spacetime_metric(const DataType& used_for_size) {
       spacetime_metric_from_boosted_solution_as_asymmetric_tensor);
 }
 
+template <typename Frame>
+void test_boosted_on_x_axis() {
+  const double mass = 1.7;
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> spin{{-0.6, 0.5, 0.3}};
+  const double dimensionless_spin_z = 0.84;
+  const double spin_parameter = mass * dimensionless_spin_z;
+  const gr::Solutions::KerrSchild rest_solution(mass, spin, center);
+  using metric_tags = tmpl::list<gr::Tags::Lapse<double>,
+                                 gr::Tags::SpatialMetric<double, 3, Frame>>;
+  using derivative_tags = tmpl::append<
+      metric_tags,
+      tmpl::list<gr::Solutions::KerrSchild::DerivLapse<double, Frame>,
+                 gr::Tags::DerivDetSpatialMetric<double, 3, Frame>>>;
+
+  for (const double velocity_x : std::array{0.0, 0.25, 0.5, 0.75, 0.99}) {
+    CAPTURE(velocity_x);
+    const std::array<double, 3> velocity{{velocity_x, 0.0, 0.0}};
+    const double lorentz_factor = 1.0 / sqrt(1.0 - square(velocity_x));
+    const gr::Solutions::KerrSchild boosted_solution(mass, spin, center,
+                                                     velocity);
+    const gr::Solutions::KerrSchild schwarzschild_solution(
+        mass, {{0.0, 0.0, 0.0}}, center, velocity);
+    const gr::Solutions::KerrSchild spinning_solution(
+        mass, {{0.0, 0.0, dimensionless_spin_z}}, center, velocity);
+
+    for (const double radial_offset : std::array{0.5, 1.0, 2.0, 3.0, 5.0}) {
+      CAPTURE(radial_offset);
+      // To be consistent with the analytic formula for the trace extrinsic
+      // curvature (further down) we choose to test for points outside
+      // 2M and both a_z / Gamma and a_z * Gamma.
+      const double x_coordinate =
+          std::max(2.0 * mass, spin_parameter * lorentz_factor) +
+          radial_offset * mass;
+      const tnsr::I<double, 3, Frame> x{{{x_coordinate, 0.0, 0.0}}};
+      const tnsr::I<double, 3, Frame> rest_x{
+          {{lorentz_factor * x_coordinate, 0.0, 0.0}}};
+
+      {
+        // The spacetime volume element is invariant under a boost.
+        // This is because the Lorentz matrix has unit determinant.
+        // We compute it using the relation
+        // sqrt(-det(spacetime_metric)) = lapse * sqrt(det(spatial_metric))
+        const auto rest_vars =
+            rest_solution.variables(rest_x, 0.0, metric_tags{});
+        const auto boosted_vars =
+            boosted_solution.variables(x, 0.0, metric_tags{});
+        const double rest_volume_element =
+            get(get<gr::Tags::Lapse<double>>(rest_vars)) *
+            sqrt(get(determinant(
+                get<gr::Tags::SpatialMetric<double, 3, Frame>>(rest_vars))));
+        const double boosted_volume_element =
+            get(get<gr::Tags::Lapse<double>>(boosted_vars)) *
+            sqrt(get(determinant(
+                get<gr::Tags::SpatialMetric<double, 3, Frame>>(boosted_vars))));
+        CHECK(rest_volume_element == approx(1.0));
+        CHECK(boosted_volume_element == approx(rest_volume_element));
+      }
+
+      {
+        // For a non-spinning Kerr-Schild solution the determinant of the
+        // spacetime metric is constant, and equal to -1.
+        // Therefore the all spatial derivatives of the spacetime volume element
+        // vanish. Here we check the derivative in the x direction.
+        // We use the property that
+        // sqrt(-det(spacetime_metric)) = lapse * sqrt(det(spatial_metric))
+        // to compute the spatial derivative of the left-hand side.
+        // This test also checks that the lapse, determinant of the spatial
+        // metric and their derivatives are consistent with each other.
+        const auto vars =
+            schwarzschild_solution.variables(x, 0.0, derivative_tags{});
+        const double lapse = get(get<gr::Tags::Lapse<double>>(vars));
+        const double sqrt_det_spatial_metric = sqrt(get(
+            determinant(get<gr::Tags::SpatialMetric<double, 3, Frame>>(vars))));
+        const double deriv_lapse = get<0>(
+            get<gr::Solutions::KerrSchild::DerivLapse<double, Frame>>(vars));
+        const double deriv_sqrt_det_spatial_metric =
+            get<0>(
+                get<gr::Tags::DerivDetSpatialMetric<double, 3, Frame>>(vars)) /
+            (2.0 * sqrt_det_spatial_metric);
+        CHECK(deriv_lapse * sqrt_det_spatial_metric +
+                  lapse * deriv_sqrt_det_spatial_metric ==
+              approx(0.0));
+      }
+
+      {
+        // We verified in Mathematica the following analytic formula for the
+        // trace of the extrinsic curvature along the positive x-axis,
+        // for a black hole with spin along the positive z-direction.
+        // We check that the trace of the extrinsic curvature matches with this
+        // formula. Specifically, the analytic formula applies applies at
+        // t = y = z = 0, x > a_z / Gamma, a_z > 0, with
+        // positive x velocity and dimensional Kerr spin a_z = M * chi_z.
+        const double s = sqrt(square(lorentz_factor) - 1.0);
+        const double rest_x_coordinate = lorentz_factor * x_coordinate;
+        const double r =
+            sqrt(square(rest_x_coordinate) - square(spin_parameter));
+        const double u = lorentz_factor - s * r / rest_x_coordinate;
+        const double det_spatial_metric = 1.0 + 2.0 * mass * square(u) / r;
+        const double expected_trace =
+            mass * u / (square(r) * pow(det_spatial_metric, 1.5)) *
+            (2.0 + 6.0 * mass * square(u) / r + s * u * rest_x_coordinate / r +
+             2.0 * square(s) * square(spin_parameter) /
+                 square(rest_x_coordinate));
+        const auto vars = spinning_solution.variables(
+            x, 0.0, tmpl::list<gr::Tags::TraceExtrinsicCurvature<double>>{});
+        CHECK(get(get<gr::Tags::TraceExtrinsicCurvature<double>>(vars)) ==
+              approx(expected_trace));
+      }
+
+      {
+        // Nullness of the Kerr-Schild one-form implies
+        // gamma_ij beta^i beta^j = alpha^{-2} - 2 + alpha^2.
+        // This formula follows from noticing that the spacetime metric
+        // satisfies g_{tt} + g^{tt} = -2. Then, use g_{tt} = - lapse^2
+        // + spatial_metric_{ij} shift^{i} shift^{j} and g^{tt} = -1 / lapse^2,
+        // according to the standard 3 +1 decomposition.
+        // Check this identity and its ordinary partial derivatives using the
+        // same spinning solution as in the trace test above.
+        const auto vars = spinning_solution.variables(
+            x, 0.0,
+            tmpl::list<
+                gr::Tags::Lapse<double>, gr::Tags::Shift<double, 3, Frame>,
+                gr::Tags::SpatialMetric<double, 3, Frame>,
+                gr::Solutions::KerrSchild::DerivLapse<double, Frame>,
+                gr::Solutions::KerrSchild::DerivShift<double, Frame>,
+                gr::Solutions::KerrSchild::DerivSpatialMetric<double, Frame>,
+                Tags::dt<gr::Tags::Lapse<double>>,
+                Tags::dt<gr::Tags::Shift<double, 3, Frame>>,
+                Tags::dt<gr::Tags::SpatialMetric<double, 3, Frame>>>{});
+        const double lapse = get(get<gr::Tags::Lapse<double>>(vars));
+        const auto& shift = get<gr::Tags::Shift<double, 3, Frame>>(vars);
+        const auto& metric =
+            get<gr::Tags::SpatialMetric<double, 3, Frame>>(vars);
+        const auto& deriv_lapse =
+            get<gr::Solutions::KerrSchild::DerivLapse<double, Frame>>(vars);
+        const auto& deriv_shift =
+            get<gr::Solutions::KerrSchild::DerivShift<double, Frame>>(vars);
+        const auto& deriv_metric =
+            get<gr::Solutions::KerrSchild::DerivSpatialMetric<double, Frame>>(
+                vars);
+        const double dt_lapse =
+            get(get<Tags::dt<gr::Tags::Lapse<double>>>(vars));
+        const auto& dt_shift =
+            get<Tags::dt<gr::Tags::Shift<double, 3, Frame>>>(vars);
+        const auto& dt_metric =
+            get<Tags::dt<gr::Tags::SpatialMetric<double, 3, Frame>>>(vars);
+
+        double shift_norm_squared = 0.0;
+        for (size_t i = 0; i < 3; ++i) {
+          for (size_t j = 0; j < 3; ++j) {
+            shift_norm_squared +=
+                metric.get(i, j) * shift.get(i) * shift.get(j);
+          }
+        }
+        CHECK(shift_norm_squared ==
+              approx(square(1.0 - square(lapse)) / square(lapse)));
+
+        // Differentiate both sides, including the derivative of the metric.
+        // The shift derivative is constrained along the shift direction.
+        const double lapse_derivative_factor =
+            2.0 * (lapse - 1.0 / cube(lapse));
+        for (size_t a = 0; a < 4; ++a) {
+          CAPTURE(a);
+          double derivative_residual =
+              -lapse_derivative_factor *
+              (a == 0 ? dt_lapse : deriv_lapse.get(a - 1));
+          for (size_t i = 0; i < 3; ++i) {
+            for (size_t j = 0; j < 3; ++j) {
+              derivative_residual +=
+                  (a == 0 ? dt_metric.get(i, j)
+                          : deriv_metric.get(a - 1, i, j)) *
+                      shift.get(i) * shift.get(j) +
+                  2.0 * metric.get(i, j) * shift.get(i) *
+                      (a == 0 ? dt_shift.get(j) : deriv_shift.get(a - 1, j));
+            }
+          }
+          CHECK(derivative_residual == approx(0.0));
+        }
+      }
+    }
+  }
+}
+
+template <typename Frame, typename DataType>
+void test_time_derivative_consistency(const DataType& used_for_size) {
+  const double mass = 1.7;
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const auto x = spatial_coords<Frame>(used_for_size);
+  using tags =
+      tmpl::list<gr::Tags::Lapse<DataType>, gr::Tags::Shift<DataType, 3, Frame>,
+                 gr::Solutions::KerrSchild::DerivShift<DataType, Frame>,
+                 gr::Tags::SpatialMetric<DataType, 3, Frame>,
+                 Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>,
+                 gr::Solutions::KerrSchild::DerivSpatialMetric<DataType, Frame>,
+                 gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>>;
+
+  for (const auto& spin :
+       std::array{std::array{0.0, 0.0, 0.0}, std::array{-0.6, 0.5, 0.3}}) {
+    CAPTURE(spin);
+    for (const auto& velocity :
+         std::array{std::array{0.0, 0.0, 0.0}, std::array{0.4, -0.3, 0.2}}) {
+      CAPTURE(velocity);
+      const gr::Solutions::KerrSchild solution(mass, spin, center, velocity);
+      const auto vars = solution.variables(x, 0.0, tags{});
+      const auto& lapse = get(get<gr::Tags::Lapse<DataType>>(vars));
+      const auto& shift = get<gr::Tags::Shift<DataType, 3, Frame>>(vars);
+      const auto& deriv_shift =
+          get<gr::Solutions::KerrSchild::DerivShift<DataType, Frame>>(vars);
+      const auto& metric =
+          get<gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
+      const auto& dt_metric =
+          get<Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>>(vars);
+      const auto& deriv_metric =
+          get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataType, Frame>>(
+              vars);
+      const auto& extrinsic_curvature =
+          get<gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>>(vars);
+
+      // Check dt(gamma_ij) = -2 alpha K_ij + Lie_beta(gamma)_ij.
+      auto expected_dt_metric =
+          make_with_value<tnsr::ii<DataType, 3, Frame>>(used_for_size, 0.0);
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = i; j < 3; ++j) {
+          expected_dt_metric.get(i, j) =
+              -2.0 * lapse * extrinsic_curvature.get(i, j);
+          for (size_t k = 0; k < 3; ++k) {
+            expected_dt_metric.get(i, j) +=
+                shift.get(k) * deriv_metric.get(k, i, j) +
+                metric.get(i, k) * deriv_shift.get(j, k) +
+                metric.get(j, k) * deriv_shift.get(i, k);
+          }
+        }
+      }
+      CHECK_ITERABLE_APPROX(dt_metric, expected_dt_metric);
+    }
+  }
+}
+
 void test_serialize() {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}},
                                      {{0.1, 0.2, 0.3}});
@@ -548,6 +788,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_boosted_for_zero_velocity<Frame::Inertial>(DataVector(5));
   test_boosted_for_zero_velocity<Frame::Inertial>(0.0);
   test_boosted_spacetime_metric<Frame::Inertial, double>(0.0);
+  test_boosted_on_x_axis<Frame::Inertial>();
+  test_time_derivative_consistency<Frame::Inertial>(0.0);
+  test_time_derivative_consistency<Frame::Inertial>(DataVector(5));
 
   test_schwarzschild<Frame::Grid>(DataVector(5));
   test_schwarzschild<Frame::Grid>(0.0);
@@ -561,6 +804,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_boosted_for_zero_velocity<Frame::Grid>(DataVector(5));
   test_boosted_for_zero_velocity<Frame::Grid>(0.0);
   test_boosted_spacetime_metric<Frame::Grid, double>(0.0);
+  test_boosted_on_x_axis<Frame::Grid>();
+  test_time_derivative_consistency<Frame::Grid>(0.0);
+  test_time_derivative_consistency<Frame::Grid>(DataVector(5));
 
   CHECK_THROWS_WITH(
       []() {
