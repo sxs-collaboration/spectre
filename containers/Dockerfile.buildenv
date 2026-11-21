@@ -790,6 +790,11 @@ COPY . spectre/
 # `*_STATIC` cmake option and `find_library` otherwise prefers the shared
 # `libxsmm.so`, which would make the extracted executable fail to run outside
 # the container with "libxsmm.so.2: cannot open shared object file".
+# The `BundledExporter` shared library gets the static libraries linked in, so
+# we compile everything as position-independent code. The shared linker flags
+# hide the symbols of the static libraries so they can't clash with the
+# libraries of the program that loads the exporter (e.g. its own HDF5), and
+# strip the library to reduce its size.
 RUN set -e; \
     if [ "$TARGETARCH" = "arm64" ]; then \
       GCC_TRIPLET=aarch64-linux-gnu; \
@@ -821,6 +826,8 @@ RUN set -e; \
     $ARCH_ARGS \
     -D USE_LD=gold \
     -D CMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -D CMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -D CMAKE_SHARED_LINKER_FLAGS="-static-libstdc++ -static-libgcc -Wl,--exclude-libs,ALL -s" \
     -D gfortran=/usr/lib/gcc/$GCC_TRIPLET/13/libgfortran.a \
     $QUADMATH_ARG \
     -D LIBXSMM_LIBRARIES=/usr/local/lib/libxsmm.a \
@@ -829,5 +836,5 @@ RUN set -e; \
     .. \
     && make ${PARALLEL_MAKE_ARG} module_All \
     && make -j1 CharacteristicExtract PreprocessCceWorldtube \
-    WriteCceWorldtubeCoordsToFile \
+    WriteCceWorldtubeCoordsToFile BundledExporter \
     && ctest -LE unit -R CharacteristicExtract -E KleinGordon
