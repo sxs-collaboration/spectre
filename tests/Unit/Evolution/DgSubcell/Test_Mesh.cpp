@@ -60,37 +60,6 @@ void test_mesh() {
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t max_num_pts =
       Spectral::maximum_number_of_points<BasisType, QuadratureType>;
-#ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<1>{2 * (max_num_pts - 1) - 1, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::CellCentered},
-          BasisType, QuadratureType),
-      Catch::Matchers::ContainsSubstring("The basis for computing the DG mesh "
-                                         "must be FiniteDifference but got "));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<1>{2 * (max_num_pts - 1) - 1, Spectral::Basis::FiniteDifference,
-                  Spectral::Quadrature::FaceCentered},
-          BasisType, QuadratureType),
-      Catch::Matchers::ContainsSubstring("The quadrature for computing the DG "
-                                         "mesh must be CellCentered but got "));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<1>{2 * (max_num_pts - 1) - 1, Spectral::Basis::FiniteDifference,
-                  Spectral::Quadrature::CellCentered},
-          Spectral::Basis::FiniteDifference, QuadratureType),
-      Catch::Matchers::ContainsSubstring(
-          "The DG basis must be Legendre or Chebyshev but got "));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<1>{2 * (max_num_pts - 1) - 1, Spectral::Basis::FiniteDifference,
-                  Spectral::Quadrature::CellCentered},
-          BasisType, Spectral::Quadrature::FaceCentered),
-      Catch::Matchers::ContainsSubstring(
-          "The DG quadrature for computing the DG mesh must be Gauss or "
-          "GaussLobatto but "));
-#endif  // SPECTRE_DEBUG
 
   for (size_t i = min_num_pts; i < max_num_pts; ++i) {
     CHECK(evolution::dg::subcell::fd::mesh(
@@ -105,22 +74,6 @@ void test_mesh() {
               Mesh<3>(i, BasisType, QuadratureType)) ==
           Mesh<3>{2 * i - 1, Spectral::Basis::FiniteDifference,
                   Spectral::Quadrature::CellCentered});
-
-    CHECK(evolution::dg::subcell::fd::dg_mesh(
-              Mesh<1>{2 * i - 1, Spectral::Basis::FiniteDifference,
-                      Spectral::Quadrature::CellCentered},
-              BasisType,
-              QuadratureType) == Mesh<1>(i, BasisType, QuadratureType));
-    CHECK(evolution::dg::subcell::fd::dg_mesh(
-              Mesh<2>{2 * i - 1, Spectral::Basis::FiniteDifference,
-                      Spectral::Quadrature::CellCentered},
-              BasisType,
-              QuadratureType) == Mesh<2>(i, BasisType, QuadratureType));
-    CHECK(evolution::dg::subcell::fd::dg_mesh(
-              Mesh<3>{2 * i - 1, Spectral::Basis::FiniteDifference,
-                      Spectral::Quadrature::CellCentered},
-              BasisType,
-              QuadratureType) == Mesh<3>(i, BasisType, QuadratureType));
   }
   CHECK(evolution::dg::subcell::fd::mesh(
             Mesh<2>({{4, 6}}, BasisType, QuadratureType)) ==
@@ -132,19 +85,6 @@ void test_mesh() {
         Mesh<3>{{{7, 11, 13}},
                 Spectral::Basis::FiniteDifference,
                 Spectral::Quadrature::CellCentered});
-
-  CHECK(evolution::dg::subcell::fd::dg_mesh(
-            Mesh<2>{{{7, 11}},
-                    Spectral::Basis::FiniteDifference,
-                    Spectral::Quadrature::CellCentered},
-            BasisType,
-            QuadratureType) == Mesh<2>({{4, 6}}, BasisType, QuadratureType));
-  CHECK(evolution::dg::subcell::fd::dg_mesh(
-            Mesh<3>{{{7, 11, 13}},
-                    Spectral::Basis::FiniteDifference,
-                    Spectral::Quadrature::CellCentered},
-            BasisType,
-            QuadratureType) == Mesh<3>({{4, 6, 7}}, BasisType, QuadratureType));
 }
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_cartoon_mesh() {
@@ -163,8 +103,6 @@ void test_cartoon_mesh() {
          Spectral::Quadrature::SphericalSymmetry,
          Spectral::Quadrature::SphericalSymmetry}};
     CHECK(evolution::dg::subcell::fd::mesh(dg_spherical) == subcell_spherical);
-    CHECK(evolution::dg::subcell::fd::dg_mesh(subcell_spherical, BasisType,
-                                              QuadratureType) == dg_spherical);
 
     // Axially symmetric: only third basis is Cartoon.
     const Mesh<3> dg_axial{
@@ -178,8 +116,6 @@ void test_cartoon_mesh() {
         {Spectral::Quadrature::CellCentered, Spectral::Quadrature::CellCentered,
          Spectral::Quadrature::AxialSymmetry}};
     CHECK(evolution::dg::subcell::fd::mesh(dg_axial) == subcell_axial);
-    CHECK(evolution::dg::subcell::fd::dg_mesh(subcell_axial, BasisType,
-                                              QuadratureType) == dg_axial);
   }
   // mesh(): unsupported bases return the uninitialized sentinel rather than
   // asserting, since subcell is never used on such elements.
@@ -206,32 +142,6 @@ void test_cartoon_mesh() {
           Mesh<3>{0_st, Spectral::Basis::Uninitialized,
                   Spectral::Quadrature::Uninitialized});
   }
-
-#ifdef SPECTRE_DEBUG
-  // dg_mesh() assert: non-FiniteDifference dimension mixed with Cartoon
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<3>{
-              {{5, 1, 1}},
-              {BasisType, Spectral::Basis::Cartoon, Spectral::Basis::Cartoon},
-              {QuadratureType, Spectral::Quadrature::SphericalSymmetry,
-               Spectral::Quadrature::SphericalSymmetry}},
-          BasisType, QuadratureType),
-      Catch::Matchers::ContainsSubstring(
-          "The basis for computing the DG mesh can only mix "
-          "FiniteDifference with Cartoon"));
-  CHECK_THROWS_WITH(
-      evolution::dg::subcell::fd::dg_mesh(
-          Mesh<3>{{{5, 3, 1}},
-                  {BasisType, Spectral::Basis::FiniteDifference,
-                   Spectral::Basis::Cartoon},
-                  {QuadratureType, Spectral::Quadrature::CellCentered,
-                   Spectral::Quadrature::AxialSymmetry}},
-          BasisType, QuadratureType),
-      Catch::Matchers::ContainsSubstring(
-          "The basis for computing the DG mesh can only mix "
-          "FiniteDifference with Cartoon"));
-#endif  // SPECTRE_DEBUG
 }
 void test_zernike_b1_cartoon_mesh() {
   for (size_t i = 2; i < 5; ++i) {

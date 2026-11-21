@@ -164,71 +164,6 @@ Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
                    Spectral::Quadrature::CellCentered};
 }
 
-template <size_t Dim>
-Mesh<Dim> dg_mesh(const Mesh<Dim>& subcell_mesh, const Spectral::Basis basis,
-                  const Spectral::Quadrature quadrature) {
-  if (subcell_mesh.basis(Dim - 1) != Spectral::Basis::Cartoon) {
-    ASSERT(
-        subcell_mesh.basis() ==
-            make_array<Dim>(Spectral::Basis::FiniteDifference),
-        "The basis for computing the DG mesh must be FiniteDifference but got "
-            << subcell_mesh);
-    ASSERT(
-        subcell_mesh.quadrature() ==
-            make_array<Dim>(Spectral::Quadrature::CellCentered),
-        "The quadrature for computing the DG mesh must be CellCentered but got "
-            << subcell_mesh);
-  }
-  ASSERT(
-      basis == Spectral::Basis::Legendre or basis == Spectral::Basis::Chebyshev,
-      "The DG basis must be Legendre or Chebyshev but got " << basis);
-  ASSERT(quadrature == Spectral::Quadrature::Gauss or
-             quadrature == Spectral::Quadrature::GaussLobatto,
-         "The DG quadrature for computing the DG mesh must be Gauss or "
-         "GaussLobatto but "
-             << quadrature);
-  std::array<size_t, Dim> extents{};
-  for (size_t d = 0; d < Dim; ++d) {
-    ASSERT((subcell_mesh.extents(d) + 1) % 2 == 0,
-           "Subcell mesh must have odd extents " << subcell_mesh);
-    gsl::at(extents, d) = (subcell_mesh.extents(d) + 1) / 2;
-  }
-  if constexpr (Dim == 3) {
-    if (subcell_mesh.basis(1) == Spectral::Basis::Cartoon and
-        subcell_mesh.basis(2) == Spectral::Basis::Cartoon) {
-      ASSERT(subcell_mesh.basis(0) == Spectral::Basis::FiniteDifference,
-             "The basis for computing the DG mesh can only mix "
-             "FiniteDifference with Cartoon, but got "
-                 << subcell_mesh);
-      ASSERT(subcell_mesh.slice_away(0).quadrature() ==
-                 make_array<2>(Spectral::Quadrature::SphericalSymmetry),
-             "Invalid combination of Cartoon bases, got " << subcell_mesh);
-      return Mesh<3>{
-          extents,
-          {basis, Spectral::Basis::Cartoon, Spectral::Basis::Cartoon},
-          {quadrature, Spectral::Quadrature::SphericalSymmetry,
-           Spectral::Quadrature::SphericalSymmetry}};
-    } else if (subcell_mesh.basis(2) == Spectral::Basis::Cartoon) {
-      ASSERT(subcell_mesh.slice_away(2).basis() ==
-                 make_array<2>(Spectral::Basis::FiniteDifference),
-             "The basis for computing the DG mesh can only mix "
-             "FiniteDifference with Cartoon, but got "
-                 << subcell_mesh);
-      ASSERT(subcell_mesh.slice_away(2).quadrature() ==
-                 make_array<2>(Spectral::Quadrature::CellCentered),
-             "The quadrature for computing the DG mesh, if not a Cartoon "
-             "quadrature, must be CellCentered "
-             "but got "
-                 << subcell_mesh);
-      return Mesh<3>{
-          extents,
-          {basis, basis, Spectral::Basis::Cartoon},
-          {quadrature, quadrature, Spectral::Quadrature::AxialSymmetry}};
-    }
-  }
-  return Mesh<Dim>{extents, basis, quadrature};
-}
-
 template bool dg_mesh_supports_subcell(const Mesh<1>& dg_mesh);
 template bool dg_mesh_supports_subcell(const Mesh<2>& dg_mesh);
 template bool dg_mesh_supports_subcell(const Mesh<3>& dg_mesh);
@@ -241,13 +176,4 @@ template void verify_subcell_mesh(const Mesh<3>& subcell_mesh,
 template Mesh<1> mesh(const Mesh<1>& dg_mesh);
 template Mesh<2> mesh(const Mesh<2>& dg_mesh);
 template Mesh<3> mesh(const Mesh<3>& dg_mesh);
-template Mesh<1> dg_mesh(const Mesh<1>& subcell_mesh,
-                         const Spectral::Basis basis,
-                         const Spectral::Quadrature quadrature);
-template Mesh<2> dg_mesh(const Mesh<2>& subcell_mesh,
-                         const Spectral::Basis basis,
-                         const Spectral::Quadrature quadrature);
-template Mesh<3> dg_mesh(const Mesh<3>& subcell_mesh,
-                         const Spectral::Basis basis,
-                         const Spectral::Quadrature quadrature);
 }  // namespace evolution::dg::subcell::fd
