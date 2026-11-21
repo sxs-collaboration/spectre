@@ -76,6 +76,8 @@ Affiliations:
     USA
   - &pucsp
     Biomaterials & Regenerative Medicine, PUCSP, São Paulo, São Paulo, Brazil
+  - &mit
+    Massachusetts Institute of Technology, Cambridge, MA 02139, USA
 
 Authors:
   Description: |
@@ -305,6 +307,10 @@ Authors:
         Orcid: 0009-0007-2006-094X
         Affiliations: [*caltech]
         GitHub: gda98re
+      - Name: Demos, Nicholas
+        Orcid: 0000-0002-3364-7893
+        Affiliations: [*mit]
+        GitHub: ndemos
       - Name: Dittmer, Clemens
         Orcid: 0009-0007-3833-9252
         Affiliations: [*aei]
