@@ -10,8 +10,10 @@ on:
     inputs:
       tag_name:
         type: string
-        required: true
-        description: The name of the release tag
+        required: false
+        description: >-
+          The name of the release tag to upload to. Leave empty to only upload
+          the assets as workflow artifacts, e.g. for testing.
 
 jobs:
   deploy_static_execs:
@@ -35,8 +37,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-      # Build static executables in a Docker container with an older version
-      # of Ubuntu so that the glibc is compatible with most Linux distros.
+      # Build static executables in a manylinux container so they are
+      # compatible with most Linux distros (see Dockerfile.buildenv).
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Build static executables
@@ -50,7 +52,6 @@ jobs:
           platforms: linux/${{ matrix.arch }}
           load: true
           build-args: |
-            UBUNTU_VERSION=18.04
             PARALLEL_MAKE_ARG=-j4
       - name: Run Docker container
         run: >
@@ -129,7 +130,14 @@ jobs:
         # size of gzip.
         run:  |
           tar cJf CceExecutables-${{ matrix.asset }}.tar.xz CceExecutables
+      - name: Upload as workflow artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ matrix.asset }}
+          if-no-files-found: error
+          path: CceExecutables-${{ matrix.asset }}.tar.xz
       - name: Upload to release
+        if: env.RELEASE_TAG_NAME != ''
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG_NAME }}
