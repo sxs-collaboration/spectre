@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -39,6 +40,7 @@
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/WithNoise.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -193,6 +195,52 @@ void test_ks(const Mesh<3>& mesh) {
   }
   CHECK_ITERABLE_APPROX(d4_gauge_h, expected_d4_gauge_h);
 }
+
+// This test checks the analytic Christoffel gauge function
+// in a case where the spacetime metric is invertible but where the
+// 2x2 determinant \f$g_{tt}g_{xx}-g_{tx}g_{xt}\f$ is nearly zero.
+// In a direct, 4D numerical inverse,
+// determinant_and_inverse() divides by this small number and loses accuracy.
+// Computing \f$g^{ab}\f$ from the inverse spatial metric, lapse, and
+// shift avoids that division. This test should pass when the analytic
+// Christoffel gauge function computes the inverse spacetime metric via
+// inverse spatial metric, lapse, and shift but should fail if it
+// is computed via passing the spacetime metric into determinant_and_inverse().
+void test_ks_nearly_singular_tx_block() {
+  constexpr double mass{1.0};
+  constexpr double dimensionless_spin{0.99};
+  constexpr double spin_length{dimensionless_spin * mass};
+  constexpr double radius{2.000001 * mass};
+
+  const tnsr::I<DataVector, 3, Frame::Inertial> coords{std::array{
+      DataVector{-spin_length}, DataVector{radius}, DataVector{0.0}}};
+  using Solution = gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>;
+  const gh::gauges::AnalyticChristoffel gauge_condition{
+      std::make_unique<Solution>(mass, std::array{0.0, 0.0, dimensionless_spin},
+                                 std::array{0.0, 0.0, 0.0})};
+
+  // Set up a trivial (translation map) whose Jacobian is just the identity
+  const Mesh<3> mesh{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      inverse_jacobian{mesh.number_of_grid_points(), 0.0};
+  for (size_t i = 0; i < 3; ++i) {
+    inverse_jacobian.get(i, i) = 1.0;
+  }
+  tnsr::a<DataVector, 3> gauge_h{mesh.number_of_grid_points()};
+  tnsr::ab<DataVector, 3> d4_gauge_h{mesh.number_of_grid_points()};
+  gauge_condition.gauge_and_spacetime_derivative(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), mesh, 0.0, coords,
+      inverse_jacobian, tmpl::list<Solution>{});
+
+  // Compare the computed H_a with a value directly computed from H and l_a,
+  // which turns out to just be (-2 M/r)(1,0,1,0) in this case.
+  constexpr double expected_h_t{-2.0 * mass / square(radius)};
+  const tnsr::a<DataVector, 3> expected_gauge_h{
+      std::array{DataVector{expected_h_t}, DataVector{0.0},
+                 DataVector{expected_h_t}, DataVector{0.0}}};
+  CHECK_ITERABLE_APPROX(gauge_h, expected_gauge_h);
+}
+
 // Verify that AnalyticChristoffel::gauge_and_spacetime_derivative unwraps a
 // WithNoise wrapper and produces the same result as using the inner solution
 // directly, so noise has no effect on the gauge condition.
@@ -247,6 +295,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.AnalyticChristoffel",
     "[Unit][Evolution]") {
   gh::gauges::register_derived_with_charm();
+  test_ks_nearly_singular_tx_block();
   for (const auto& basis_and_quadrature :
        {std::pair{Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto},
