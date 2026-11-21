@@ -39,10 +39,12 @@ std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
                 "  CoefficientTruncationLimit: 0.\n"
                 "  SizeInitialValues: Auto\n"
                 "  InitialValues:" +
-                    (use_non_zero_shape.value() ? "\n"
-                                                  "    Mass: 1.0\n"
-                                                  "    Spin: [0.0, 0.0, 0.0]\n"s
-                                                : " Spherical\n"s)
+                    (use_non_zero_shape.value()
+                         ? "\n"
+                           "    Mass: 1.0\n"
+                           "    Spin: [0.0, 0.0, 0.0]\n"
+                           "    Velocity: [0.0, 0.0, 0.0]\n"s
+                         : " Spherical\n"s)
               : " None\n") +
          "RotationMap: None\n"
          "ExpansionMap: None\n"
@@ -265,20 +267,26 @@ void test(const std::optional<bool> use_non_zero_shape) {
       time_dep_options.create_functions_of_time(expiration_times);
 
   if (use_non_zero_shape.has_value()) {
-    CHECK(
-        dynamic_cast<PP3&>(
-            *functions_of_time.at(TimeDependentMapOptions::size_name).get()) ==
-        size);
-    // This will always be zero based on our options above. Just easier to check
-    // that way
-    CHECK(
-        dynamic_cast<PP2&>(
-            *functions_of_time.at(TimeDependentMapOptions::shape_name).get()) ==
-        shape_all_zero);
+    CHECK_ITERABLE_APPROX(
+        functions_of_time.at(TimeDependentMapOptions::size_name)
+            ->func_and_all_derivs(initial_time),
+        size.func_and_all_derivs(initial_time));
+    CHECK(functions_of_time.at(TimeDependentMapOptions::size_name)
+              ->time_bounds() == size.time_bounds());
 
-    CHECK(dynamic_cast<PP2&>(
-              *functions_of_time.at(TimeDependentMapOptions::translation_name)
-                   .get()) == translation_non_zero);
+    CHECK_ITERABLE_APPROX(
+        functions_of_time.at(TimeDependentMapOptions::shape_name)
+            ->func_and_all_derivs(initial_time),
+        shape_all_zero.func_and_all_derivs(initial_time));
+    CHECK(functions_of_time.at(TimeDependentMapOptions::shape_name)
+              ->time_bounds() == shape_all_zero.time_bounds());
+
+    CHECK_ITERABLE_APPROX(
+        functions_of_time.at(TimeDependentMapOptions::translation_name)
+            ->func_and_all_derivs(initial_time),
+        translation_non_zero.func_and_all_derivs(initial_time));
+    CHECK(functions_of_time.at(TimeDependentMapOptions::translation_name)
+              ->time_bounds() == translation_non_zero.time_bounds());
   }
 }
 

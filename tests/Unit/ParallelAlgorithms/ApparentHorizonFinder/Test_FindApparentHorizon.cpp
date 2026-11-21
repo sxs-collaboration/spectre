@@ -251,26 +251,30 @@ void test_apparent_horizon(
   // 2.9M; this ensures the horizon is inside the domain, and it gives a narrow
   // domain so that we don't need a large number of grid points to resolve the
   // horizon (which would make the test slower).
-  std::unique_ptr<DomainCreator<3>> domain_creator = std::make_unique<
-      domain::creators::Sphere>(
-      1.9, 2.9, domain::creators::Sphere::Excision{nullptr}, 1_st,
-      grid_points_each_dimension, true, std::nullopt, std::vector<double>{2.4},
-      domain::CoordinateMaps::Distribution::Linear, ShellWedges::All,
-      is_time_dependent
-          ? std::optional{domain::creators::sphere::TimeDependentMapOptions{
-                0.0,
-                domain::creators::time_dependent_options::ShapeMapOptions<
-                    false, ::domain::ObjectLabel::None>{
-                    l_max,
+  std::unique_ptr<DomainCreator<3>> domain_creator =
+      std::make_unique<domain::creators::Sphere>(
+          1.9, 2.9, domain::creators::Sphere::Excision{nullptr}, 1_st,
+          grid_points_each_dimension, true, std::nullopt,
+          std::vector<double>{2.4},
+          domain::CoordinateMaps::Distribution::Linear, ShellWedges::All,
+          is_time_dependent
+              ? std::optional{domain::creators::sphere::TimeDependentMapOptions{
+                    0.0,
+                    domain::creators::time_dependent_options::ShapeMapOptions<
+                        false, ::domain::ObjectLabel::None>{
+                        l_max,
+                        domain::creators::time_dependent_options::
+                            KerrSchildFromBoyerLindquist{
+                                mass, dimensionless_spin,
+                                std::array<double, 3>{{0., 0., 0.}}}},
+                    std::nullopt, std::nullopt,
                     domain::creators::time_dependent_options::
-                        KerrSchildFromBoyerLindquist{mass, dimensionless_spin}},
-                std::nullopt, std::nullopt,
-                domain::creators::time_dependent_options::TranslationMapOptions<
-                    3>{std::array{std::array{0.0, 0.0, 0.0},
-                                  std::array{0.0, 0.01, 0.0},
-                                  std::array{0.0, 0.0, 0.0}}},
-                true, std::nullopt}}
-          : std::nullopt);
+                        TranslationMapOptions<3>{
+                            std::array{std::array{0.0, 0.0, 0.0},
+                                       std::array{0.0, 0.01, 0.0},
+                                       std::array{0.0, 0.0, 0.0}}},
+                    true, std::nullopt}}
+              : std::nullopt);
 
   {
     const Domain<3> domain_for_block_selection =
