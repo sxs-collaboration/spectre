@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Particles/MonteCarlo/Actions/TimeStepActions.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunication.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
@@ -156,7 +157,8 @@ void test_advance_packets() {
   const TimeStepId next_time_step_id{true, 1, Time{Slab{1.0, 2.0}, {1, 10}}};
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;
   const size_t n_pts = subcell_mesh.number_of_grid_points();

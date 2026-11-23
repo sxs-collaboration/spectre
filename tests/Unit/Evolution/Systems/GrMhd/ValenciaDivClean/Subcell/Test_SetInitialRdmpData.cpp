@@ -14,6 +14,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -31,7 +32,8 @@ void test_zernike_b1() {
                          Spectral::Quadrature::SphericalSymmetry}};
   const DataVector dg_logical_coordinates =
       0.25 * (get<0>(logical_coordinates(dg_mesh)) + 1.0);
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
 
   using ConsVars =
@@ -100,7 +102,8 @@ SPECTRE_TEST_CASE(
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   ConsVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};
 
   // While the code is supposed to be used on the subcells, that doesn't

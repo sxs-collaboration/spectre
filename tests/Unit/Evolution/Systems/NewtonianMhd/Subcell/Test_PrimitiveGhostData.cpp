@@ -15,6 +15,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/NewtonianMhd/Subcell/PrimitiveGhostData.hpp"
 #include "Evolution/Systems/NewtonianMhd/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -77,7 +78,8 @@ void test_dg(const gsl::not_null<std::mt19937*> gen,
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   // NOLINTNEXTLINE(modernize-use-auto)
   const PrimVars prims = make_with_random_values<PrimVars>(

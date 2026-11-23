@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -75,7 +76,8 @@ struct MockElementArray {
                   ::Tags::Time, evolution::dg::subcell::Tags::ActiveGrid,
                   evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
                   evolution::dg::subcell::fd::Tags::
-                      InverseJacobianLogicalToInertial<3>>,
+                      InverseJacobianLogicalToInertial<3>,
+                  evolution::dg::Tags::NumberOfSubcellPointsCoefficients>,
               db::AddComputeTags<evolution::dg::subcell::Tags::MeshCompute<3>,
                                  evolution::dg::subcell::Tags::
                                      LogicalCoordinatesCompute<3>>>>>,
@@ -176,7 +178,8 @@ void test_set_initial_data(
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
   const Mesh<3> dg_mesh{8, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const size_t dg_num_points = dg_mesh.number_of_grid_points();
   const size_t subcell_num_points = subcell_mesh.number_of_grid_points();
   const auto map =
@@ -198,7 +201,8 @@ void test_set_initial_data(
       {Variables<all_ghmhd_vars>{subcell_active ? subcell_num_points
                                                 : dg_num_points},
        eos->get_clone(), dg_mesh, dg_coords, dg_inv_jacobian, 0., active_grid,
-       subcell_coords, subcell_inv_jacobian});
+       subcell_coords, subcell_inv_jacobian,
+       evolution::dg::auto_number_of_subcell_points_coefficients});
   auto tov_vars = tov_star.variables(
       active_coords, 0.,
       tmpl::append<hydro::grmhd_tags<DataVector>, gh_system_vars,

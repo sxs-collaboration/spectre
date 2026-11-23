@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
@@ -100,7 +101,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
   const size_t num_dg_pts = 5;
   const Mesh<1> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   // Perform test with MC reconstruction & Rusanov riemann solver
   using ReconstructionForTest = fd::MonotonisedCentral;

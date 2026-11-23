@@ -14,6 +14,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnFdGrid.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -45,7 +46,8 @@ enum class TestThis {
 void test(const TestThis test_this, const int expected_tci_status) {
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const double persson_exponent = 5.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
       1.0e-12,

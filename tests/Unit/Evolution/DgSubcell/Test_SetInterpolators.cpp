@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 
@@ -82,7 +83,8 @@ void test(const bool enable_extension, const size_t fd_to_fd_interp_order) {
 
   const ::Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
-  const ::Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const ::Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const ElementId<Dim> element_id{0};
   const ElementId<Dim> lower_xi_element_id{1};

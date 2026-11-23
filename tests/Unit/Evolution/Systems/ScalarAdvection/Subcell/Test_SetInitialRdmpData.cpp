@@ -9,6 +9,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
@@ -26,7 +27,8 @@ void test() {
   // create DG mesh and subcell mesh for test
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const size_t number_of_dg_grid_points{dg_mesh.number_of_grid_points()};
 
   // create scalar field U for DG mesh

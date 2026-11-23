@@ -21,6 +21,7 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Particles/MonteCarlo/Actions/InitializeMonteCarlo.hpp"
 #include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
@@ -137,7 +138,8 @@ void test_initialize_monte_carlo() {
   const double time = 0.0;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;
   const size_t n_pts = subcell_mesh.number_of_grid_points();

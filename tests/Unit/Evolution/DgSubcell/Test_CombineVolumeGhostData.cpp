@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/CombineVolumeGhostData.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -27,8 +28,10 @@ class DummyReconstructor {
 
 template <size_t Dim>
 void test(bool test_lower) {
-  const auto subcell_mesh = evolution::dg::subcell::fd::mesh(::Mesh<Dim>{
-      {5}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
+  const auto subcell_mesh = evolution::dg::subcell::fd::mesh(
+      ::Mesh<Dim>{
+          {5}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto element_logical_coords = logical_coordinates(subcell_mesh);
 
   DataVector volume_data{Dim * element_logical_coords[0].size()};

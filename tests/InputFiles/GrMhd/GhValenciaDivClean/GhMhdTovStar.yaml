@@ -160,6 +160,7 @@ SpatialDiscretization:
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
     OnlyDgBlocksAndGroups: None
+    NumberOfSubcellPoints: Auto
     Subcell:
       TroubledCellIndicator:
         PerssonTci:

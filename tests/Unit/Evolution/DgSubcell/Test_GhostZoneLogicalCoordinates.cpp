@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -24,7 +25,8 @@ void test() {
   // Create a subcell mesh
   const Mesh<Dim> dg_mesh{3, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh =
+      mesh(dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const Index<Dim> subcell_extents = subcell_mesh.extents();
 
   for (const auto& direction : Direction<Dim>::all_directions()) {

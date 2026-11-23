@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -24,7 +25,8 @@ void test(const TestThis& test_this) {
   // create DG mesh
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   // create scalar field U on the DG mesh
   const size_t number_of_points{dg_mesh.number_of_grid_points()};
   Scalar<DataVector> u{number_of_points, 1.0};

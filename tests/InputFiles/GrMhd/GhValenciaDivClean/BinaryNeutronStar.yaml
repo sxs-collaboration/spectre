@@ -245,6 +245,7 @@ SpatialDiscretization:
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
     OnlyDgBlocksAndGroups: [Envelope, OuterShell0, OuterShell1, OuterShell2]
+    NumberOfSubcellPoints: Auto
     Subcell:
       TroubledCellIndicator:
         PerssonTci:

@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -168,7 +169,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
 
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh<3>(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh<3>(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const auto face_centered_meshes = create_face_centered_meshes(subcell_mesh);
 
@@ -476,7 +478,8 @@ void test_cartoon(const bool did_rollback) {
        Spectral::Basis::Cartoon},
       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
        Spectral::Quadrature::AxialSymmetry}};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const auto face_centered_meshes =
       create_axial_face_centered_meshes(subcell_mesh);
