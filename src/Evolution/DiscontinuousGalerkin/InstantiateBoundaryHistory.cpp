@@ -10,9 +10,10 @@
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                           \
-  INSTANTIATE_BOUNDARY_HISTORY(::evolution::dg::MortarData<DIM(data)>, \
-                               ::evolution::dg::MortarData<DIM(data)>, \
+#define INSTANTIATE(_, data)                                                \
+  INSTANTIATE_BOUNDARY_HISTORY_SIDE(::evolution::dg::MortarData<DIM(data)>) \
+  INSTANTIATE_BOUNDARY_HISTORY(::evolution::dg::MortarData<DIM(data)>,      \
+                               ::evolution::dg::MortarData<DIM(data)>,      \
                                DataVector)
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

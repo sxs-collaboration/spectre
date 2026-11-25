@@ -51,7 +51,8 @@ struct StepData {
 /// For simplicity of implementation, iterable-container access is not
 /// provided for substeps within a step, but is instead provided
 /// through additional methods on this class.
-/// @{
+///
+/// \see BoundaryHistory::local(), BoundaryHistory::remote()
 class ConstBoundaryHistoryTimes
     : public stl_boilerplate::RandomAccessSequence<ConstBoundaryHistoryTimes,
                                                    const TimeStepId, false> {
@@ -70,7 +71,8 @@ class ConstBoundaryHistoryTimes
   virtual size_t number_of_substeps(const TimeStepId& id) const = 0;
 };
 
-class MutableBoundaryHistoryTimes : public ConstBoundaryHistoryTimes {
+/// \copydoc ConstBoundaryHistoryTimes
+class MutableBoundaryHistoryTimes : public virtual ConstBoundaryHistoryTimes {
  protected:
   ~MutableBoundaryHistoryTimes() = default;
 
@@ -81,7 +83,87 @@ class MutableBoundaryHistoryTimes : public ConstBoundaryHistoryTimes {
   /// Remove all substeps for step \p n except for the step itself.
   virtual void clear_substeps(size_t n) const = 0;
 };
-/// @}
+
+/// Access to the data for a particular side of the BoundaryHistory.
+///
+/// \see BoundaryHistory::local(), BoundaryHistory::remote()
+template <typename Data>
+class ConstBoundaryHistorySide : public virtual ConstBoundaryHistoryTimes {
+ public:
+  size_t size() const override;
+  static constexpr size_t max_size() {
+    return std::remove_cvref_t<decltype(std::declval<ConstBoundaryHistorySide>()
+                                            .parent_data())>::max_size();
+  }
+
+  const TimeStepId& operator[](size_t n) const override;
+  const TimeStepId& operator[](
+      const std::pair<size_t, size_t>& step_and_substep) const override;
+
+  size_t integration_order(size_t n) const override;
+  size_t integration_order(const TimeStepId& id) const override;
+
+  size_t number_of_substeps(size_t n) const override;
+  size_t number_of_substeps(const TimeStepId& id) const override;
+
+  /// Access the data stored on the side.
+  /// @{
+  const Data& data(size_t n) const;
+  const Data& data(const TimeStepId& id) const;
+  /// @}
+
+  /// Apply \p func to each entry.
+  ///
+  /// The function \p func must accept two arguments, one of type
+  /// `const TimeStepId&` and a second of type `const Data&`.
+  template <typename Func>
+  void for_each(Func&& func) const;
+
+ protected:
+  ~ConstBoundaryHistorySide() = default;
+
+  virtual const CircularDeque<BoundaryHistory_detail::StepData<Data>>&
+  parent_data() const = 0;
+};
+
+/// \copydoc ConstBoundaryHistorySide
+template <typename Data>
+class MutableBoundaryHistorySide : public ConstBoundaryHistorySide<Data>,
+                                   public MutableBoundaryHistoryTimes {
+ public:
+  virtual void insert(const TimeStepId& id, size_t integration_order,
+                      Data data) const = 0;
+
+  virtual void insert_initial(const TimeStepId& id, size_t integration_order,
+                              Data data) const = 0;
+
+  /// Access the data stored on the side.  Modifying the data likely
+  /// invalidates the coupling cache for the associated
+  /// `BoundaryHistory` object, which should be cleared.
+  /// @{
+  Data& data(size_t n) const;
+  Data& data(const TimeStepId& id) const;
+  /// @}
+
+  /// Apply \p func to each entry.
+  ///
+  /// The function \p func must accept two arguments, one of type
+  /// `const TimeStepId&` and a second of either type `const Data&` or
+  /// `gsl::not_null<Data*>`.  If \p func takes a `not_null`, it must
+  /// return a `bool` indicating if it modified the entry.  If any
+  /// entries are modified, the coupling cache of parent
+  /// `BoundaryHistory` will be cleared.
+  template <typename Func>
+  void for_each(Func&& func) const;
+
+ protected:
+  ~MutableBoundaryHistorySide() = default;
+
+  virtual CircularDeque<BoundaryHistory_detail::StepData<Data>>& parent_data()
+      const = 0;
+
+  virtual void clear_coupling_cache() const = 0;
+};
 
 /// \ingroup TimeSteppersGroup
 /// Type erased base class for evaluating BoundaryHistory couplings.
@@ -103,6 +185,8 @@ class BoundaryHistoryEvaluator {
 /// \tparam LocalData local data passed to the boundary coupling
 /// \tparam RemoteData remote data passed to the boundary coupling
 /// \tparam UntypedCouplingResult math_wrapper_type of cached boundary couplings
+///
+/// \see INSTANTIATE_BOUNDARY_HISTORY
 template <typename LocalData, typename RemoteData,
           typename UntypedCouplingResult>
 class BoundaryHistory {
@@ -117,106 +201,64 @@ class BoundaryHistory {
   BoundaryHistory& operator=(BoundaryHistory&&) = default;
   ~BoundaryHistory() = default;
 
-  // Factored out of ConstSideAccess so that the base classes of
-  // MutableSideAccess can have protected destructors.
-  template <bool Local, bool Mutable>
-  class SideAccessCommon
-      : public tmpl::conditional_t<Mutable, MutableBoundaryHistoryTimes,
-                                   ConstBoundaryHistoryTimes> {
-   public:
-    using MutableData = tmpl::conditional_t<Local, LocalData, RemoteData>;
-    using Data = tmpl::conditional_t<Mutable, MutableData, const MutableData>;
+  template <bool Local>
+  class ConstSideAccess final
+      : public ConstBoundaryHistorySide<
+            tmpl::conditional_t<Local, LocalData, RemoteData>> {
+   private:
+    using Data = tmpl::conditional_t<Local, LocalData, RemoteData>;
 
-    size_t size() const override;
-    static constexpr size_t max_size() {
-      return std::remove_cvref_t<decltype(std::declval<ConstSideAccess<Local>>()
-                                              .parent_data())>::max_size();
-    }
+    friend class BoundaryHistory;
+    explicit ConstSideAccess(gsl::not_null<const BoundaryHistory*> parent);
 
-    const TimeStepId& operator[](size_t n) const override;
-    const TimeStepId& operator[](
-        const std::pair<size_t, size_t>& step_and_substep) const override;
+    const CircularDeque<BoundaryHistory_detail::StepData<Data>>& parent_data()
+        const override;
 
-    size_t integration_order(size_t n) const override;
-    size_t integration_order(const TimeStepId& id) const override;
-
-    size_t number_of_substeps(size_t n) const override;
-    size_t number_of_substeps(const TimeStepId& id) const override;
-
-    /// Access the data stored on the side.  When performed through a
-    /// `MutableSideAccess`, these allow modification of the data.
-    /// Performing such modifications likely invalidates the coupling
-    /// cache for the associated `BoundaryHistory` object, which
-    /// should be cleared.
-    /// @{
-    Data& data(size_t n) const;
-    Data& data(const TimeStepId& id) const;
-    /// @}
-
-    /// Apply \p func to each entry.
-    ///
-    /// The function \p func must accept two arguments, one of type
-    /// `const TimeStepId&` and a second of either type `const Data&`
-    /// or `gsl::not_null<Data*>`, with the `not_null` version only
-    /// available if this is a `MutableSideAccess`.  If \p func takes
-    /// a `not_null`, it must return a `bool` indicating if it
-    /// modified the entry.  If any entries are modified, the coupling
-    /// cache of parent `BoundaryHistory` will be cleared.
-    template <typename Func>
-    void for_each(Func&& func) const;
-
-   protected:
-    ~SideAccessCommon() = default;
-
-    tmpl::conditional_t<
-        Mutable, CircularDeque<BoundaryHistory_detail::StepData<MutableData>>&,
-        const CircularDeque<BoundaryHistory_detail::StepData<MutableData>>&>
-    parent_data() const;
-
-    auto& step_data(const TimeStepId& id) const;
-
-    auto& entry(const TimeStepId& id) const;
-
-    auto& entry(const std::pair<size_t, size_t>& step_and_substep) const;
-
-    using StoredHistory =
-        tmpl::conditional_t<Mutable, BoundaryHistory, const BoundaryHistory>;
-    explicit SideAccessCommon(gsl::not_null<StoredHistory*> parent);
-
-    gsl::not_null<StoredHistory*> parent_;
+    gsl::not_null<const BoundaryHistory*> parent_;
   };
 
   template <bool Local>
-  class MutableSideAccess final : public SideAccessCommon<Local, true> {
-   public:
+  class MutableSideAccess final
+      : public MutableBoundaryHistorySide<
+            tmpl::conditional_t<Local, LocalData, RemoteData>> {
+   private:
     using Data = tmpl::conditional_t<Local, LocalData, RemoteData>;
 
+   public:
     void pop_front() const override;
     void clear() const override;
     void clear_substeps(size_t n) const override;
 
     void insert(const TimeStepId& id, size_t integration_order,
-                Data data) const;
+                Data data) const override;
 
     void insert_initial(const TimeStepId& id, size_t integration_order,
-                        Data data) const;
+                        Data data) const override;
 
    private:
     friend class BoundaryHistory;
     explicit MutableSideAccess(gsl::not_null<BoundaryHistory*> parent);
+
+    CircularDeque<BoundaryHistory_detail::StepData<Data>>& parent_data()
+        const override;
+
+    void clear_coupling_cache() const override;
+
+    gsl::not_null<BoundaryHistory*> parent_;
   };
 
-  template <bool Local>
-  class ConstSideAccess final : public SideAccessCommon<Local, false> {
-   private:
-    friend class BoundaryHistory;
-    explicit ConstSideAccess(gsl::not_null<const BoundaryHistory*> parent);
-  };
-
+  /// Access to the local side data.  Returns a class derived from
+  /// `MutableBoundaryHistorySide<LocalData>`.
   MutableSideAccess<true> local();
+  /// Access to the local side data.  Returns a class derived from
+  /// `ConstBoundaryHistorySide<LocalData>`.
   ConstSideAccess<true> local() const;
 
+  /// Access to the remote side data.  Returns a class derived from
+  /// `MutableBoundaryHistorySide<RemoteData>`.
   MutableSideAccess<false> remote();
+  /// Access to the remote side data.  Returns a class derived from
+  /// `ConstBoundaryHistorySide<RemoteData>`.
   ConstSideAccess<false> remote() const;
 
  private:
@@ -297,12 +339,21 @@ class BoundaryHistory {
       couplings_;
 };
 
-template <typename LocalData, typename RemoteData,
-          typename UntypedCouplingResult>
-template <bool Local, bool Mutable>
+template <typename Data>
 template <typename Func>
-void BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
-    SideAccessCommon<Local, Mutable>::for_each(Func&& func) const {
+// NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
+void ConstBoundaryHistorySide<Data>::for_each(Func&& func) const {
+  for (auto& step : parent_data()) {
+    for (auto& substep : step.substeps) {
+      func(std::as_const(substep.id), std::as_const(substep.data));
+    }
+  }
+}
+
+template <typename Data>
+template <typename Func>
+// NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
+void MutableBoundaryHistorySide<Data>::for_each(Func&& func) const {
   bool entries_changed = false;
   for (auto& step : parent_data()) {
     for (auto& substep : step.substeps) {
@@ -310,21 +361,17 @@ void BoundaryHistory<LocalData, RemoteData, UntypedCouplingResult>::
                                         const Data&>) {
         func(std::as_const(substep.id), std::as_const(substep.data));
       } else {
-        static_assert(Mutable,
-                      "Cannot perform mutating for_each on a ConstSideAccess");
         if (func(std::as_const(substep.id), make_not_null(&substep.data))) {
           entries_changed = true;
         }
       }
     }
   }
-  if constexpr (Mutable) {
-    if (entries_changed) {
-      // A minor optimization would be to only clear the cache entries
-      // that have actually been invalidated, but most things that
-      // modify the history modify all the entries.
-      parent_->clear_coupling_cache();
-    }
+  if (entries_changed) {
+    // A minor optimization would be to only clear the cache entries
+    // that have actually been invalidated, but most things that
+    // modify the history modify all the entries.
+    clear_coupling_cache();
   }
 }
 
@@ -353,10 +400,18 @@ std::ostream& operator<<(std::ostream& os,
                                                UntypedCouplingResult>& history);
 }  // namespace TimeSteppers
 
-// Documentation for macro defined in the tpp file
+// Documentation for macros defined in the tpp file
 #ifdef SPECTRE_DOXYGEN_INVOKED
+/// \ingroup TimeSteppersGroup
+/// Explicitly instantiate per-side BoundaryHistory helpers.  Should
+/// be called once for each type used as the `LocalData` or
+/// `RemoteData` template arguments.
+#define INSTANTIATE_BOUNDARY_HISTORY_SIDE(...) UNSPECIFIED
+
 /// \ingroup TimeSteppersGroup
 /// Explicitly instantiate BoundaryHistory and helpers.  Should be
 /// called with the template arguments for `BoundaryHistory`.
+/// Additional helpers must be instantiated using
+/// \ref INSTANTIATE_BOUNDARY_HISTORY_SIDE.
 #define INSTANTIATE_BOUNDARY_HISTORY(...) UNSPECIFIED
 #endif  // SPECTRE_DOXYGEN_INVOKED
