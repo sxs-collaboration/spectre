@@ -103,6 +103,21 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
   )
 endif()
 
+# Disable -Wunused-but-set-global because it's broken.
+# https://github.com/llvm/llvm-project/issues/231652
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 23
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 24)
+  create_cxx_flags_target(
+    "-Wno-unused-but-set-global"
+    SpectreDisableClangUnusedGlobal)
+  target_link_libraries(
+    SpectreWarnings
+    INTERFACE
+    SpectreDisableClangUnusedGlobal
+  )
+endif()
+
 # Suppress CUDA warnings that we don't want
 create_cxx_flag_target(
   "-Xcudafe \"--diag_suppress=177,186,191,554,1301,1305,2189,3060,20012\""
