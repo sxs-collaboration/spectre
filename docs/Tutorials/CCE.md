@@ -40,7 +40,9 @@ flag to use gzip will cause an error.
 See [Running the CCE executable](#running_the_cce_executable) for how to run
 CCE.
 
-We have tested that this executable works natively on the following machines:
+The executables run on Linux distributions with glibc 2.28 or later, e.g.
+RHEL 8, Debian 10, Ubuntu 20.04, or later versions. We have tested that this
+executable works natively on the following machines:
 
 - Expanse
 - Anvil
@@ -49,7 +51,6 @@ We have tested that this executable works natively on the following machines:
   `LD_LIBRARY_PATH=/sw/spack/deltas11-2023-03/apps/linux-rhel8-x86_64/gcc-8.5.0/gcc-11.4.0-yycklku/lib64/:$LD_LIBRARY_PATH`
   before running CCE)
 - Perlmutter
-- Ubuntu 18.04 LTS or later (LTS version only)
 
 We have also tested that this executable works inside our
 [`dev` Docker container](https://hub.docker.com/r/sxscollaboration/spectre/tags)
