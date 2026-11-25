@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_MagneticFieldTreatment.cpp
   Test_MassFlux.cpp
   Test_MassWeightedFluidItems.cpp
+  Test_PrimitiveSources.cpp
   Test_QuadrupoleFormula.cpp
   Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp

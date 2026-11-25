@@ -24,7 +24,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
-#include "PointwiseFunctions/Hydro/StressEnergy.hpp"
+#include "PointwiseFunctions/Hydro/PrimitiveSources.hpp"
 #include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -316,8 +316,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     hydro::Tags::ComovingMagneticFieldSquared<DataType> /*meta*/) const {
   if constexpr (HasMhd) {
-    const auto& lorentz_factor =
-        get<hydro::Tags::LorentzFactor<DataType>>(hydro_solution);
+    const auto lorentz_factor = provider_lorentz_factor();
     const auto& magnetic_field =
         get<hydro::Tags::MagneticField<DataType, Dim, Frame::Inertial>>(
             hydro_solution);
@@ -343,26 +342,50 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 
 template <typename DataType, bool HasMhd>
+const typename WrappedGrVariables<DataType, HasMhd>::PrimitiveSources&
+WrappedGrVariables<DataType, HasMhd>::primitive_sources() const
+  requires(HasMhd)
+{
+  if (not primitive_sources_.has_value()) {
+    const auto& rho =
+        get<hydro::Tags::RestMassDensity<DataType>>(hydro_solution);
+    const auto& epsilon =
+        get<hydro::Tags::SpecificInternalEnergy<DataType>>(hydro_solution);
+    const auto& pressure = get<hydro::Tags::Pressure<DataType>>(hydro_solution);
+    const auto& velocity =
+        get<hydro::Tags::SpatialVelocity<DataType, Dim>>(hydro_solution);
+    const auto& magnetic_field =
+        get<hydro::Tags::MagneticField<DataType, Dim>>(hydro_solution);
+    const auto& metric =
+        get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
+    std::array<DataType, 3> v{};
+    std::array<DataType, 3> b{};
+    std::array<std::array<DataType, 3>, 3> g{};
+    for (size_t i = 0; i < Dim; ++i) {
+      gsl::at(v, i) = velocity.get(i);
+      gsl::at(b, i) = magnetic_field.get(i);
+      for (size_t j = 0; j < Dim; ++j) {
+        gsl::at(gsl::at(g, i), j) = metric.get(i, j);
+      }
+    }
+    // Direct primitive H is intentional, including below CcsnCollapse's
+    // historical h-denominator floor. The library validates the primitives;
+    // the wrapper neither repairs them nor reconstructs epsilon from h.
+    // Store only a complete successful result; errors propagate to the
+    // caller.
+    primitive_sources_.emplace(hydro::primitive_sources::joint_sources(
+        get(rho), get(epsilon), get(pressure), v, b, g));
+  }
+  return *primitive_sources_;
+}
+
+template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<Scalar<DataType>*> energy_density,
-    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/) const {
   if constexpr (HasMhd) {
-    const auto& rest_mass_density =
-        get<hydro::Tags::RestMassDensity<DataType>>(hydro_solution);
-    const auto& specific_enthalpy =
-        get<hydro::Tags::SpecificEnthalpy<DataType>>(hydro_solution);
-    const auto& pressure = get<hydro::Tags::Pressure<DataType>>(hydro_solution);
-    const auto& lorentz_factor =
-        get<hydro::Tags::LorentzFactor<DataType>>(hydro_solution);
-    const auto& magnetic_field_dot_spatial_velocity = cache->get_var(
-        *this, hydro::Tags::MagneticFieldDotSpatialVelocity<DataType>{});
-    const auto& comoving_magnetic_field_squared = cache->get_var(
-        *this, hydro::Tags::ComovingMagneticFieldSquared<DataType>{});
-    hydro::energy_density(energy_density, rest_mass_density, specific_enthalpy,
-                          pressure, lorentz_factor,
-                          magnetic_field_dot_spatial_velocity,
-                          comoving_magnetic_field_squared);
+    get(*energy_density) = primitive_sources()[0];
   } else {
     std::fill(energy_density->begin(), energy_density->end(), 0.);
   }
@@ -371,32 +394,10 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<Scalar<DataType>*> stress_trace,
-    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const {
   if constexpr (HasMhd) {
-    const auto& rest_mass_density =
-        get<hydro::Tags::RestMassDensity<DataType>>(hydro_solution);
-    const auto& specific_enthalpy =
-        get<hydro::Tags::SpecificEnthalpy<DataType>>(hydro_solution);
-    const auto& pressure = get<hydro::Tags::Pressure<DataType>>(hydro_solution);
-    const auto& spatial_velocity =
-        get<hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>(
-            hydro_solution);
-    const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<DataType, Dim>>(gr_solution);
-    const auto spatial_velocity_squared =
-        tenex::evaluate(spatial_velocity(ti::I) * spatial_velocity(ti::J) *
-                        spatial_metric(ti::i, ti::j));
-    const auto& lorentz_factor =
-        get<hydro::Tags::LorentzFactor<DataType>>(hydro_solution);
-    const auto& magnetic_field_dot_spatial_velocity = cache->get_var(
-        *this, hydro::Tags::MagneticFieldDotSpatialVelocity<DataType>{});
-    const auto& comoving_magnetic_field_squared = cache->get_var(
-        *this, hydro::Tags::ComovingMagneticFieldSquared<DataType>{});
-    hydro::stress_trace(stress_trace, rest_mass_density, specific_enthalpy,
-                        pressure, spatial_velocity_squared, lorentz_factor,
-                        magnetic_field_dot_spatial_velocity,
-                        comoving_magnetic_field_squared);
+    get(*stress_trace) = primitive_sources()[4];
   } else {
     std::fill(stress_trace->begin(), stress_trace->end(), 0.);
   }
@@ -405,30 +406,14 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
-    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> /*meta*/)
     const {
   if constexpr (HasMhd) {
-    const auto& rest_mass_density =
-        get<hydro::Tags::RestMassDensity<DataType>>(hydro_solution);
-    const auto& specific_enthalpy =
-        get<hydro::Tags::SpecificEnthalpy<DataType>>(hydro_solution);
-    const auto& spatial_velocity =
-        get<hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>(
-            hydro_solution);
-    const auto& lorentz_factor =
-        get<hydro::Tags::LorentzFactor<DataType>>(hydro_solution);
-    const auto& magnetic_field =
-        get<hydro::Tags::MagneticField<DataType, Dim, Frame::Inertial>>(
-            hydro_solution);
-    const auto& magnetic_field_dot_spatial_velocity = cache->get_var(
-        *this, hydro::Tags::MagneticFieldDotSpatialVelocity<DataType>{});
-    const auto& comoving_magnetic_field_squared = cache->get_var(
-        *this, hydro::Tags::ComovingMagneticFieldSquared<DataType>{});
-    hydro::momentum_density(momentum_density, rest_mass_density,
-                            specific_enthalpy, spatial_velocity, lorentz_factor,
-                            magnetic_field, magnetic_field_dot_spatial_velocity,
-                            comoving_magnetic_field_squared);
+    const auto& sources = primitive_sources();
+    for (size_t i = 0; i < Dim; ++i) {
+      momentum_density->get(i) = gsl::at(sources, i + 1);
+    }
   } else {
     std::fill(momentum_density->begin(), momentum_density->end(), 0.);
   }

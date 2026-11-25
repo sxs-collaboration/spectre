@@ -34,6 +34,7 @@ spectre_target_headers(
   MagneticFieldTreatment.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
+  PrimitiveSources.hpp
   QuadrupoleFormula.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp

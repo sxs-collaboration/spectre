@@ -3,9 +3,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <type_traits>
 
@@ -47,6 +50,15 @@ using gr_solution_vars =
                              Frame::Inertial>,
                gr::Tags::ExtrinsicCurvature<DataType, Dim>>;
 
+// Private source inputs. Keep the shared XCTS hydro_tags forwarding contract.
+template <typename DataType>
+using wrapped_gr_primitive_tags =
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+               hydro::Tags::SpecificInternalEnergy<DataType>,
+               hydro::Tags::Pressure<DataType>,
+               hydro::Tags::SpatialVelocity<DataType, 3>,
+               hydro::Tags::MagneticField<DataType, 3>>;
+
 template <typename DataType>
 using WrappedGrVariablesCache =
     cached_temp_buffer_from_typelist<tmpl::push_back<
@@ -73,19 +85,35 @@ struct WrappedGrVariables
       const tnsr::I<DataType, 3>& local_x,
       const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
           local_gr_solution,
-      const tuples::tagged_tuple_from_typelist<hydro_tags<DataType>>&
-          local_hydro_solution)
+      const tuples::tagged_tuple_from_typelist<
+          wrapped_gr_primitive_tags<DataType>>& local_hydro_solution,
+      std::function<Scalar<DataType>()> local_provider_lorentz_factor)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         gr_solution(local_gr_solution),
-        hydro_solution(local_hydro_solution) {}
+        hydro_solution(local_hydro_solution),
+        provider_lorentz_factor(std::move(local_provider_lorentz_factor)) {}
 
   const tnsr::I<DataType, Dim>& x;
   const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
       gr_solution;
-  const tuples::tagged_tuple_from_typelist<hydro_tags<DataType>>&
+  const tuples::tagged_tuple_from_typelist<wrapped_gr_primitive_tags<DataType>>&
       hydro_solution;
+  // Only the legacy comoving-field cache needs the provider's W. The joint
+  // primitive source path does not evaluate this callback.
+  std::function<Scalar<DataType>()> provider_lorentz_factor;
 
+ private:
+  // Source order: energy, contravariant S^x/S^y/S^z, spatial stress trace.
+  using PrimitiveSources = std::array<DataType, 5>;
+  const PrimitiveSources& primitive_sources() const
+    requires(HasMhd);
+  // This computer is local to one synchronous variables_impl call; it is not
+  // shared between calls or stored on the analytic solution.
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable std::optional<PrimitiveSources> primitive_sources_{};
+
+ public:
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
       gsl::not_null<Cache*> cache,
@@ -264,6 +292,15 @@ struct WrappedGrVariables
  * adding the source terms and their linearization to the XCTS equations, and
  * could be interesting to explore.
  *
+ * For HasMhd=true the provider must supply rho, epsilon, p, v and B. Source
+ * terms use direct primitive H = rho + rho * epsilon + p, including below any
+ * provider-specific floor used only in a specific-enthalpy denominator. Public
+ * h and W requests retain the provider's values. The provider remains
+ * responsible for EOS-consistent primitives; invalid source inputs propagate
+ * the domain errors of hydro::primitive_sources::joint_sources without repair.
+ * HasMhd=false does not request fluid primitives and returns zero matter
+ * sources.
+ *
  * \tparam GrSolution Any solution to the Einstein constraint equations
  * \tparam HasMhd Enable to compute matter source terms. Disable to set matter
  * source terms to zero.
@@ -348,35 +385,52 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
       gr_solution =
           gr_solution_.variables(x, detail::gr_solution_vars<DataType, Dim>{});
     }
-    tuples::tagged_tuple_from_typelist<hydro_tags<DataType>> hydro_solution;
-    if constexpr (HasMhd) {
+    using PrimitiveTags = detail::wrapped_gr_primitive_tags<DataType>;
+    tuples::tagged_tuple_from_typelist<PrimitiveTags> hydro_solution;
+    // Keep provider dispatch for explicitly requested public hydro tags and
+    // the legacy magnetic cache. No invocation on the pure-GR branch.
+    const auto provider_variables = [this, &x](auto tags) {
       if constexpr (is_analytic_solution_v<GrSolution>) {
-        hydro_solution = gr_solution_.variables(
-            x, std::numeric_limits<double>::signaling_NaN(),
-            hydro_tags<DataType>{});
+        return gr_solution_.variables(
+            x, std::numeric_limits<double>::signaling_NaN(), tags);
       } else {
-        hydro_solution = gr_solution_.variables(x, hydro_tags<DataType>{});
+        return gr_solution_.variables(x, tags);
       }
+    };
+    std::function<Scalar<DataType>()> provider_lorentz_factor;
+    if constexpr (HasMhd) {
+      hydro_solution = provider_variables(PrimitiveTags{});
+      provider_lorentz_factor = [&provider_variables]() {
+        using Tag = hydro::Tags::LorentzFactor<DataType>;
+        return get<Tag>(provider_variables(tmpl::list<Tag>{}));
+      };
     }
     using VarsComputer = detail::WrappedGrVariables<DataType, HasMhd>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
-    VarsComputer computer{mesh, inv_jacobian, x, gr_solution, hydro_solution};
-    const auto get_var = [&cache, &computer, &hydro_solution, &x](auto tag_v) {
+    VarsComputer computer{
+        mesh,        inv_jacobian,   x,
+        gr_solution, hydro_solution, std::move(provider_lorentz_factor)};
+    const auto get_var = [&cache, &computer, &hydro_solution, &x,
+                          &provider_variables](auto tag_v) {
+      (void)cache;
+      (void)computer;
+      (void)hydro_solution;
+      (void)x;
+      (void)provider_variables;
       using tag = std::decay_t<decltype(tag_v)>;
       if constexpr (tmpl::list_contains_v<hydro_tags<DataType>, tag>) {
-        (void)cache;
-        (void)computer;
         if constexpr (HasMhd) {
-          (void)x;
-          return get<tag>(hydro_solution);
+          if constexpr (tmpl::list_contains_v<PrimitiveTags, tag>) {
+            return get<tag>(hydro_solution);
+          } else {
+            // h and W retain provider semantics when explicitly requested.
+            return get<tag>(provider_variables(tmpl::list<tag>{}));
+          }
         } else {
-          (void)hydro_solution;
           return get<tag>(Flatness{}.variables(x, tmpl::list<tag>{}));
         }
       } else {
-        (void)hydro_solution;
-        (void)x;
         return cache.get_var(computer, tag{});
       }
     };
