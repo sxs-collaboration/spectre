@@ -64,16 +64,27 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  * positive sign because the outward directed normal of the neighboring element
  * has the opposite sign, i.e. \f$n_i^{\text{ext}}=-n_i^{\text{int}}\f$.
  *
- * The characteristic/signal speeds are given in the documentation for
- * `grmhd::ValenciaDivClean::characteristic_speeds()`. Since the fluid is
- * travelling slower than the speed of light, the speeds we are interested in
- * are
+ * The divergence cleaning field \f$\tilde{\Phi}\f$ and the normal part of the
+ * magnetic field, \f$n_i \tilde{B}^i\f$, form a separate pair. Their normal
+ * fluxes depend only on each other, and their waves travel at the divergence
+ * cleaning speed, which this system sets to the speed of light. The fastest
+ * waves of all other variables are the fast-magnetosonic waves. Their speed in
+ * the fluid frame is greatest for waves moving perpendicular to the magnetic
+ * field. For these variables we use this perpendicular speed for waves in
+ * every direction \cite Gammie2003, so the resulting speeds along the face
+ * normal bound the exact fast-magnetosonic speeds.
  *
- * \f{align*}{
- *   \lambda^{\pm}&=\pm\alpha-\beta^i n_i,
- * \f}
+ * These fast-magnetosonic speeds are not taken from
+ * `grmhd::ValenciaDivClean::characteristic_speeds_approximate_mhd()`, because
+ * that function takes the specific internal energy, while the data on the face
+ * has the temperature. With a tabulated equation of state, the function would
+ * have to find the temperature again from the energy with a root find at every
+ * point, which is expensive. So we compute them here from the temperature, in
+ * the same way as the hydro speeds, with the inputs clamped to physical ranges.
  *
- * which correspond to the divergence cleaning field.
+ * The magnetic field is split into its normal and tangential parts along the
+ * average of the two sides' unit normals, which keeps the correction
+ * antisymmetric.
  *
  * \note
  * - In the strong form the `dg_boundary_terms` function returns
@@ -83,18 +94,46 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  *   correction reduces to pure upwinding.
  * - Some references use \f$S\f$ instead of \f$\lambda\f$ for the
  *   signal/characteristic speeds
- * - It may be possible to use the slower speeds for the magnetic field and
- *   fluid part of the system in order to make the flux less dissipative for
- *   those variables.
  */
 class Hll final : public evolution::BoundaryCorrection {
  public:
+  /// @{
+  /// The estimated wave-speed bounds of this side, used by the HLL flux.
+  /// - `LargestOutgoingCharSpeed` and `LargestIngoingCharSpeed` are used for
+  ///   the divergence cleaning pair and are the light speeds
+  ///   \f$\pm\alpha - \beta^i n_i\f$.
+  /// - `FastOutgoingCharSpeed` and `FastIngoingCharSpeed` are used for all
+  ///   other variables and bound the fast-magnetosonic speeds.
+  ///
+  /// The two pairs are the same in two cases.
+  /// - Atmosphere: at points where the rest mass density is at most
+  ///   `LightSpeedDensityCutoff`, both are the light speeds.
+  /// - Hydro: on a face where the magnitude of \f$\tilde{B}^i\f$ never exceeds
+  ///   `MagneticFieldMagnitudeForHydro`, both are the hydro speeds at all
+  ///   points outside the atmosphere.
   struct LargestOutgoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
   struct LargestIngoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
+  struct FastOutgoingCharSpeed : db::SimpleTag {
+    using type = Scalar<DataVector>;
+  };
+  struct FastIngoingCharSpeed : db::SimpleTag {
+    using type = Scalar<DataVector>;
+  };
+  /// @}
+  /// @{
+  /// The unit normal covector and vector of this side; `dg_boundary_terms`
+  /// splits the magnetic field along the average of the two sides' normals.
+  struct InterfaceUnitNormal : db::SimpleTag {
+    using type = tnsr::i<DataVector, 3, Frame::Inertial>;
+  };
+  struct InterfaceUnitNormalVector : db::SimpleTag {
+    using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+  };
+  /// @}
 
   struct MagneticFieldMagnitudeForHydro {
     static constexpr Options::String help = {
@@ -141,10 +180,13 @@ class Hll final : public evolution::BoundaryCorrection {
                  ::Tags::NormalDotFlux<Tags::TildeS<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildeB<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildePhi>,
-                 LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
+                 LargestOutgoingCharSpeed, LargestIngoingCharSpeed,
+                 FastOutgoingCharSpeed, FastIngoingCharSpeed,
+                 InterfaceUnitNormal, InterfaceUnitNormalVector>;
   using dg_package_data_temporary_tags = tmpl::list<
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>;
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      gr::Tags::SpatialMetric<DataVector, 3>>;
   using dg_package_data_primitive_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
@@ -152,7 +194,7 @@ class Hll final : public evolution::BoundaryCorrection {
                  hydro::Tags::SpatialVelocity<DataVector, 3>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::GrmhdEquationOfState>;
-    using dg_boundary_terms_volume_tags = tmpl::list<>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_d,
@@ -171,6 +213,12 @@ class Hll final : public evolution::BoundaryCorrection {
       gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_tilde_phi,
       gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed,
       gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_fast_outgoing_char_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_fast_ingoing_char_speed,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+          packaged_interface_unit_normal,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          packaged_interface_unit_normal_vector,
 
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
       const Scalar<DataVector>& tilde_tau,
@@ -188,6 +236,7 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
 
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& electron_fraction,
@@ -227,6 +276,11 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& normal_dot_flux_tilde_phi_int,
       const Scalar<DataVector>& largest_outgoing_char_speed_int,
       const Scalar<DataVector>& largest_ingoing_char_speed_int,
+      const Scalar<DataVector>& fast_outgoing_char_speed_int,
+      const Scalar<DataVector>& fast_ingoing_char_speed_int,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& interface_unit_normal_int,
+      const tnsr::I<DataVector, 3, Frame::Inertial>&
+          interface_unit_normal_vector_int,
       const Scalar<DataVector>& tilde_d_ext,
       const Scalar<DataVector>& tilde_ye_ext,
       const Scalar<DataVector>& tilde_tau_ext,
@@ -243,6 +297,11 @@ class Hll final : public evolution::BoundaryCorrection {
       const Scalar<DataVector>& normal_dot_flux_tilde_phi_ext,
       const Scalar<DataVector>& largest_outgoing_char_speed_ext,
       const Scalar<DataVector>& largest_ingoing_char_speed_ext,
+      const Scalar<DataVector>& fast_outgoing_char_speed_ext,
+      const Scalar<DataVector>& fast_ingoing_char_speed_ext,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& interface_unit_normal_ext,
+      const tnsr::I<DataVector, 3, Frame::Inertial>&
+          interface_unit_normal_vector_ext,
       dg::Formulation dg_formulation);
 
  private:

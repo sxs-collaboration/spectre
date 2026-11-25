@@ -376,11 +376,9 @@ struct TimeDerivativeTerms : evolution::PassVariables {
                  grmhd::ValenciaDivClean::Tags::ComovingMagneticFieldOneForm>;
   using extra_temp_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>;
 
-  using temporary_tags = tmpl::remove<
-      tmpl::remove_duplicates<tmpl::append<
-          gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,
-          trace_reversed_stress_result_tags, extra_temp_tags>>,
-      gr::Tags::SpatialMetric<DataVector, 3>>;
+  using temporary_tags = tmpl::remove_duplicates<
+      tmpl::append<gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,
+                   trace_reversed_stress_result_tags, extra_temp_tags>>;
   using argument_tags = tmpl::remove<
       tmpl::remove<tmpl::append<gh_arg_tags,
 
@@ -435,6 +433,15 @@ struct TimeDerivativeTerms : evolution::PassVariables {
                   .get(i, j + 1, k + 1),
               0, number_of_points);
         }
+      }
+    }
+    auto& temp_spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(*temps_ptr);
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = i; j < 3; ++j) {
+        temp_spatial_metric.get(i, j) = get<Tags::detail::TemporaryReference<
+            gr::Tags::SpacetimeMetric<DataVector, 3>>>(arguments)
+                                            .get(i + 1, j + 1);
       }
     }
 

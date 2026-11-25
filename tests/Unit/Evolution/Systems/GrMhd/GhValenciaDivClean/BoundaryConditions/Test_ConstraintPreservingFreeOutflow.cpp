@@ -155,6 +155,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     phi = get<::gh::Tags::Phi<DataVector, 3>>(analytic_vars);
     lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
     shift = get<gr::Tags::Shift<DataVector, 3>>(analytic_vars);
+    spatial_metric = get<gr::Tags::SpatialMetric<DataVector, 3>>(analytic_vars);
     inverse_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(analytic_vars);
 
@@ -235,6 +236,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                   make_not_null(&gamma2), make_not_null(&lapse),
                   make_not_null(&shift),
                   make_not_null(&spatial_velocity_one_form),
+                  make_not_null(&spatial_metric),
                   make_not_null(&rest_mass_density),
                   make_not_null(&electron_fraction),
                   make_not_null(&temperature), make_not_null(&spatial_velocity),
@@ -391,6 +393,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
                     make_not_null(&lapse_expected),
                     make_not_null(&shift_expected),
                     make_not_null(&spatial_velocity_one_form_expected),
+                    make_not_null(&spatial_metric_expected),
                     make_not_null(&rest_mass_density_expected),
                     make_not_null(&electron_fraction_expected),
                     make_not_null(&temperature_expected),
