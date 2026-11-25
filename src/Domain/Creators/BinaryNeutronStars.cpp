@@ -96,6 +96,7 @@ BinaryNeutronStars::BinaryNeutronStars(
     const BinaryNeutronStars::CubeInitialYZRefinement::type& cube_yz_refinement,
     size_t wedge_prism_radial_grid_points, size_t wedge_prism_radial_refinement,
     size_t cylinder_radial_grid_points, size_t cylinder_radial_refinement,
+    const std::optional<double> cylinder_log_map_strength,
     size_t b2_angular_grid_points,
     std::array<size_t, 2> hollow_cylinder_angular_grid_points,
     const BinaryNeutronStars::SphericalShellsInitialRadialRefinement::type&
@@ -124,6 +125,7 @@ BinaryNeutronStars::BinaryNeutronStars(
       wedge_prism_radial_refinement_(wedge_prism_radial_refinement),
       cylinder_radial_grid_points_(cylinder_radial_grid_points),
       cylinder_radial_refinement_(cylinder_radial_refinement),
+      cylinder_log_map_strength_(cylinder_log_map_strength),
       b2_angular_grid_points_(b2_angular_grid_points),
       hollow_cylinder_angular_grid_points_(hollow_cylinder_angular_grid_points),
       spherical_shells_radial_grid_points_(spherical_shells_radial_grid_points),
@@ -210,6 +212,13 @@ BinaryNeutronStars::BinaryNeutronStars(
                       << " and CylinderOuterRadius=" << cylinder_outer_radius_
                       << ". Adjust " << name << " or CylinderOuterRadius.");
     }
+  }
+  if (cylinder_log_map_strength_.has_value() and
+      *cylinder_log_map_strength_ < 1.0) {
+    PARSE_ERROR(context, "CylinderLogMapStrength ("
+                             << *cylinder_log_map_strength_
+                             << ") must be at least 1, or None for a linear "
+                                "grid.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(outer_boundary_condition_)) {
@@ -812,10 +821,44 @@ Domain<3> BinaryNeutronStars::create_domain() const {
 
   // Lambdas for cylinder and sphere-shell blocks
 
-  // ZernikeB2 filled-cylinder (full_cylinder topology).
+  // The optional log map in the logical direction of the cylinders that
+  // points from the cubed cylinders out to CylinderOuterRadius. All six
+  // cylinders share this direction across conforming faces, so they must all
+  // use the same one-dimensional map. The log map's origin r_0 is computed
+  // from the radii r_in and r_out where the cylinders meet the x = 0 plane
+  const double cylinder_inner_radius =
+      bulge_ ? sqrt(square(R_B) - square(center_B_)) : wedge_outer_radius_;
+  // Logical position of r_0 in units where 0 is the inner face and 1 is the
+  // outer face
+  std::optional<double> cylinder_log_origin_fraction{};
+  if (cylinder_log_map_strength_.has_value()) {
+    const double alpha = *cylinder_log_map_strength_;
+    cylinder_log_origin_fraction =
+        cylinder_inner_radius /
+        (cylinder_inner_radius - alpha * cylinder_outer_radius_);
+  }
+  // Maps [-1, 1] to [lower, upper]. `inner_is_upper` says whether `upper`
+  // corresponds to the inner face of the cylinder
+  const auto cylinder_radial_map = [&cylinder_log_origin_fraction](
+                                       const double lower, const double upper,
+                                       const bool inner_is_upper) {
+    if (not cylinder_log_origin_fraction.has_value()) {
+      return Interval(-1.0, 1.0, lower, upper,
+                      CoordinateMaps::Distribution::Linear);
+    }
+    const double inner = inner_is_upper ? upper : lower;
+    const double outer = inner_is_upper ? lower : upper;
+    return Interval(-1.0, 1.0, lower, upper,
+                    CoordinateMaps::Distribution::Logarithmic,
+                    inner + *cylinder_log_origin_fraction * (outer - inner));
+  };
+
+  // ZernikeB2 filled-cylinder (full_cylinder topology): the flat face is at
+  // zeta = 1 for BFilledCylinder (minus_side = false) and at zeta = -1 for
+  // AFilledCylinder (minus_side = true); zeta points along positive x for both
   const auto add_filled_cylinder =
       [&coordinate_maps, &check_block_name, &rotate_to_minus_x_axis,
-       &half_turn_about_y_axis, &aligned](
+       &half_turn_about_y_axis, &aligned, &cylinder_radial_map](
           const CoordinateMaps::CylindricalFlatEndcapInterior& endcap_map,
           const Rotation& rotation_map, const std::string& name) {
         const bool minus_side =
@@ -823,7 +866,9 @@ Domain<3> BinaryNeutronStars::create_domain() const {
         coordinate_maps.push_back(
             domain::make_coordinate_map_base<Frame::BlockLogical,
                                              Frame::Inertial>(
-                ShiftX{Affine{-1.0, 1.0, 0.0, 1.0}, Identity1D{}, Identity1D{}},
+                CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Interval>{
+                    Affine{-1.0, 1.0, 0.0, 1.0}, Identity1D{},
+                    cylinder_radial_map(-1.0, 1.0, not minus_side)},
                 CoordinateMaps::ProductOf2Maps<CoordinateMaps::PolarToCartesian,
                                                Identity1D>{
                     CoordinateMaps::PolarToCartesian{}, Identity1D{}},
@@ -834,7 +879,8 @@ Domain<3> BinaryNeutronStars::create_domain() const {
 
   // Bulge=false hollow cylinder: CylindricalSphericalShell.
   const auto add_hollow_cylinder_flat = [this, &coordinate_maps,
-                                         &check_block_name, &rotate_to_y_axis](
+                                         &check_block_name, &rotate_to_y_axis,
+                                         &cylinder_radial_map](
                                             const double x_inner_lower,
                                             const double x_inner_upper,
                                             const double x_outer_lower,
@@ -842,6 +888,9 @@ Domain<3> BinaryNeutronStars::create_domain() const {
                                             const std::string& name) {
     coordinate_maps.push_back(
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            CoordinateMaps::ProductOf3Maps<Interval, Identity1D, Identity1D>{
+                cylinder_radial_map(-1.0, 1.0, false), Identity1D{},
+                Identity1D{}},
             CoordinateMaps::CylindricalSphericalShell{
                 x_inner_lower, x_inner_upper, x_outer_lower, x_outer_upper,
                 wedge_outer_radius_, cylinder_outer_radius_},
@@ -853,7 +902,8 @@ Domain<3> BinaryNeutronStars::create_domain() const {
   const auto add_hollow_cylinder_bulged = [this, &coordinate_maps,
                                            &check_block_name,
                                            &rotate_to_minus_x_axis,
-                                           &half_turn_about_y_axis, &aligned](
+                                           &half_turn_about_y_axis, &aligned,
+                                           &cylinder_radial_map](
                                               const double center,
                                               const double inner_radius,
                                               const double z_inner_upper,
@@ -865,8 +915,9 @@ Domain<3> BinaryNeutronStars::create_domain() const {
     const bool minus_side = rotation_map == Rotation{rotate_to_minus_x_axis};
     coordinate_maps.push_back(
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>{
-                Affine{-1.0, 1.0, 1.0, 2.0}, Identity1D{}, Identity1D{}},
+            CoordinateMaps::ProductOf3Maps<Interval, Identity1D, Identity1D>{
+                cylinder_radial_map(1.0, 2.0, false), Identity1D{},
+                Identity1D{}},
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::PolarToCartesian,
                                            Identity1D>{
                 CoordinateMaps::PolarToCartesian{}, Identity1D{}},

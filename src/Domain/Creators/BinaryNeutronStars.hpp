@@ -81,7 +81,9 @@ namespace domain::creators {
  *    groups, and a filled cylinder (with a ZernikeB2 cross-section) caps each
  *    end, at \f$x = x_{\rm left}\f$ and \f$x = x_{\rm right}\f$. The outer
  *    faces of these six blocks together form a sphere of radius
- *    `CylinderOuterRadius` centered at the origin.
+ *    `CylinderOuterRadius` centered at the origin. Grid points from the cubed
+ *    cylinders out to this sphere can be distributed logarithmically with
+ *    `CylinderLogMapStrength`.
  * 3. **Spherical shells.** One or more spherical shells extend from
  *    `CylinderOuterRadius` to `OuterRadius`. The number of shells is set by
  *    `SphericalShellsRadialPartitioning`.
@@ -141,27 +143,31 @@ class BinaryNeutronStars : public DomainCreator<3> {
                                          CoordinateMaps::Identity<1>,
                                          CoordinateMaps::Identity<1>>,
           CoordinateMaps::DiscreteRotation<3>>,
-      // Filled cylinders (blocks 20, 25): radial Affine +
+      // Filled cylinders (blocks 20, 25): radial Affine and axial Interval +
       // polar-to-Cartesian + half-turn + interior endcap + rotation to
       // x-axis + rotation to align angle
       domain::CoordinateMap<
           Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Identity<1>,
-                                         CoordinateMaps::Identity<1>>,
+                                         CoordinateMaps::Interval>,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::PolarToCartesian,
                                          CoordinateMaps::Identity<1>>,
           CoordinateMaps::DiscreteRotation<3>,
           CoordinateMaps::CylindricalFlatEndcapInterior,
           CoordinateMaps::DiscreteRotation<3>>,
       // Hollow cylinders (blocks 21-24): bulge = false
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::CylindricalSphericalShell,
-                            CoordinateMaps::DiscreteRotation<3>>,
+      domain::CoordinateMap<
+          Frame::BlockLogical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                         CoordinateMaps::Identity<1>,
+                                         CoordinateMaps::Identity<1>>,
+          CoordinateMaps::CylindricalSphericalShell,
+          CoordinateMaps::DiscreteRotation<3>>,
       // Hollow cylinders (blocks 21-24): bulge = true
       domain::CoordinateMap<
           Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
                                          CoordinateMaps::Identity<1>,
                                          CoordinateMaps::Identity<1>>,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::PolarToCartesian,
@@ -346,6 +352,25 @@ class BinaryNeutronStars : public DomainCreator<3> {
         "cylinders, axial for the filled cylinders)."};
   };
   /*!
+   * \brief Strength of the logarithmic map applied to the filled and hollow
+   * cylinders, or `None` for a linear grid
+   *
+   * With strength \f$\alpha \geq 1\f$ the ratio of the grid spacing at the
+   * outer and inner faces is \f$\alpha r_\mathrm{out}/r_\mathrm{in}\f$,
+   * where \f$r_\mathrm{in}\f$ and \f$r_\mathrm{out}\f$ are the radii where
+   * the cylinders meet the \f$x = 0\f$ plane. So \f$\alpha = 1\f$ is
+   * logarithmic in the radius \f$r\f$, and larger values group grid
+   * points closer toward the cubed cylinders.
+   */
+  struct CylinderLogMapStrength {
+    using type = Options::Auto<double, Options::AutoLabel::None>;
+    static constexpr Options::String help = {
+        "Strength of the logarithmic map applied to the cylinders. Set to "
+        "'None' for a linear grid; a value of 1 is logarithmic in the "
+        "radius. Larger values concentrate grid points more strongly toward "
+        "the cubed cylinders."};
+  };
+  /*!
    * \brief Initial number of angular grid points for the ZernikeB2
    * cross-section of the filled cylinders
    *
@@ -476,8 +501,8 @@ class BinaryNeutronStars : public DomainCreator<3> {
           OuterRadius, CubeInitialGridPoints, CubeInitialXRefinement,
           CubeInitialYZRefinement, WedgePrismInitialRadialGridPoints,
           WedgePrismInitialRadialRefinement, CylinderInitialRadialGridPoints,
-          CylinderInitialRadialRefinement, B2InitialAngularGridPoints,
-          HollowCylinderInitialAngularGridPoints,
+          CylinderInitialRadialRefinement, CylinderLogMapStrength,
+          B2InitialAngularGridPoints, HollowCylinderInitialAngularGridPoints,
           SphericalShellsInitialRadialRefinement,
           SphericalShellsInitialRadialGridPoints, InitialSphericalHarmonicL,
           SphericalShellsRadialPartitioning, SphericalShellsRadialDistribution,
@@ -509,7 +534,9 @@ class BinaryNeutronStars : public DomainCreator<3> {
       const CubeInitialYZRefinement::type& cube_yz_refinement,
       size_t wedge_prism_radial_grid_points,
       size_t wedge_prism_radial_refinement, size_t cylinder_radial_grid_points,
-      size_t cylinder_radial_refinement, size_t b2_angular_grid_points,
+      size_t cylinder_radial_refinement,
+      std::optional<double> cylinder_log_map_strength,
+      size_t b2_angular_grid_points,
       std::array<size_t, 2> hollow_cylinder_angular_grid_points,
       const SphericalShellsInitialRadialRefinement::type&
           spherical_shells_radial_refinement,
@@ -608,6 +635,7 @@ class BinaryNeutronStars : public DomainCreator<3> {
   size_t wedge_prism_radial_refinement_{};
   size_t cylinder_radial_grid_points_{};
   size_t cylinder_radial_refinement_{};
+  std::optional<double> cylinder_log_map_strength_{};
   size_t b2_angular_grid_points_{};
   std::array<size_t, 2> hollow_cylinder_angular_grid_points_{};
   std::vector<size_t> spherical_shells_radial_refinement_{};
