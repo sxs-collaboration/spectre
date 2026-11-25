@@ -47,6 +47,13 @@ void bind_spherepack(pybind11::module& m) {  // NOLINT
                &ylm::Spherepack::spec_to_phys),
            py::arg("spectral_coefs"), py::arg("spectral_stride") = 1,
            py::arg("spectral_offset") = 0)
+      .def_static("prolong_or_restrict",
+                  static_cast<DataVector (*)(
+                      const DataVector&, size_t, size_t, size_t, size_t,
+                      size_t)>(&ylm::Spherepack::prolong_or_restrict),
+                  py::arg("spectral_coefs"), py::arg("l_max_coefs"),
+                  py::arg("m_max_coefs"), py::arg("l_max_target"),
+                  py::arg("m_max_target"), py::arg("stride") = 1)
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self == py::self)
       // NOLINTNEXTLINE(misc-redundant-expression)
