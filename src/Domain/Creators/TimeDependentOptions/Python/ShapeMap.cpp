@@ -21,8 +21,8 @@ namespace {
 void bind_kerrschild_from_boyer_lindquist_impl(py::module& m) {
   py::class_<time_dependent_options::KerrSchildFromBoyerLindquist>(
       m, "KerrSchildFromBoyerLindquist")
-      .def(py::init<double, std::array<double, 3>>(), py::arg("mass"),
-           py::arg("spin"));
+      .def(py::init<double, std::array<double, 3>, std::array<double, 3>>(),
+           py::arg("mass"), py::arg("spin"), py::arg("velocity"));
 }
 
 void bind_ylms_from_file_impl(py::module& m) {

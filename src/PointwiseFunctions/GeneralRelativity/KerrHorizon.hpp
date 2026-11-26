@@ -21,48 +21,81 @@ namespace gr::Solutions {
  *
  * Derivation:
  *
- * Define spherical coordinates \f$(r,\theta,\phi)\f$ in the usual way
- * from the Cartesian Kerr-Schild coordinates \f$(x,y,z)\f$
- * (i.e. \f$x = r \sin\theta \cos\phi\f$ and so on).
- * Then the relationship between \f$r\f$ and the radial
- * Boyer-Lindquist coordinate \f$r_{BL}\f$ is
- * \f[
+ * Define spherical coordinates $(r,\theta,\phi)$ in the usual way
+ * from the Cartesian Kerr-Schild coordinates $(x,y,z)$
+ * (i.e. $x = r \sin\theta \cos\phi$ and so on).
+ * Then the relationship between $r$ and the radial
+ * Boyer-Lindquist coordinate $r_{BL}$ is
+ * \begin{equation}
  * r_{BL}^2 = \frac{1}{2}(r^2 - a^2)
  *     + \left(\frac{1}{4}(r^2-a^2)^2 +
  *             r^2(\vec{a}\cdot \hat{x})^2\right)^{1/2},
- * \f]
- * where \f$\vec{a}\f$ is the Kerr spin vector (with units of mass),
- * \f$\hat{x}\f$ means \f$(x/r,y/r,z/r)\f$, and the dot product is
+ * \end{equation}
+ * where $\vec{a}$ is the Kerr spin vector (with units of mass),
+ * $\hat{x}$ means $(x/r,y/r,z/r)$, and the dot product is
  * taken as in flat space.
  *
- * We solve the above equation for \f$r^2\f$ as a function of angles,
+ * We solve the above equation for $r^2$ as a function of angles,
  * yielding
- * \f[
+ * \begin{equation}
  *     r^2 = \frac{r_{BL}^2 (r_{BL}^2 + a^2)}
-                  {r_{BL}^2+(\vec{a}\cdot \hat{x})^2},
- * \f]
- * where the angles are encoded in \f$\hat x\f$ and everything else on the
+ *                {r_{BL}^2+(\vec{a}\cdot \hat{x})^2},
+ * \end{equation}
+ * where the angles are encoded in $\hat x$ and everything else on the
  * right-hand side is constant.
+ *
+ * Boosted black hole:
+ *
+ * \warning The spin is assumed to be given in the rest frame of the black
+ * hole. Only the angles and the returned radius refer to the boosted frame.
+ * The spin measured in the boosted frame differs, because the spin transforms
+ * as an axial vector (see Eq. (68) of \cite Pfeiffer:2002xz).
+ *
+ * Given a `boost_velocity` $\vec{v}$ with Lorentz factor $\gamma$, the
+ * angles and the returned radius are in the boosted Kerr-Schild coordinates at
+ * $t=0$. Decompose $\hat{x}$ into components parallel and orthogonal
+ * to the boost, $\hat{x}_\parallel = (\hat{x}\cdot\hat{v})\hat{v}$ and
+ * $\hat{x}_\perp = \hat{x} - \hat{x}_\parallel$. The Lorentz
+ * transformation at $t=0$ stretches only the parallel component, so the
+ * rest-frame position is $r\vec{u}$ with
+ * $\vec{u} = \gamma\hat{x}_\parallel + \hat{x}_\perp$. Applying the
+ * rest-frame relation above along $\hat{u} = \vec{u}/|\vec{u}|$ to the
+ * rest-frame radius $r|\vec{u}|$, and using
+ * $\gamma^2 - 1 = \gamma^2 v^2$, simplifies to
+ * \begin{equation}
+ *     r^2 = \frac{r_{BL}^2 (r_{BL}^2 + a^2)}
+ *                {r_{BL}^2 |\vec{u}|^2 + (\vec{a}\cdot\vec{u})^2},
+ * \end{equation}
+ * where
+ * \begin{align}
+ *     |\vec{u}|^2 &= 1 + \gamma^2 (\hat{x}\cdot\vec{v})^2, \\
+ *     \vec{a}\cdot\vec{u} &= \vec{a}\cdot\hat{x}
+ *       + \frac{\gamma^2}{1+\gamma}(\hat{x}\cdot\vec{v})(\vec{a}\cdot\vec{v}).
+ * \end{align}
+ * For $\vec{v}=0$ this reduces to the unboosted expression.
  */
 template <typename DataType>
 Scalar<DataType> kerr_schild_radius_from_boyer_lindquist(
-    const double boyer_lindquist_radius,
+    double boyer_lindquist_radius,
     const std::array<DataType, 2>& theta_phi, double mass,
-    const std::array<double, 3>& dimensionless_spin);
+    const std::array<double, 3>& dimensionless_spin,
+    const std::array<double, 3>& boost_velocity = std::array<double, 3>{
+        {0.0, 0.0, 0.0}});
+
 /*!
  * \brief The Kerr-Schild radius corresponding to a Kerr horizon.
  *
- * \details `kerr_horizon_radius` evaluates \f$r\f$ using the above equation in
+ * \details `kerr_horizon_radius` evaluates $r$ using the above equation in
  * the documentation for `kerr_schild_radius_from_boyer_lindquist`, and
  * using the standard expression for the Boyer-Lindquist radius of the
  * Kerr horizon:
- * \f[
+ * \begin{equation}
  *   r_{BL} = r_+ = M + \sqrt{M^2-a^2}.
- * \f]
+ * \end{equation}
  *
  * \note If the spin is nearly extremal, this function has accuracy
- *       limited to roughly \f$10^{-8}\f$, because of roundoff amplification
- *       from computing \f$M + \sqrt{M^2-a^2}\f$.
+ *       limited to roughly $10^{-8}$, because of roundoff amplification
+ *       from computing $M + \sqrt{M^2-a^2}$.
  */
 template <typename DataType>
 Scalar<DataType> kerr_horizon_radius(
