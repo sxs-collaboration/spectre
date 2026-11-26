@@ -53,6 +53,30 @@ KOKKOS_FUNCTION void trace(
   }
 }
 
+template <typename DataType, typename Index0, typename Index1>
+KOKKOS_FUNCTION Tensor<DataType, Symmetry<1>, index_list<Index0>>
+trace_last_indices(
+    const Tensor<DataType, Symmetry<2, 1, 1>,
+                 index_list<Index0, Index1, Index1>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index1>,
+                            change_index_up_lo<Index1>>>& metric) {
+  Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_of_tensor{};
+  trace_last_indices(make_not_null(&trace_of_tensor), tensor, metric);
+  return trace_of_tensor;
+}
+
+template <typename DataType, typename Index0>
+KOKKOS_FUNCTION Scalar<DataType> trace(
+    const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index0>,
+                            change_index_up_lo<Index0>>>& metric) {
+  Scalar<DataType> trace{};
+  ::trace(make_not_null(&trace), tensor, metric);
+  return trace;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -67,16 +91,24 @@ KOKKOS_FUNCTION void trace(
 #define INDEX0(data) INDEXTYPE(data)<DIM(data), UPORLO0(data), FRAME(data)>
 #define INDEX1(data) INDEXTYPE(data)<DIM(data), UPORLO1(data), FRAME(data)>
 
-#define INSTANTIATE(_, data)                                              \
-  template void trace_last_indices(                                       \
-      const gsl::not_null<                                                \
-          Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>*>    \
-          result,                                                         \
-      const Tensor<DTYPE(data), Symmetry<2, 1, 1>,                        \
-                   index_list<INDEX0(data), INDEX1(data), INDEX1(data)>>& \
-          tensor,                                                         \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                           \
-                   index_list<change_index_up_lo<INDEX1(data)>,           \
+#define INSTANTIATE(_, data)                                               \
+  template void trace_last_indices(                                        \
+      const gsl::not_null<                                                 \
+          Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>*>     \
+          result,                                                          \
+      const Tensor<DTYPE(data), Symmetry<2, 1, 1>,                         \
+                   index_list<INDEX0(data), INDEX1(data), INDEX1(data)>>&  \
+          tensor,                                                          \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX1(data)>,            \
+                              change_index_up_lo<INDEX1(data)>>>& metric); \
+  template Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>      \
+  trace_last_indices(                                                      \
+      const Tensor<DTYPE(data), Symmetry<2, 1, 1>,                         \
+                   index_list<INDEX0(data), INDEX1(data), INDEX1(data)>>&  \
+          tensor,                                                          \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX1(data)>,            \
                               change_index_up_lo<INDEX1(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(
@@ -93,13 +125,19 @@ GENERATE_INSTANTIATIONS(
 #undef INDEX1
 #undef INSTANTIATE
 
-#define INSTANTIATE2(_, data)                                       \
-  template void trace(                                              \
-      const gsl::not_null<Scalar<DTYPE(data)>*> trace,              \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                     \
-                   index_list<INDEX0(data), INDEX0(data)>>& tensor, \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                     \
-                   index_list<change_index_up_lo<INDEX0(data)>,     \
+#define INSTANTIATE2(_, data)                                              \
+  template void trace(                                                     \
+      const gsl::not_null<Scalar<DTYPE(data)>*> trace,                     \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<INDEX0(data), INDEX0(data)>>& tensor,        \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
+                              change_index_up_lo<INDEX0(data)>>>& metric); \
+  template Scalar<DTYPE(data)> trace(                                      \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<INDEX0(data), INDEX0(data)>>& tensor,        \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3),

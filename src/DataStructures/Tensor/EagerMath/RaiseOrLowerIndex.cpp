@@ -57,6 +57,36 @@ KOKKOS_FUNCTION void raise_or_lower_index(
   }
 }
 
+template <typename DataType, typename Index0, typename Index1>
+KOKKOS_FUNCTION Tensor<DataType, Symmetry<2, 1, 1>,
+                       index_list<change_index_up_lo<Index0>, Index1, Index1>>
+raise_or_lower_first_index(
+    const Tensor<DataType, Symmetry<2, 1, 1>,
+                 index_list<Index0, Index1, Index1>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index0>,
+                            change_index_up_lo<Index0>>>& metric) {
+  Tensor<DataType, Symmetry<2, 1, 1>,
+         index_list<change_index_up_lo<Index0>, Index1, Index1>>
+      result{};
+  raise_or_lower_first_index(make_not_null(&result), tensor, metric);
+  return result;
+}
+
+template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
+KOKKOS_FUNCTION
+    Tensor<DataTypeTensor, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
+    raise_or_lower_index(
+        const Tensor<DataTypeTensor, Symmetry<1>, index_list<Index0>>& tensor,
+        const Tensor<DataTypeMetric, Symmetry<1, 1>,
+                     index_list<change_index_up_lo<Index0>,
+                                change_index_up_lo<Index0>>>& metric) {
+  Tensor<DataTypeTensor, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
+      result{};
+  raise_or_lower_index(make_not_null(&result), tensor, metric);
+  return result;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -77,6 +107,16 @@ KOKKOS_FUNCTION void raise_or_lower_index(
                                  index_list<change_index_up_lo<INDEX0(data)>, \
                                             INDEX1(data), INDEX1(data)>>*>    \
           result,                                                             \
+      const Tensor<DTYPE(data), Symmetry<2, 1, 1>,                            \
+                   index_list<INDEX0(data), INDEX1(data), INDEX1(data)>>&     \
+          tensor,                                                             \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                               \
+                   index_list<change_index_up_lo<INDEX0(data)>,               \
+                              change_index_up_lo<INDEX0(data)>>>& metric);    \
+  template Tensor<DTYPE(data), Symmetry<2, 1, 1>,                             \
+                  index_list<change_index_up_lo<INDEX0(data)>, INDEX1(data),  \
+                             INDEX1(data)>>                                   \
+  raise_or_lower_first_index(                                                 \
       const Tensor<DTYPE(data), Symmetry<2, 1, 1>,                            \
                    index_list<INDEX0(data), INDEX1(data), INDEX1(data)>>&     \
           tensor,                                                             \
@@ -105,16 +145,24 @@ using make_real_t = std::conditional_t<
     std::is_same_v<T, ComplexDataVector>, DataVector,
     std::conditional_t<std::is_same_v<T, std::complex<double>>, double, T>>;
 
-#define INSTANTIATE2(_, data)                                           \
-  template void raise_or_lower_index(                                   \
-      const gsl::not_null<                                              \
-          Tensor<DTYPE(data), Symmetry<1>,                              \
-                 index_list<change_index_up_lo<INDEX0(data)>>>*>        \
-          trace_of_tensor,                                              \
-      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>& \
-          tensor,                                                       \
-      const Tensor<make_real_t<DTYPE(data)>, Symmetry<1, 1>,            \
-                   index_list<change_index_up_lo<INDEX0(data)>,         \
+#define INSTANTIATE2(_, data)                                              \
+  template void raise_or_lower_index(                                      \
+      const gsl::not_null<                                                 \
+          Tensor<DTYPE(data), Symmetry<1>,                                 \
+                 index_list<change_index_up_lo<INDEX0(data)>>>*>           \
+          trace_of_tensor,                                                 \
+      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>&    \
+          tensor,                                                          \
+      const Tensor<make_real_t<DTYPE(data)>, Symmetry<1, 1>,               \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
+                              change_index_up_lo<INDEX0(data)>>>& metric); \
+  template Tensor<DTYPE(data), Symmetry<1>,                                \
+                  index_list<change_index_up_lo<INDEX0(data)>>>            \
+  raise_or_lower_index(                                                    \
+      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>&    \
+          tensor,                                                          \
+      const Tensor<make_real_t<DTYPE(data)>, Symmetry<1, 1>,               \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(
