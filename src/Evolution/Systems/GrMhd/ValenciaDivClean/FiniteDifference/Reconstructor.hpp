@@ -14,6 +14,7 @@ namespace grmhd::ValenciaDivClean::fd {
 class MonotonicityPreserving5Prim;
 class MonotonisedCentralPrim;
 class PositivityPreservingAdaptiveOrderPrim;
+class PpmPrim;
 class Wcns5zPrim;
 /// \endcond
 
@@ -36,7 +37,7 @@ class Reconstructor : public PUP::able {
 
   using creatable_classes =
       tmpl::list<MonotonicityPreserving5Prim, MonotonisedCentralPrim,
-                 PositivityPreservingAdaptiveOrderPrim, Wcns5zPrim>;
+                 PositivityPreservingAdaptiveOrderPrim, PpmPrim, Wcns5zPrim>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 

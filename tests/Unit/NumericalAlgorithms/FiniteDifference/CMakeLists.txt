@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_NonUniform1D.cpp
   Test_PartialDerivatives.cpp
   Test_PositivityPreservingAdaptiveOrder.cpp
+  Test_Ppm.cpp
   Test_SecondPartialDerivatives.cpp
   Test_Unlimited.cpp
   Test_Wcns5z.cpp
