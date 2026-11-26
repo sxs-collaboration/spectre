@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -413,9 +414,15 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
         // Time and center
         test_file << time + static_cast<double>(i) << " " << 0.0 << " " << 0.0
                   << " " << 0.0;
-        // Skip writing time, center, and Lmax
-        for (size_t j = 5; j < data.size(); j++) {
-          test_file << " " << data[j];
+        // Skip time, center, and Lmax, and convert the Spherepack
+        // coefficients to SpEC's surface dat file convention.
+        size_t j = 5;
+        for (size_t l = 0; l <= file_l_max; l++) {
+          for (int m = -static_cast<int>(l); m <= static_cast<int>(l); m++) {
+            test_file << " "
+                      << (m % 2 == 0 ? 1.0 : -1.0) * sqrt(0.5 * M_PI) *
+                             data[j++];
+          }
         }
         test_file << "\n";
       }
@@ -468,14 +475,30 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
                 l < 2
                     ? 0.0
                     : -1.0 * strahlkorper.coefficients()[file_iter.set(l, m)()];
-            CHECK(gsl::at(shape_funcs, i)[iter.set(l, m)()] == expected_value);
+            CHECK(gsl::at(shape_funcs, i)[iter.set(l, m)()] ==
+                  approx(expected_value));
           }
         }
       }
-      CHECK(size_funcs ==
-            std::array{DataVector{-1.0 * strahlkorper.coefficients()[0] *
-                                  sqrt(0.5 * M_PI)},
-                       DataVector{0.0}, DataVector{0.0}});
+      CHECK_ITERABLE_APPROX(
+          size_funcs, (std::array{DataVector{(inner_radius -
+                                              strahlkorper.average_radius()) *
+                                             2.0 * sqrt(M_PI)},
+                                  DataVector{0.0}, DataVector{0.0}}));
+
+      // An explicit zero size preserves the grid sphere's mean radius while
+      // retaining the angular shape read from SpEC.
+      auto explicit_size_options = shape_map_options.value();
+      std::get<ShapeMapOptions<false, domain::ObjectLabel::None>>(
+          explicit_size_options)
+          .initial_size_values = std::array{0.0, 0.0, 0.0};
+      const auto explicit_size_shape_and_size = get_shape_and_size(
+          explicit_size_options, 0.2, 1.1, 1.2, inner_radius);
+      CHECK_ITERABLE_APPROX(
+          explicit_size_shape_and_size.at("Shape")->func_and_2_derivs(0.2),
+          shape_funcs);
+      CHECK(explicit_size_shape_and_size.at("Size")->func_and_2_derivs(0.2) ==
+            std::array{DataVector{0.0}, DataVector{0.0}, DataVector{0.0}});
     }
 
     {
