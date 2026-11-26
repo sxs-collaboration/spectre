@@ -15,7 +15,7 @@ OutputFileChecks:
     ExpectedData:
       # ObservationValue | NumberOfPoints | EnergyFlux | SurfaceArea
       - [0, 528, 0., 2.]
-      - [1, 528, 6.8211e-5, 2.]
+      - [1, 528, 7.0190e-5, 2.]
     AbsoluteTolerance: 1.e-9
     RelativeTolerance: 0.
 
@@ -33,6 +33,7 @@ Background: &background
       - &t_to_u_transition 15
       - *t_to_u_transition
     PenetratingHorizon: True
+    Version: 3
 
 GrSelfForce:
   NullSlicingBlocks:
@@ -147,7 +148,7 @@ Amr:
   Criteria:
     - IncreaseResolution
     - RefineAtPuncture
-    - RefineAtBoundaryY
+    # - RefineAtBoundaryY
   EnableInBlocks: All
   Policies:
     Isotropy: Anisotropic

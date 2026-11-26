@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   CircularOrbit.cpp
   CircularOrbitCoeffs.cpp
+  CircularOrbitCoeffsVrz.cpp
   CircularOrbitConvertEffsource.cpp
   )
 
@@ -19,6 +20,7 @@ spectre_target_headers(
   HEADERS
   CircularOrbit.hpp
   CircularOrbitCoeffs.hpp
+  CircularOrbitCoeffsVrz.hpp
   CircularOrbitConvertEffsource.hpp
   )
 
