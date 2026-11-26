@@ -35,6 +35,8 @@ struct GrmhdEquationOfState;
 template <typename DataType>
 struct InversePlasmaBeta;
 template <typename DataType>
+struct KretschmannScalar;
+template <typename DataType>
 struct LorentzFactor;
 template <typename DataType>
 struct LorentzFactorSquared;
@@ -51,9 +53,15 @@ struct MagneticPressure;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MassFlux;
 template <typename DataType>
+struct PontryaginScalar;
+template <typename DataType>
 struct Pressure;
 template <typename DataType>
 struct RestMassDensity;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct GrRicci;
+template <typename DataType>
+struct GrRicciScalar;
 template <typename DataType>
 struct SoundSpeedSquared;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
@@ -68,10 +76,16 @@ template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
 struct SpecificInternalEnergy;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct StressEnergy;
 template <typename DataType>
 struct Temperature;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct TransportVelocity;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct WeylElectric;
+template <typename DataType>
+struct WeylElectricScalar;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct LowerSpatialFourVelocity;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
