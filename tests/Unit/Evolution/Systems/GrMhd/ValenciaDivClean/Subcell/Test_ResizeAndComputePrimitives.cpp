@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
@@ -50,7 +51,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
   CAPTURE(start_on_dg);
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using cons_tag = typename grmhd::ValenciaDivClean::System::variables_tag;
   using prim_tag =

@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/Burgers/Subcell/TciOnDgGrid.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -23,7 +24,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TciOnDgGrid",
        {TestThis::AllGood, TestThis::PerssonU, TestThis::RdmpU}) {
     const Mesh<1> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-    const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+    const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(
+        dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
     const size_t number_of_points{dg_mesh.number_of_grid_points()};
 
     Scalar<DataVector> u{number_of_points, 1.0};

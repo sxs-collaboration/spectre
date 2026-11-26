@@ -19,6 +19,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/TciOnFdGrid.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
@@ -47,7 +48,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using TildeE = ForceFree::Tags::TildeE;
   using TildeB = ForceFree::Tags::TildeB;

@@ -9,6 +9,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/Burgers/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -22,7 +23,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.SetInitialRdmpData",
 
   const Mesh<1> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const size_t number_of_dg_grid_points{dg_mesh.number_of_grid_points()};
 
   Vars dg_vars{number_of_dg_grid_points, 1.0};

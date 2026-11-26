@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/TestingFramework.hpp"
 
@@ -126,7 +127,8 @@ void test(const BoundaryConditionType& boundary_condition,
   // Mesh and coordinates
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   // use MC reconstruction for test
   using ReconstructorForTest =

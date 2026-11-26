@@ -45,6 +45,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -269,7 +270,8 @@ void test_impl(
   }
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;
   const std::unique_ptr<TimeStepper> time_stepper =

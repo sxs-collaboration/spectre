@@ -49,6 +49,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
@@ -192,7 +193,8 @@ void test_cartoon_fd_time_derivative() {
   // lambda to compute du/dt of conserved variables and put in a HydroResults
   // struct for comparison between full 3D and cartoon timestep
   const auto fd_compute = [&soln, time, &fot](const Mesh<3>& dg_mesh) {
-    const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+    const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+        dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
     const size_t comp_dim =
         subcell_mesh.basis(1) == Spectral::Basis::Cartoon
             ? 1

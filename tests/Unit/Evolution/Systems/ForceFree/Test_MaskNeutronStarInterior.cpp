@@ -18,6 +18,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ForceFree/MaskNeutronStarInterior.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -54,7 +55,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.MaskNsInterior",
 
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const auto logical_to_grid_map = ElementMap<3, Frame::Grid>{
       ElementId<3>{0},

@@ -11,6 +11,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/Burgers/Subcell/GhostData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -28,7 +29,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.GhostData",
   const size_t num_of_pts_dg_grid = 4;
   const Mesh<1> dg_mesh{num_of_pts_dg_grid, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const auto random_vars_dg =
       make_with_random_values<Variables<tmpl::list<Burgers::Tags::U>>>(

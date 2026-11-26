@@ -13,6 +13,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/GhostData.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
@@ -33,7 +34,8 @@ void test_ghost_data_on_subcells(
     const gsl::not_null<std::uniform_real_distribution<>*> dist) {
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using evolved_vars_tags = System::variables_tag::tags_list;
   const auto evolved_vars =

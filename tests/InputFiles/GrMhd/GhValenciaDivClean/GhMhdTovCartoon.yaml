@@ -167,6 +167,7 @@ SpatialDiscretization:
           VolumeFilterEveryNSteps: None
           BoundaryCorrectionFilterEveryNSteps: None
     OnlyDgBlocksAndGroups: [Shell0]
+    NumberOfSubcellPoints: Auto
     Subcell:
       FdInterpolationOrder: 3
       TroubledCellIndicator:

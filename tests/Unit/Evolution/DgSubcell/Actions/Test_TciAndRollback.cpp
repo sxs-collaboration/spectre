@@ -47,6 +47,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -147,7 +148,8 @@ struct Metavariables {
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
       tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>,
-                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>,
+                 evolution::dg::Tags::NumberOfSubcellPointsCoefficients>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;
@@ -198,7 +200,10 @@ struct Metavariables {
           subcell_mesh.number_of_grid_points()};
       evolution::dg::subcell::fd::project(
           make_not_null(&projected_vars), dg_vars, dg_mesh,
-          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+          evolution::dg::subcell::fd::mesh(
+              dg_mesh,
+              evolution::dg::auto_number_of_subcell_points_coefficients)
+              .extents());
       // Set RDMP TCI data
       using std::max;
       using std::min;
@@ -375,14 +380,17 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           TestCreator<Dim>{});
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{subcell_options, only_dg_block_ids}};
+  MockRuntimeSystem runner{
+      {subcell_options, only_dg_block_ids,
+       evolution::dg::auto_number_of_subcell_points_coefficients}};
 
   const TimeStepId time_step_id{false, self_starting ? -1 : 1,
                                 Slab{1.0, 2.0}.end()};
   const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const Element<Dim> element = create_element<Dim>(with_neighbors);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Dg;
@@ -599,7 +607,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           make_not_null(&expected_ghost_data),
           expected_ghost_data.at(directional_element_id)
               .neighbor_ghost_data_for_reconstruction(),
-          0, directional_element_id, neighbor_mesh, element, subcell_mesh, 2,
+          0, directional_element_id, neighbor_mesh, element, subcell_mesh,
+          evolution::dg::auto_number_of_subcell_points_coefficients, 2,
           Interps{},
           typename metavars::SubcellOptions::GhostVariables::
               ghost_variables_tag_list{});
@@ -624,7 +633,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       // TCI was invoked and updated RDMP data
       const auto subcell_vars = evolution::dg::subcell::fd::project(
           evolved_vars, dg_mesh,
-          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+          evolution::dg::subcell::fd::mesh(
+              dg_mesh,
+              evolution::dg::auto_number_of_subcell_points_coefficients)
+              .extents());
       const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
           {std::max(max(get(get<Var1>(evolved_vars))),
                     max(get(get<Var1>(subcell_vars))))},
@@ -752,7 +764,8 @@ void test_nonhypercube_mesh() {
       1,
       1};
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {subcell_options, std::vector<size_t>{}}};
+      {subcell_options, std::vector<size_t>{},
+       evolution::dg::auto_number_of_subcell_points_coefficients}};
 
   const Mesh<Dim> dg_mesh{4, Spectral::Basis::SphericalHarmonic,
                           Spectral::Quadrature::Gauss};
@@ -776,7 +789,8 @@ void test_nonhypercube_mesh() {
   const Variables<tmpl::list<PrimVar1>> prim_vars{num_pts, 1000.0};
 
   const TimeStepId time_step_id{false, 1, Slab{1.0, 2.0}.end()};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto active_grid = evolution::dg::subcell::ActiveGrid::Dg;
   const bool did_rollback = false;
   const int tci_decision = -1;

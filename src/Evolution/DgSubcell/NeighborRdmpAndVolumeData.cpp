@@ -4,6 +4,7 @@
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <iterator>
@@ -180,7 +181,9 @@ void insert_or_update_neighbor_volume_data_impl(
     const size_t number_of_rdmp_vars_in_buffer,
     const DirectionalId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
+    const Mesh<Dim>& subcell_mesh,
+    [[maybe_unused]] const std::array<int, 3>& number_of_points_coefficients,
+    const size_t number_of_ghost_zones,
     const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants,
     const gsl::span<const size_t> parity_list, const size_t num_even,
@@ -223,10 +226,11 @@ void insert_or_update_neighbor_volume_data_impl(
                           number_of_rdmp_vars_in_buffer)),
         computed_ghost_data.begin());
   } else {
-    ASSERT(fd::mesh(neighbor_mesh) == subcell_mesh,
-           "Neighbor subcell mesh computed from the neighbor DG mesh ("
-               << fd::mesh(neighbor_mesh) << ") and my mesh (" << subcell_mesh
-               << ") must be the same.");
+    ASSERT(
+        fd::mesh(neighbor_mesh, number_of_points_coefficients) == subcell_mesh,
+        "Neighbor subcell mesh computed from the neighbor DG mesh ("
+            << fd::mesh(neighbor_mesh, number_of_points_coefficients)
+            << ") and my mesh (" << subcell_mesh << ") must be the same.");
     const Direction<Dim>& direction = directional_element_id.direction();
     const size_t total_number_of_ghost_zones =
         number_of_ghost_zones *
@@ -337,7 +341,9 @@ void insert_or_update_neighbor_volume_data_impl(
       const DirectionalId<GET_DIM(data)>& directional_element_id,             \
       const Mesh<GET_DIM(data)>& neighbor_mesh,                               \
       const Element<GET_DIM(data)>& element,                                  \
-      const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones,  \
+      const Mesh<GET_DIM(data)>& subcell_mesh,                                \
+      const std::array<int, 3>& number_of_points_coefficients,                \
+      size_t number_of_ghost_zones,                                           \
       const DirectionalIdMap<GET_DIM(data),                                   \
                              std::optional<intrp::Irregular<GET_DIM(data)>>>& \
           neighbor_dg_to_fd_interpolants,                                     \

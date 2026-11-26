@@ -11,6 +11,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Parity.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -21,8 +22,9 @@ namespace evolution::dg::subcell {
 namespace {
 template <size_t Dim>
 void impl(py::module& m) {  // NOLINT
-  m.def("mesh", py::overload_cast<const Mesh<Dim>&>(&fd::mesh<Dim>),
-        py::arg("mesh"));
+  m.def("mesh", &fd::mesh<Dim>, py::arg("mesh"),
+        py::arg("number_of_points_coefficients") =
+            evolution::dg::auto_number_of_subcell_points_coefficients);
   m.def(
       "project",
       +[](const DataVector& dg_u, const Mesh<Dim>& dg_mesh,

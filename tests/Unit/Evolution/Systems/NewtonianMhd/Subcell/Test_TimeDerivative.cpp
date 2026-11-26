@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/NewtonianMhd/Sources/LaneEmdenGravitationalField.hpp"
 #include "Framework/TestingFramework.hpp"
 
@@ -184,7 +185,8 @@ std::array<double, 3> test(const size_t num_dg_pts) {
   const double time = 0.0;
   const Mesh<dim> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto cell_centered_coords =
       (*grid_to_inertial_map)(element_map(logical_coordinates(subcell_mesh)));
 

@@ -60,6 +60,7 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -137,7 +138,8 @@ struct component {
           tmpl::list<>>,
       evolution::dg::subcell::Tags::ExtensionDirections<Dim>,
       evolution::dg::subcell::Tags::SubcellOptions<Dim>,
-      evolution::dg::Tags::OnlyDgBlockIds<Dim>>>;
+      evolution::dg::Tags::OnlyDgBlockIds<Dim>,
+      evolution::dg::Tags::NumberOfSubcellPointsCoefficients>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -236,7 +238,8 @@ void test(const bool use_cell_centered_flux) {
   const TimeStepId next_time_step_id{true, 1, Time{Slab{1.0, 2.0}, {1, 10}}};
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Subcell;
 
@@ -386,7 +389,8 @@ void test(const bool use_cell_centered_flux) {
            Interps{},
            ExtensionDirs{},
            SubcellOptions{},
-           std::vector<size_t>{}});
+           std::vector<size_t>{},
+           evolution::dg::auto_number_of_subcell_points_coefficients});
       ++neighbor_tci_decision;
     }
   }
@@ -411,7 +415,8 @@ void test(const bool use_cell_centered_flux) {
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
        neighbor_dg_to_fd_interpolants, extension_directions, subcell_options,
-       std::vector<size_t>{}});
+       std::vector<size_t>{},
+       evolution::dg::auto_number_of_subcell_points_coefficients});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
@@ -952,7 +957,8 @@ void test_receive_and_send_data(const bool enable_extension,
       ::fd::DerivativeOrder::Two, 1, 1, 1);
   const ::Mesh<3> dg_mesh{6, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const ::Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const ::Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   const TimeStepId time_step_id{true, 1, Time{Slab{1.0, 2.0}, {0, 10}}};
   const TimeStepId next_time_step_id{true, 1, Time{Slab{1.0, 2.0}, {1, 10}}};
@@ -1034,7 +1040,8 @@ void test_receive_and_send_data(const bool enable_extension,
          cell_centered_flux, fd_to_neighbor_fd_interpolants,
          neighbor_dg_to_fd_interpolants, dg_to_neighbor_fd_interpolants,
          ElementMap<3, Frame::Grid>{element_id, blocks[element_id.block_id()]},
-         extension_directions, subcell_options, std::vector<size_t>{}});
+         extension_directions, subcell_options, std::vector<size_t>{},
+         evolution::dg::auto_number_of_subcell_points_coefficients});
   }
 
   // SetInterpolator

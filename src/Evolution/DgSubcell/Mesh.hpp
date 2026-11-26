@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <string>
 
@@ -32,8 +33,10 @@ bool dg_mesh_supports_subcell(const Mesh<Dim>& dg_mesh);
 
 /*!
  * \brief Computes the cell-centered finite-difference mesh from the DG mesh,
- * using \f$2N-1\f$ grid points per dimension, where \f$N\f$ is the degree of
- * the DG basis.
+ * using `evolution::dg::number_of_subcell_points()` grid points per
+ * dimension.
+ *
+ * Cartoon dimensions only have a single grid point.
  *
  * If the DG mesh uses a basis that is not compatible with subcell (i.e.,
  * `dg_mesh_supports_subcell()` returns `false`), the returned mesh is
@@ -41,14 +44,8 @@ bool dg_mesh_supports_subcell(const Mesh<Dim>& dg_mesh);
  * The uninitialized mesh should never be used for actual subcell computations.
  */
 template <size_t Dim>
-Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh);
-
-/*!
- * \brief Computes the DG mesh from the cell-centered finite-difference mesh.
- */
-template <size_t Dim>
-Mesh<Dim> dg_mesh(const Mesh<Dim>& subcell_mesh, Spectral::Basis basis,
-                  Spectral::Quadrature quadrature);
+Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh,
+               const std::array<int, 3>& number_of_points_coefficients);
 
 /*!
  * \brief Computes the computational dimension from the subcell mesh, which

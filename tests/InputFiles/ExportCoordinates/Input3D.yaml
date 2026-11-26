@@ -50,6 +50,7 @@ SpatialDiscretization:
   ActiveGrid: Dg
   DiscontinuousGalerkin:
     Quadrature: GaussLobatto
+    NumberOfSubcellPoints: Auto
 
 Evolution:
   InitialTime: 0.0

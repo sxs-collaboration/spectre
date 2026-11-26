@@ -48,6 +48,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/NewtonianMhd/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianMhd/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/NewtonianMhd/ConservativeFromPrimitive.hpp"
@@ -163,7 +164,8 @@ double test(const size_t num_dg_pts) {
   const double time = 0.0;
   const Mesh<Dim> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto dg_coords = coordinate_map(logical_coordinates(dg_mesh));
 
   // Neighbor data for reconstruction.

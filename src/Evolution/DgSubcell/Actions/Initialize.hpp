@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <optional>
 #include <tuple>
@@ -41,6 +42,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
@@ -51,6 +53,7 @@
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -72,6 +75,8 @@ namespace evolution::dg::subcell::Actions {
  * GlobalCache:
  * - Uses:
  *   - `subcell::Tags::SubcellOptions`
+ *   - `evolution::dg::Tags::OnlyDgBlockIds`
+ *   - `evolution::dg::Tags::NumberOfSubcellPointsCoefficients`
  *
  * DataBox:
  * - Uses:
@@ -105,7 +110,8 @@ template <size_t Dim, typename System, bool UseNumericInitialData>
 struct SetSubcellGrid {
   using const_global_cache_tags =
       tmpl::list<Tags::SubcellOptions<Dim>,
-                 evolution::dg::Tags::OnlyDgBlockIds<Dim>>;
+                 evolution::dg::Tags::OnlyDgBlockIds<Dim>,
+                 evolution::dg::Tags::NumberOfSubcellPointsCoefficients>;
 
   using simple_tags = tmpl::list<
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
@@ -166,6 +172,28 @@ struct SetSubcellGrid {
               << subcell_options.persson_num_highest_modes()
               << ") must be smaller than the extent of the DG mesh ("
               << dg_mesh.extents(d) << ").");
+      }
+    }
+
+    // The subcell mesh is currently fixed after initialization. Operations
+    // using ghost zone as well as the reconstruction matrices require at
+    // least 3 points, which a strange NumberOfSubcellPoints could violate
+    if constexpr (requires {
+                    Metavariables::SubcellOptions::ghost_zone_size(box);
+                  }) {
+      if (fd::dg_mesh_supports_subcell(dg_mesh)) {
+        const size_t min_subcell_extent =
+            std::max(3_st, Metavariables::SubcellOptions::ghost_zone_size(box));
+        for (size_t d = 0; d < Dim; ++d) {
+          if (subcell_mesh.basis(d) != Spectral::Basis::Cartoon and
+              subcell_mesh.extents(d) < min_subcell_extent) {
+            ERROR("The subcell mesh "
+                  << subcell_mesh << " of element " << element.id()
+                  << " (DG mesh " << dg_mesh << ") has fewer than "
+                  << min_subcell_extent << " grid points in dimension " << d
+                  << ". Change NumberOfSubcellPoints or the DG extents.");
+          }
+        }
       }
     }
 

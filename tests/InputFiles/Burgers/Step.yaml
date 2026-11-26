@@ -70,6 +70,7 @@ SpatialDiscretization:
       - None:
           BlocksToFilter: All
     OnlyDgBlocksAndGroups: [Block(0), Block(4)]
+    NumberOfSubcellPoints: Auto
     Subcell:
       TroubledCellIndicator:
         PerssonTci:

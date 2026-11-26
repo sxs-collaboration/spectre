@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -174,7 +175,8 @@ void test(const bool all_neighbors_are_doing_dg,
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const Element<Dim> element = create_element<Dim>();
 
   const auto neighbor_meshes = compute_neighbor_meshes(
@@ -400,7 +402,8 @@ void test_non_hypercube(const bool own_mesh_is_non_hypercube,
   const Mesh<Dim> dg_mesh =
       own_mesh_is_non_hypercube ? non_hypercube_mesh : hypercube_mesh;
   // Uninitialized whenever the DG mesh doesn't support subcell.
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const Element<Dim> element = create_element<Dim>();
 
   // Exactly one neighbor is on a non-hypercube block, the rest are ordinary

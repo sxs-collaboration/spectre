@@ -49,6 +49,7 @@ SpatialDiscretization:
       - None:
           BlocksToFilter: All
     OnlyDgBlocksAndGroups: None
+    NumberOfSubcellPoints: [0, 2, 0]  # 2N: tests a non-default mapping
     Subcell:
       TroubledCellIndicator:
         PerssonTci:

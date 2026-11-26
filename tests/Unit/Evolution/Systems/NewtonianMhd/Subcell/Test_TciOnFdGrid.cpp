@@ -14,6 +14,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/NewtonianMhd/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianMhd/Subcell/TciOnFdGrid.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -49,7 +50,8 @@ void test(const TestThis test_this) {
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using cons_tags = tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>;
   using ConsVars = Variables<cons_tags>;

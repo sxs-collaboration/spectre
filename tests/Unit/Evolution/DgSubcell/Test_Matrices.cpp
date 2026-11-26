@@ -205,32 +205,36 @@ void reconstruction_matrix(const double eps) {
     const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
     const size_t num_pts = dg_mesh.number_of_grid_points();
     const auto logical_coords = logical_coordinates(dg_mesh);
-    const size_t num_subcells_1d = 2 * num_pts_1d - 1;
-    const Mesh<Dim> subcell_mesh(num_subcells_1d,
-                                 Spectral::Basis::FiniteDifference,
-                                 Spectral::Quadrature::CellCentered);
-    // Our FD reconstruction scheme can integrate polynomials up to degree 6
-    // exactly. However, we want to verify that if we have more than 8 grid
-    // points on the DG grid that we still are able to recover the correct
-    // solution.
-    const DataVector expected_nodal_coeffs =
-        TestHelpers::evolution::dg::subcell::cell_values(
-            std::min(dg_mesh.extents(0) - 2, 6_st), logical_coords);
-    const DataVector subcell_values =
-        TestHelpers::evolution::dg::subcell::cell_values(
-            std::min(dg_mesh.extents(0) - 2, 6_st),
-            logical_coordinates(subcell_mesh));
+    for (const size_t num_subcells_1d :
+         {2 * num_pts_1d - 1, 2 * num_pts_1d + 2}) {
+      CAPTURE(num_subcells_1d);
+      const Mesh<Dim> subcell_mesh(num_subcells_1d,
+                                   Spectral::Basis::FiniteDifference,
+                                   Spectral::Quadrature::CellCentered);
+      // Our FD reconstruction scheme can integrate polynomials up to degree 6
+      // exactly. However, we want to verify that if we have more than 8 grid
+      // points on the DG grid that we still are able to recover the correct
+      // solution.
+      const DataVector expected_nodal_coeffs =
+          TestHelpers::evolution::dg::subcell::cell_values(
+              std::min(dg_mesh.extents(0) - 2, 6_st), logical_coords);
+      const DataVector subcell_values =
+          TestHelpers::evolution::dg::subcell::cell_values(
+              std::min(dg_mesh.extents(0) - 2, 6_st),
+              logical_coordinates(subcell_mesh));
 
-    const Matrix& single_recons =
-        subcell::fd::reconstruction_matrix(dg_mesh, subcell_mesh.extents());
+      const Matrix& single_recons =
+          subcell::fd::reconstruction_matrix(dg_mesh, subcell_mesh.extents());
 
-    DataVector reconstructed_nodal_coeffs(num_pts);
-    dgemv_('N', single_recons.rows(), single_recons.columns(), 1.0,
-           single_recons.data(), single_recons.spacing(), subcell_values.data(),
-           1, 0.0, reconstructed_nodal_coeffs.data(), 1);
+      DataVector reconstructed_nodal_coeffs(num_pts);
+      dgemv_('N', single_recons.rows(), single_recons.columns(), 1.0,
+             single_recons.data(), single_recons.spacing(),
+             subcell_values.data(), 1, 0.0, reconstructed_nodal_coeffs.data(),
+             1);
 
-    CHECK_ITERABLE_CUSTOM_APPROX(expected_nodal_coeffs,
-                                 reconstructed_nodal_coeffs, local_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(expected_nodal_coeffs,
+                                   reconstructed_nodal_coeffs, local_approx);
+    }
   }
 }
 

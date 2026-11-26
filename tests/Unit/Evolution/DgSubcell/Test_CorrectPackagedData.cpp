@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -52,8 +53,9 @@ void test() {
       tmpl::conditional_t<SkipFirstVar, Variables<tmpl::list<Var2<Dim>>>, Vars>;
   const Mesh<Dim> volume_dg_mesh{5, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> volume_subcell_mesh =
-      evolution::dg::subcell::fd::mesh(volume_dg_mesh);
+  const Mesh<Dim> volume_subcell_mesh = evolution::dg::subcell::fd::mesh(
+      volume_dg_mesh,
+      evolution::dg::auto_number_of_subcell_points_coefficients);
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   for (size_t i = 0; i < 2 * Dim; ++i) {
     neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{

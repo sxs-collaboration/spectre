@@ -23,6 +23,7 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace {
@@ -53,7 +54,8 @@ void test() {
   // Assemble an Element and its ElementMap
   const Mesh<Dim> dg_mesh{3, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using neighbor_tags = tmpl::list<
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>,

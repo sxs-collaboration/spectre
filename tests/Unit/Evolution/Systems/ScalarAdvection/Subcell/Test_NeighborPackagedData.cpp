@@ -45,6 +45,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
@@ -107,7 +108,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
   // generate random U on the dg mesh and project it to subcell mesh
   const Mesh<Dim> dg_mesh{num_dg_pts_per_dimension, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   Variables<evolved_vars_tags> volume_vars_dg{dg_mesh.number_of_grid_points()};
   std::uniform_real_distribution<> dist(-1.0, 1.0);

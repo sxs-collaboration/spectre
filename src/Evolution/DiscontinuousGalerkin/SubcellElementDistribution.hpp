@@ -16,6 +16,7 @@
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/OptionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
@@ -38,10 +39,11 @@ namespace evolution::dg {
  *
  * These conditions must match `evolution::dg::subcell::starts_on_subcell_grid`,
  * which cannot be called here because the `DgSubcell` library links this one.
- *  The entry is the number of finite-difference grid points \f$2N-1\f$
- * corresponding to the \f$N\f$ DG grid points in `initial_extents`, matching
- * the subcell mesh built by `evolution::dg::subcell::fd::mesh`. All other
- * elements always run on the DG grid and so are omitted from the returned map.
+ * The entry is the number of finite-difference grid points
+ * `evolution::dg::number_of_subcell_points()` corresponding to the \f$N\f$ DG
+ * grid points in `initial_extents`, which must match the subcell mesh built by
+ * `evolution::dg::subcell::fd::mesh`. All other elements always run on the DG
+ * grid and so are omitted from the returned map.
  */
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, std::array<size_t, Dim>>
@@ -50,6 +52,7 @@ compute_weighting_extents_override(
     const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const std::array<int, 3>& number_of_points_coefficients,
     bool subcell_enabled_at_external_boundary);
 
 namespace Tags {
@@ -108,7 +111,8 @@ using element_distribution_cache_tags = tmpl::append<
     tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::ElementDistribution>,
     tmpl::conditional_t<using_subcell_v<Metavariables>,
                         tmpl::list<Tags::UseSubcellGridPointsForDistribution,
-                                   Tags::OnlyDgBlockIds<Dim>>,
+                                   Tags::OnlyDgBlockIds<Dim>,
+                                   Tags::NumberOfSubcellPointsCoefficients>,
                         tmpl::list<>>>;
 
 /*!
@@ -132,6 +136,7 @@ weighting_extents_override_from_cache(
           Parallel::get<Tags::OnlyDgBlockIds<Dim>>(cache),
           Parallel::get<domain::Tags::Domain<Dim>>(cache).blocks(),
           initial_refinement_levels, initial_extents,
+          Parallel::get<Tags::NumberOfSubcellPointsCoefficients>(cache),
           Metavariables::SubcellOptions::subcell_enabled_at_external_boundary)};
     }
   }

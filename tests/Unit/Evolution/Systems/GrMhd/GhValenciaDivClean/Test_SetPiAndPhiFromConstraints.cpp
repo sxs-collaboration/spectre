@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
@@ -68,7 +69,8 @@ struct Component {
                                                   Frame::Inertial>,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::Coordinates<3, Frame::ElementLogical>,
-      evolution::dg::subcell::Tags::ActiveGrid>;
+      evolution::dg::subcell::Tags::ActiveGrid,
+      evolution::dg::Tags::NumberOfSubcellPointsCoefficients>;
   using compute_tags = db::AddComputeTags<
       evolution::dg::subcell::Tags::MeshCompute<3>,
       evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>;
@@ -151,7 +153,8 @@ SPECTRE_TEST_CASE(
          std::unordered_map<
              std::string,
              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
-         logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg});
+         logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg,
+         evolution::dg::auto_number_of_subcell_points_coefficients});
 
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -181,7 +184,8 @@ SPECTRE_TEST_CASE(
        std::unordered_map<
            std::string,
            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
-       logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg});
+       logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg,
+       evolution::dg::auto_number_of_subcell_points_coefficients});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
 

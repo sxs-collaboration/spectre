@@ -11,6 +11,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/GhostData.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -29,7 +30,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
   // make random U on DG and subcell mesh
   const Mesh<Dim> dg_mesh{num_of_pts_dg_grid, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const auto random_vars_dg =
       make_with_random_values<Variables<tmpl::list<ScalarAdvection::Tags::U>>>(
           gen, dist, dg_mesh.number_of_grid_points());

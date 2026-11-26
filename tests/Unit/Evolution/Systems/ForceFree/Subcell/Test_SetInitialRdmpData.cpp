@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
@@ -27,7 +28,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
                   "[Unit][Evolution]") {
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
 
   using EvolvedVars = typename System::variables_tag::type;
   EvolvedVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};

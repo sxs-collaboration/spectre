@@ -50,6 +50,7 @@
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/NumberOfSubcellPoints.hpp"
 #include "Evolution/DiscontinuousGalerkin/OnlyDgBlockIds.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
@@ -182,6 +183,12 @@ struct Metavariables {
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary =
         SubcellEnabledOnExternalBoundary;
+
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& /*box*/) {
+      return 4;
+    }
   };
 
   struct FdInitialDataTci {
@@ -283,13 +290,15 @@ void test(const bool always_use_subcell, const bool interior_element,
            allow_subcell_in_block
                ? std::optional<std::vector<std::string>>{}
                : std::optional{std::vector<std::string>{"Block0"}},
-           TestCreator<Dim>{})}};
+           TestCreator<Dim>{}),
+       evolution::dg::auto_number_of_subcell_points_coefficients}};
   metavars::FdInitialDataTci::invoked = false;
   metavars::SetInitialRdmpData::invoked = false;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+  const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(
+      dg_mesh, evolution::dg::auto_number_of_subcell_points_coefficients);
   const ElementId<Dim> self_id{0};
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   if (interior_element) {
@@ -667,8 +676,9 @@ void test_cartoon() {
       {Spectral::Quadrature::GaussLobatto,
        Spectral::Quadrature::SphericalSymmetry,
        Spectral::Quadrature::SphericalSymmetry}};
-  const Mesh<3> cartoon_subcell_mesh =
-      evolution::dg::subcell::fd::mesh(cartoon_dg_mesh);
+  const Mesh<3> cartoon_subcell_mesh = evolution::dg::subcell::fd::mesh(
+      cartoon_dg_mesh,
+      evolution::dg::auto_number_of_subcell_points_coefficients);
 
   // persson_num_highest_modes = 4 (passed as first arg to SubcellOptions).
   // For Cartoon dims (extent 1): 4 >= 1 but Cartoon -> should not ERROR.
@@ -681,7 +691,8 @@ void test_cartoon() {
            evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
            ::fd::DerivativeOrder::Two, 1, 1, 1},
        evolution::dg::compute_only_dg_block_ids(
-           std::optional<std::vector<std::string>>{}, TestCreator<3>{})}};
+           std::optional<std::vector<std::string>>{}, TestCreator<3>{}),
+       evolution::dg::auto_number_of_subcell_points_coefficients}};
 
   const ElementId<3> self_id3{0};
   const Element<3> isolated_element{
@@ -719,6 +730,51 @@ void test_cartoon() {
             runner3, self_id3) == cartoon_subcell_mesh);
 }
 
+void test_too_few_subcell_points() {
+  // 2 DG points give 3 subcell points by default, fewer than the ghost zone
+  // size (4) of the metavariables.
+  using metavars1 = Metavariables<1, false, true>;
+  using comp1 = Component<1, metavars1>;
+  ActionTesting::MockRuntimeSystem<metavars1> runner1{
+      {std::unique_ptr<evolution::initial_data::InitialData>(
+           std::make_unique<SystemAnalyticSolution>()),
+       evolution::dg::subcell::SubcellOptions{
+           4.1, 1_st, 1.0e-3, 1.0e-4, false, false,
+           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+           ::fd::DerivativeOrder::Two, 1, 1, 1},
+       evolution::dg::compute_only_dg_block_ids(
+           std::optional<std::vector<std::string>>{}, TestCreator<1>{}),
+       evolution::dg::auto_number_of_subcell_points_coefficients}};
+
+  const Mesh<1> dg_mesh{2, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const ElementId<1> self_id1{0};
+  const Element<1> isolated_element{
+      self_id1, {}, domain::topologies::hypercube<1>};
+  const std::unordered_map<
+      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time1{};
+  ActionTesting::emplace_array_component_and_initialize<comp1>(
+      &runner1, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
+      self_id1,
+      {1.3, dg_mesh, isolated_element, clone_unique_ptrs(functions_of_time1),
+       logical_coordinates(dg_mesh),
+       ElementMap<1, Frame::Grid>{
+           self_id1,
+           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+               domain::CoordinateMaps::Identity<1>{})},
+       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+           domain::CoordinateMaps::Identity<1>{}),
+       Variables<tmpl::list<Var1>>{3},
+       Variables<tmpl::list<::Tags::dt<Var1>>>{3},
+       typename ::Tags::HistoryEvolvedVariables<
+           Tags::Variables<tmpl::list<Var1>>>::type{}});
+  CHECK_THROWS_WITH(
+      ActionTesting::next_action<comp1>(make_not_null(&runner1), self_id1),
+      Catch::Matchers::ContainsSubstring(
+          "has fewer than 4 grid points in dimension 0"));
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                   "[Evolution][Unit]") {
   register_classes_with_charm<
@@ -751,5 +807,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
     }
   }
   test_cartoon();
+  test_too_few_subcell_points();
 }
 }  // namespace
