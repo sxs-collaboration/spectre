@@ -47,6 +47,7 @@ struct MagnetizedTovVariables
   const std::vector<std::unique_ptr<
       grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>&
       magnetic_fields;
+  const double perturbation;
 
   MagnetizedTovVariables(
       const tnsr::I<DataType, 3>& local_x, const DataType& local_radius,
@@ -54,14 +55,20 @@ struct MagnetizedTovVariables
       const EquationsOfState::EquationOfState<true, 1>& local_eos,
       const std::vector<std::unique_ptr<
           grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>&
-          mag_fields)
+          mag_fields,
+      const double perturb)
       : Base(local_x, local_radius, local_radial_solution, local_eos),
-        magnetic_fields(mag_fields) {}
+        magnetic_fields(mag_fields),
+        perturbation(perturb) {}
 
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
       gsl::not_null<Cache*> cache,
       hydro::Tags::MagneticField<DataType, 3> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+      gsl::not_null<Cache*> cache,
+      hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const override;
 };
 
 }  // namespace magnetized_tov_detail
@@ -128,7 +135,15 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
         "Magnetic fields to superpose on the TOV solution."};
   };
 
-  using options = tmpl::push_back<tov_star::options, MagneticFields>;
+  struct Perturbation {
+    using type = double;
+    static constexpr Options::String help = {
+        "Size of radially symmetric spatial velocity perturbation for driving "
+        "oscillations."};
+  };
+
+  using options =
+      tmpl::push_back<tov_star::options, MagneticFields, Perturbation>;
 
   static constexpr Options::String help = {"Magnetized TOV star."};
 
@@ -151,7 +166,8 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
       RelativisticEuler::Solutions::TovCoordinates coordinate_system,
       std::vector<std::unique_ptr<
           grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>
-          magnetic_fields);
+          magnetic_fields,
+      double perturbation);
 
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
@@ -170,7 +186,7 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          tmpl::list<Tags...> /*meta*/) const {
     return variables_impl<magnetized_tov_detail::MagnetizedTovVariables>(
-        x, tmpl::list<Tags...>{}, magnetic_fields_);
+        x, tmpl::list<Tags...>{}, magnetic_fields_, perturbation_);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -184,6 +200,7 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   std::vector<std::unique_ptr<
       grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>
       magnetic_fields_{};
+  double perturbation_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 bool operator!=(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs);

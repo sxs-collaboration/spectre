@@ -38,16 +38,19 @@ MagnetizedTovStar::MagnetizedTovStar(
     const RelativisticEuler::Solutions::TovCoordinates coordinate_system,
     std::vector<std::unique_ptr<
         grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>
-        magnetic_fields)
+        magnetic_fields,
+    const double perturbation)
     : tov_star(central_rest_mass_density, std::move(equation_of_state),
                coordinate_system),
-      magnetic_fields_(std::move(magnetic_fields)) {}
+      magnetic_fields_(std::move(magnetic_fields)),
+      perturbation_(perturbation) {}
 
 MagnetizedTovStar::MagnetizedTovStar(const MagnetizedTovStar& rhs)
     : evolution::initial_data::InitialData{rhs},
       RelativisticEuler::Solutions::TovStar(
           static_cast<const RelativisticEuler::Solutions::TovStar&>(rhs)),
-      magnetic_fields_(clone_unique_ptrs(rhs.magnetic_fields_)) {}
+      magnetic_fields_(clone_unique_ptrs(rhs.magnetic_fields_)),
+      perturbation_(rhs.perturbation_) {}
 
 MagnetizedTovStar& MagnetizedTovStar::operator=(const MagnetizedTovStar& rhs) {
   if (this == &rhs) {
@@ -56,6 +59,7 @@ MagnetizedTovStar& MagnetizedTovStar::operator=(const MagnetizedTovStar& rhs) {
   static_cast<RelativisticEuler::Solutions::TovStar&>(*this) =
       static_cast<const RelativisticEuler::Solutions::TovStar&>(rhs);
   magnetic_fields_ = clone_unique_ptrs(rhs.magnetic_fields_);
+  perturbation_ = rhs.perturbation_;
   return *this;
 }
 
@@ -69,6 +73,7 @@ MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
 void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
   p | magnetic_fields_;
+  p | perturbation_;
 }
 
 namespace magnetized_tov_detail {
@@ -92,6 +97,31 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
   for (const auto& magnetic_field_compute : magnetic_fields) {
     magnetic_field_compute->variables(magnetic_field, coords, pressure,
                                       sqrt_det_spatial_metric, deriv_pressure);
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void MagnetizedTovVariables<DataType, Region>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const {
+  if constexpr (Region == StarRegion::Center or
+                Region == StarRegion::Exterior) {
+    get<0>(*spatial_velocity) = 0.;
+    get<1>(*spatial_velocity) = 0.;
+    get<2>(*spatial_velocity) = 0.;
+  } else {
+    const auto& areal_radius =
+        radial_solution.coordinate_system() ==
+                RelativisticEuler::Solutions::TovCoordinates::Isotropic
+            ? get(cache->get_var(
+                  *this,
+                  RelativisticEuler::Solutions::tov_detail::Tags::ArealRadius<
+                      DataType>{}))
+            : radius;
+    get<0>(*spatial_velocity) = perturbation * coords.get(0) / areal_radius;
+    get<1>(*spatial_velocity) = perturbation * coords.get(1) / areal_radius;
+    get<2>(*spatial_velocity) = perturbation * coords.get(2) / areal_radius;
   }
 }
 }  // namespace magnetized_tov_detail
