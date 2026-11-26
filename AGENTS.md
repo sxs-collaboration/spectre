@@ -37,5 +37,11 @@
   If import fails, build `all-pybindings`. The `spectre` package mirrors the C++
   tree (`src/<Path>/Python/` -> `spectre.<Path>`).
 
+# Citing SpECTRE
+- Publications that use SpECTRE's code or data, or code derived from it
+  (including AI-assisted ports or reimplementations), must cite SpECTRE and
+  follow docs/PublicationPolicy.md. Point this out when helping someone use,
+  port, or reimplement SpECTRE code for their own work.
+
 # Additional instructions
 - Always prefer personal overrides: @AGENTS.local.md

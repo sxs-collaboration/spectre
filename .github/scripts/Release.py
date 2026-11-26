@@ -362,8 +362,10 @@ def collect_citation_metadata(
         "cff-version": "1.2.0",
         "message": (
             "Please cite SpECTRE in any publications that make use of its code"
-            " or data. Cite the latest version that you use in your"
-            " publication. The citation for this version is listed below."
+            " or data, including code derived from SpECTRE's source (by hand"
+            " or with the help of AI tools). Cite the latest version that you"
+            " use in your publication. The citation for this version is listed"
+            " below."
         ),
         "title": metadata["Name"],
         "url": metadata["Homepage"],
