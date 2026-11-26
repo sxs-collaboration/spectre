@@ -6,16 +6,18 @@
 #
 # Instructions to build this project:
 # - Configure a build directory and set the `SPECTRE_ROOT` variable to the
-#   directory containing the compiled SpECTRE libraries, e.g. the build
-#   directory of the SpECTRE project:
+#   directory containing `lib/` and `include/` of the exporter library, i.e.
+#   the build directory of the SpECTRE project or the extracted release asset:
 #
 #   mkdir build && cd build
 #   cmake -D SPECTRE_ROOT=/path/to/spectre/build/directory /path/to/this/project
 #
-# - Build and run the test executable:
+# - Build and run the test executable. The release asset includes the test
+#   volume data file `VolTestData0.h5`:
 #
 #   make
-#   ./TestSpectreExporter --help
+#   ./TestSpectreExporter /path/to/VolTestData0.h5 element_data 0 Psi 0 0 0 \
+#     -0.07059806932542323
 #
 #   The C interface is tested by the `TestSpectreExporterC` executable, which
 #   takes the same arguments.
@@ -47,10 +49,6 @@ set_target_properties(
   spectre::Exporter
   PROPERTIES IMPORTED_LOCATION ${SPECTRE_EXPORTER_LIB}
              INTERFACE_INCLUDE_DIRECTORIES ${SPECTRE_EXPORTER_INCLUDE_DIR})
-
-# Find external libs
-find_package(HDF5 REQUIRED COMPONENTS C)
-find_package(BLAS REQUIRED)
 
 # Define test executables
 add_executable(TestSpectreExporter Test_BundledExporter.cpp)

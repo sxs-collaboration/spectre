@@ -58,12 +58,9 @@ endif()
 add_subdirectory(Python)
 
 # Create a library that can be linked into an external program. Notes:
-# - This is still experimental. The bundled library works (see
-#   Test_BundledExporter.cpp), but building the library on one system and then
-#   distributing it to another (i.e. making the library relocatable) will likely
-#   require some more work. Linking in external dependencies statically would
-#   probably help, so they don't have to be installed on the target system (e.g.
-#   HDF5, yaml-cpp, etc).
+# - Releases include a self-contained version of this library that can be
+#   distributed to other systems. It is built with static dependencies in the
+#   `deploy_static_execs_and_libs` stage of containers/Dockerfile.buildenv.
 # - A shared library seems to work better than a static library, since it
 #   includes symbols from linked static libs.
 # - The `TARGET_OBJECTS` generator expression links in the objects from the
