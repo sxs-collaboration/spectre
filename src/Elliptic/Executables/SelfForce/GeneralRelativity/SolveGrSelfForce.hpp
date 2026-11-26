@@ -33,6 +33,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Factory.hpp"
@@ -40,6 +41,7 @@
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -105,7 +107,7 @@ struct Metavariables {
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
-                Events::Completion,
+                Events::Completion, Events::ObserveSimpleProfiler,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                observer_compute_tags,
                                                amr::Tags::IsFinestGrid>,
@@ -183,10 +185,10 @@ struct Metavariables {
   };
 
   // Specify all parallel components that will execute actions at some point.
-  using component_list = tmpl::flatten<
-      tmpl::list<dg_element_array, typename solver::component_list,
-                 observers::Observer<Metavariables>,
-                 observers::ObserverWriter<Metavariables>>>;
+  using component_list = tmpl::flatten<tmpl::list<
+      profiling::SimpleProfilerDataComponent<Metavariables>, dg_element_array,
+      typename solver::component_list, observers::Observer<Metavariables>,
+      observers::ObserverWriter<Metavariables>>>;
 
   static constexpr std::array<Parallel::Phase, 6> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,

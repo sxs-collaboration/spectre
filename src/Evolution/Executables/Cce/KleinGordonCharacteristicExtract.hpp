@@ -18,7 +18,9 @@
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -104,7 +106,8 @@ struct EvolutionMetavars
                    tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>>>;
 
   using component_list =
-      tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
+      tmpl::list<profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
+                 observers::ObserverWriter<EvolutionMetavars>,
                  cce_boundary_component,
                  Cce::KleinGordonCharacteristicEvolution<EvolutionMetavars>>;
 
@@ -119,7 +122,8 @@ struct EvolutionMetavars
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<Event, tmpl::list<Cce::Events::ObserveFields,
-                                     Cce::Events::ObserveTimeStep>>,
+                                     Cce::Events::ObserveTimeStep,
+                                     Events::ObserveSimpleProfiler>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };

@@ -32,7 +32,9 @@
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -53,7 +55,8 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<Cce::System<false>> {
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
   using component_list =
-      tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
+      tmpl::list<profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
+                 observers::ObserverWriter<EvolutionMetavars>,
                  cce_boundary_component,
                  Cce::CharacteristicEvolution<EvolutionMetavars>>;
 
@@ -68,7 +71,8 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<Cce::System<false>> {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<Event, tmpl::list<Cce::Events::ObserveFields,
-                                     Cce::Events::ObserveTimeStep>>,
+                                     Cce::Events::ObserveTimeStep,
+                                     Events::ObserveSimpleProfiler>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;
   };

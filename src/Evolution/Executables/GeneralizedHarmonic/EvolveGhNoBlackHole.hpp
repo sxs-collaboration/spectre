@@ -16,6 +16,7 @@
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
@@ -134,12 +135,13 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
   };
 
   using component_list =
-      tmpl::flatten<tmpl::list<::amr::Component<EvolutionMetavars>,
-                               observers::Observer<EvolutionMetavars>,
-                               observers::ObserverWriter<EvolutionMetavars>,
-                               mem_monitor::MemoryMonitor<EvolutionMetavars>,
-                               importers::ElementDataReader<EvolutionMetavars>,
-                               gh_dg_element_array>>;
+      tmpl::list<profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
+                 ::amr::Component<EvolutionMetavars>,
+                 observers::Observer<EvolutionMetavars>,
+                 observers::ObserverWriter<EvolutionMetavars>,
+                 mem_monitor::MemoryMonitor<EvolutionMetavars>,
+                 importers::ElementDataReader<EvolutionMetavars>,
+                 gh_dg_element_array>;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "

@@ -145,6 +145,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
@@ -157,6 +158,7 @@
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
 #include "ParallelAlgorithms/Events/ObserveDataBox.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -625,6 +627,7 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion, ::Events::ObserveDataBox,
+                       Events::ObserveSimpleProfiler,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::ObserveAtExtremum<observe_fields,
@@ -983,6 +986,7 @@ struct GhValenciaDivCleanTemplateBase<
   };
 
   using component_list = tmpl::flatten<tmpl::list<
+      profiling::SimpleProfilerDataComponent<derived_metavars>,
       observers::Observer<derived_metavars>,
       observers::ObserverWriter<derived_metavars>,
       importers::ElementDataReader<derived_metavars>,

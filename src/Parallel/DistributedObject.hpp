@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <charm++.h>
 #include <converse.h>
 #include <cstddef>
@@ -39,6 +40,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/ParallelSimpleProfilerData.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -50,6 +52,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -58,6 +61,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/PupStlCpp11.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
+#include "Utilities/SimpleProfiler.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -290,6 +294,7 @@ class DistributedObject<ParallelComponent,
     // definition is out of line.
     (void)&Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
                                                      Args...>::registrar;
+    const auto profile = action_simple_profiler<Action>();
     forward_tuple_to_threaded_action<Action>(
         std::move(args), std::make_index_sequence<sizeof...(Args)>{});
   }
@@ -441,6 +446,51 @@ class DistributedObject<ParallelComponent,
 
   // After catching an exception, shutdown the simulation
   void initiate_shutdown(const std::exception& exception);
+
+  template <typename Action>
+  struct ActionProfileLabel {
+    using FileLabel = array_index;
+    using ColumnLabel = profiling::NoLabel;
+
+    template <size_t Dim>
+    static std::string make_file_name(const ElementId<Dim>& index) {
+      return pretty_type::name<Action>() + "/Block" +
+             std::to_string(index.block_id());
+    }
+
+    template <typename Index>
+    static std::string make_file_name(const Index& /*index*/) {
+      return pretty_type::name<Action>();
+    }
+  };
+
+  template <typename Action>
+  struct IterableActionProfileLabel : ActionProfileLabel<Action> {
+    using ColumnLabel = AlgorithmExecution;
+    constexpr static std::array allowed_column_labels{
+        AlgorithmExecution::Continue, AlgorithmExecution::Retry,
+        AlgorithmExecution::Pause, AlgorithmExecution::Halt};
+
+    static std::string make_column_name(const AlgorithmExecution& label) {
+      return get_output(label);
+    }
+  };
+
+  template <typename Action>
+  profiling::SimpleProfiler<ActionProfileLabel<Action>> action_simple_profiler()
+      const {
+    return {profiling::parallel_simple_profiler_data(
+                *Parallel::local_branch(global_cache_proxy_)),
+            array_index_};
+  }
+
+  template <typename Action>
+  profiling::SimpleProfiler<IterableActionProfileLabel<Action>>
+  iterable_action_simple_profiler() const {
+    return {profiling::parallel_simple_profiler_data(
+                *Parallel::local_branch(global_cache_proxy_)),
+            array_index_, AlgorithmExecution::Continue};
+  }
 
   // Member variables
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -745,6 +795,7 @@ void DistributedObject<
     (void)&Parallel::charmxx::RegisterReductionAction<
         ParallelComponent, Action, std::decay_t<Arg>>::registrar;
     {
+      const auto profile = action_simple_profiler<Action>();
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
         hold_lock.emplace(node_lock_);
@@ -777,6 +828,7 @@ void DistributedObject<ParallelComponent,
     (void)&Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                    Args...>::registrar;
     {
+      const auto profile = action_simple_profiler<Action>();
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
         hold_lock.emplace(node_lock_);
@@ -808,6 +860,7 @@ void DistributedObject<
     (void)&Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                    Action>::registrar;
     {
+      const auto profile = action_simple_profiler<Action>();
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
         hold_lock.emplace(node_lock_);
@@ -852,6 +905,7 @@ void DistributedObject<
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)&Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                      Action>::registrar;
+    const auto profile = action_simple_profiler<Action>();
     if constexpr (Parallel::is_dg_element_collection_v<parallel_component>) {
       Action::template apply<ParallelComponent>(
           box_, *Parallel::local_branch(global_cache_proxy_),
@@ -1169,12 +1223,14 @@ bool DistributedObject<
   }
 #endif // SPECTRE_CHARM_PROJECTIONS
 
+  auto profile = iterable_action_simple_profiler<ThisAction>();
   AlgorithmExecution requested_execution{};
   std::optional<std::size_t> next_action_step{};
   std::tie(requested_execution, next_action_step) = ThisAction::apply(
       box_, inboxes_, *Parallel::local_branch(global_cache_proxy_),
       std::as_const(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
+  profile.set_column_label(requested_execution);
 
   if (next_action_step.has_value()) {
     ASSERT(

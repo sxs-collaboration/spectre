@@ -60,6 +60,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/SimpleProfilerDataComponent.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
@@ -84,6 +85,7 @@
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveGridStats.hpp"
+#include "ParallelAlgorithms/Events/ObserveSimpleProfiler.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -191,7 +193,8 @@ struct EvolutionMetavars {
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
-                Events::Completion, amr::Events::RefineMesh,
+                Events::Completion, Events::ObserveSimpleProfiler,
+                amr::Events::RefineMesh,
                 Events::ObserveGridStats<volume_dim, non_tensor_compute_tags>,
                 amr::Events::ObserveAmrCriteria<EvolutionMetavars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
@@ -375,7 +378,8 @@ struct EvolutionMetavars {
   };
 
   using component_list =
-      tmpl::list<::amr::Component<EvolutionMetavars>,
+      tmpl::list<profiling::SimpleProfilerDataComponent<EvolutionMetavars>,
+                 ::amr::Component<EvolutionMetavars>,
                  observers::Observer<EvolutionMetavars>,
                  observers::ObserverWriter<EvolutionMetavars>,
                  dg_element_array>;

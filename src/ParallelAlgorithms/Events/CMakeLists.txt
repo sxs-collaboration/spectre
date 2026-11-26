@@ -14,6 +14,7 @@ spectre_target_sources(
   ObserveDataBox.cpp
   ObserveGridStats.cpp
   ObserveNorms.cpp
+  ObserveSimpleProfiler.cpp
   ObserveTimeStep.cpp
   ReductionScope.cpp
   )
@@ -34,6 +35,7 @@ spectre_target_headers(
   ObserveFields.hpp
   ObserveGridStats.hpp
   ObserveNorms.hpp
+  ObserveSimpleProfiler.hpp
   ObserveTimeStep.hpp
   ObserveTimeStep.tpp
   ObserveTimeStepVolume.hpp

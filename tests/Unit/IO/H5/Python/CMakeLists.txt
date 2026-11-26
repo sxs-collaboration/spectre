@@ -55,6 +55,12 @@ spectre_add_python_bindings_test(
   PyH5)
 
 spectre_add_python_bindings_test(
+  "Unit.IO.H5.Python.Profile"
+  Test_Profile.py
+  "unit;IO;H5;python"
+  PyH5)
+
+spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.ReadH5"
   Test_ReadH5.py
   "unit;IO;H5;python"
