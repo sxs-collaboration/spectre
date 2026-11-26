@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 def eccentricity_control(
     h5_files: Union[Union[str, Path], Sequence[Union[str, Path]]],
     id_input_file_path: Union[str, Path],
+    inspiral_input_file_path: Union[str, Path],
     pipeline_dir: Union[str, Path],
     # Eccentricity control parameters
     tmin: Optional[float] = None,
@@ -37,7 +38,6 @@ def eccentricity_control(
     # Options for continuing the evolution
     evolve: bool = True,
     branch_levs_when_complete: Optional[Sequence[int]] = None,
-    inspiral_input_file_path: Optional[Union[str, Path]] = None,
     inspiral_run_dir: Optional[Union[str, Path]] = None,
     inspiral_input_file_template: Union[
         str, Path
@@ -55,6 +55,24 @@ def eccentricity_control(
     This function can be called after the inspiral has run (see the 'Next'
     section of the Inspiral.yaml file).
 
+    Eccentricity control is carried out as an iterative process in which
+    initial data for a binary system is constructed, and then the evolution
+    of the inspiral is carried out for few orbits; after that, the data are
+    analyzed, computing the eccentricity and predicting a new estimate of the
+    orbital angular velocity and the radial expansion velocity that would
+    produce a binary with a lower eccentricity; then, a new initial data is
+    generated using such parameters and the process is repeated until the
+    eccentricity falls below a prescribed absolute tolerance.
+
+    To optimize the use of computing resources, the whole procedure can be
+    carried out as a two-stage process. In the first, the rough stage, the
+    evolution of the inspiral is carried out at a lower resolution. When the
+    eccentricity has reached values below an absolute tolerance, the fine
+    stage starts: the resolution is increased and the procedure is repeated.
+    When eccentricity falls below an absolute tolerance tolerance (which may
+    differ from the one used for the rough stage) eccentricity control is
+    completed and the evolution of the inspiral is continued.
+
     This function does the following:
 
     - Reads orbital parameters from the 'id_input_file_path'.
@@ -64,11 +82,13 @@ def eccentricity_control(
       'spectre.Pipelines.EccentricityControl.EccentricityControl'.
       See this function for default values and more details on the arguments.
 
-    - If the eccentricity is below an absolute tolerance, continue the
-      evolution.
+    - If the process is at the fine stage and the eccentricity is below an
+      absolute tolerance, continue the evolution.
 
-    - Generates new initial data based on updated orbital parameters using the
-      'generate_id' function.
+    - Otherwise set the new step for eccentricity reduction, eventually
+      promoting from rough to fine stage, and generating new initial data based
+      on updated orbital parameters with the 'generate_id' function.
+
 
     Arguments:
       h5_files: files that contain the trajectory data
@@ -85,9 +105,11 @@ def eccentricity_control(
         into a new directory. If no levs are specified, the simulation will just
         stop after eccentricity control. See `Inspiral.INSPIRAL_LEVS` for the
         definition of the levs.
-      inspiral_input_file_path: Path to the input file for the inspiral run.
-        Required only if `branch_levs_when_complete` is specified, as the
-        simulation will continue from this data.
+      inspiral_input_file_path: Path to the input file for the inspiral run. It
+        is used to obtain the lev used from the run to extract the eccentricity
+        from, which determines whether eccentricity control is at the rough or
+        fine stage. It is also required if `branch_levs_when_complete` is
+        specified, as the simulation will continue from this data.
       inspiral_run_dir: Directory where the inspiral run was executed.
         Defaults to the directory of the `inspiral_input_file_path`.
       inspiral_input_file_template: Input file template to start the
@@ -109,6 +131,21 @@ def eccentricity_control(
         " must be set."
     )
 
+    # Read and process the input file for the inspiral, and extract the lev used
+    with open(inspiral_input_file_path, "r") as inspiral_input_file:
+        inspiral_metadata, inspiral_input_params = yaml.safe_load_all(
+            inspiral_input_file
+        )
+    evolution_lev = inspiral_metadata["Lev"]
+    assert (
+        evolution_lev == target_params["RoughEccCtrlLev"]
+        or evolution_lev == target_params["EvolutionLev"]
+    ), (
+        "Cannot determine the stage of eccentricity control: the evolution lev"
+        " of the previous run mathches neither the rought nor the fine stage"
+        " evolution lev."
+    )
+
     # Find the current eccentricity and determine new parameters to put into
     # generate-id
     ecc_params = eccentricity_control_params(
@@ -124,9 +161,11 @@ def eccentricity_control(
         ecc_params_output_file=ecc_params_output_file,
     )
 
-    # Continue the evolution if eccentricity is below threshold
+    # If we are on the fine stage of eccentricity reduction and the eccentricity
+    # is below the threshold we continue evolution
     if (
-        abs(ecc_params["Eccentricity"] - target_params["Eccentricity"])
+        evolution_lev == target_params["EvolutionLev"]
+        and abs(ecc_params["Eccentricity"] - target_params["Eccentricity"])
         <= target_params["EccentricityAbsoluteTolerance"]
     ):
         logger.info("Eccentricity control complete.")
@@ -146,6 +185,19 @@ def eccentricity_control(
                     **scheduler_kwargs,
                 )
         return
+
+    # Otherwise if we are on the rough stage of eccentricity reduction and the
+    # eccentricity is below the rough threshold we promote to the fine stage
+    if (
+        evolution_lev == target_params["RoughEccCtrlLev"]
+        and abs(ecc_params["Eccentricity"] - target_params["Eccentricity"])
+        <= target_params["RoughEccentricityAbsoluteTolerance"]
+    ):
+        logger.info(
+            "Eccentricity control completed on rough stage. "
+            "Promoting to fine stage"
+        )
+        evolution_lev = target_params["EvolutionLev"]
 
     # Generate new initial data based on updated orbital parameters
     id_params = id_metadata["Next"]["With"]
@@ -177,6 +229,7 @@ def eccentricity_control(
         polynomial_order=id_params["control_polynomial_order"],
         control=True,
         evolve=evolve,
+        evolution_lev=evolution_lev,
         eccentricity_control=True,
         pipeline_dir=pipeline_dir,
         **scheduler_kwargs,

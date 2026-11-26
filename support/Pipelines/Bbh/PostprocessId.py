@@ -42,6 +42,7 @@ def postprocess_id(
     control_delay: int = DEFAULT_CONTROL_DELAY,
     control_params: List[TargetParams] = [],
     evolve: bool = False,
+    evolution_lev: int = None,
     eccentricity_control: bool = False,
     negative_expansion_bc: bool = True,
     pipeline_dir: Optional[Union[str, Path]] = None,
@@ -87,6 +88,9 @@ def postprocess_id(
       control_params: List of parameters to control. See ControlId.py
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
+      evolution_lev: Resolution for the inspiral after postprocessing. If set to
+        None (the default value), then the value from the target parameters in
+        'id_input_file_path' is used.
       negative_expansion_bc: Place the excisions inside of apparent horizons.
       pipeline_dir: Directory of the simulation, in which the pipeline
         creates its runs.
@@ -177,6 +181,9 @@ def postprocess_id(
     if evolve:
         from spectre.Pipelines.Bbh.Inspiral import start_inspiral
 
+        if evolution_lev is None:
+            evolution_lev = target_params["EvolutionLev"]
+
         start_inspiral(
             id_input_file_path,
             id_run_dir=id_run_dir,
@@ -184,7 +191,7 @@ def postprocess_id(
             continue_with_ringdown=not eccentricity_control,
             eccentricity_control=eccentricity_control,
             pipeline_dir=pipeline_dir,
-            lev=target_params["EvolutionLev"],
+            lev=evolution_lev,
             **scheduler_kwargs,
         )
 
@@ -226,6 +233,18 @@ def postprocess_id(
     "--evolve",
     is_flag=True,
     help="Evolve the initial data after postprocessing.",
+)
+@click.option(
+    "--evolution-lev",
+    "--lev",
+    type=int,
+    help=(
+        "Resolution level for the evolution. See 'start-inspiral' for details."
+        " If None, the value from the target parameters in 'id_input_file_path'"
+        " is used."
+    ),
+    default=None,
+    show_default=True,
 )
 @click.option(
     "--pipeline-dir",

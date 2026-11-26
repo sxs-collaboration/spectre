@@ -33,15 +33,18 @@ TargetParams = Literal[
     "AdmMass",
     "AdmAngularMomentumZ",
     "Eccentricity",
+    "RoughEccentricityAbsoluteTolerance",
     "EccentricityAbsoluteTolerance",
     "MeanAnomalyFraction",
     "NumOrbits",
     "TimeToMerger",
     "EvolutionLev",
+    "RoughEccCtrlLev",
 ]
 
 DEFAULT_TARGET_PARAMS: Dict[TargetParams, float] = {
-    "EccentricityAbsoluteTolerance": 1e-3,
+    "RoughEccentricityAbsoluteTolerance": 1e-3,
+    "EccentricityAbsoluteTolerance": 7e-4,
 }
 
 
@@ -201,6 +204,7 @@ def generate_id(
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
     control: bool = False,
     evolve: bool = False,
+    evolution_lev: Optional[int] = None,
     eccentricity_control: bool = False,
     negative_expansion_bc: bool = True,
     pipeline_dir: Optional[Union[str, Path]] = None,
@@ -247,6 +251,7 @@ def generate_id(
         values. If set to False, the horizon masses and spins in the generated
         data will differ from the input parameters. (default: False)
       evolve: Set to True to evolve the initial data after generation.
+      evolution_lev: Resolution for the inspiral after initial data generation.
       eccentricity_control: If set to True, an eccentricity reduction script is
         run on the initial data to correct the initial orbital parameters.
       negative_expansion_bc: If set to True, the excision boundaries are set to
@@ -316,6 +321,19 @@ def generate_id(
             target_params["Eccentricity"] is not None
         ), "For eccentricity control the target eccentricity must be set."
 
+    # We set the evolution lev, if it is not provided from the arguments of the
+    # function. If evolution has to be performed, it is set to the target
+    # parameter for final evolution (EvolutionLev), otherwise to the arbitrary
+    # value 1, since later it will be ignored.
+    if evolution_lev is None:
+        if evolve:
+            assert (
+                "EvolutionLev" in target_params
+            ), "For evolution, the evolution lev must be set."
+            evolution_lev = target_params["EvolutionLev"]
+        else:
+            evolution_lev = 1
+
     # This is an empirical factor based on an equal-mass non-spinning case, in
     # which ~0.41 conformal masses result in ~0.5 horizon masses.
     # mass_initial_guess_factor = 1.0
@@ -380,6 +398,7 @@ def generate_id(
         **scheduler_kwargs,
         control=control,
         evolve=evolve,
+        evolution_lev=evolution_lev,
         eccentricity_control=eccentricity_control,
         negative_expansion_bc=negative_expansion_bc,
         pipeline_dir=pipeline_dir,
@@ -452,6 +471,13 @@ def generate_id(
     help="Absolute tolerance for eccentricity control.",
 )
 @click.option(
+    "--rough-eccentricity-abs-tol",
+    type=click.FloatRange(0.0, 1.0),
+    default=DEFAULT_TARGET_PARAMS["RoughEccentricityAbsoluteTolerance"],
+    show_default=True,
+    help="Absolute tolerance for rough stage of eccentricity control.",
+)
+@click.option(
     "--mean-anomaly-fraction",
     "-l",
     type=click.FloatRange(0.0, 1.0, max_open=True),
@@ -488,6 +514,18 @@ def generate_id(
         "Resolution level for the evolution. See 'start-inspiral' for details."
     ),
     default=1,
+    show_default=True,
+)
+@click.option(
+    "--rough-ecc-ctrl-lev",
+    type=int,
+    help=(
+        "Resolution level for rough stage of eccentricity control. Must be"
+        " smaller or equal to the refinement level for evolution. If unset, or"
+        " if equal to the value of --evolution-lev, eccentricity control is"
+        " carried out as a single stage process."
+    ),
+    default=None,
     show_default=True,
 )
 @click.option(
@@ -573,12 +611,21 @@ def generate_id_command(
     radial_expansion_velocity,
     eccentricity,
     eccentricity_abs_tol,
+    rough_eccentricity_abs_tol,
     mean_anomaly_fraction,
     num_orbits,
     time_to_merger,
     evolution_lev,
+    rough_ecc_ctrl_lev,
     **kwargs,
 ):
+    if rough_ecc_ctrl_lev is None:
+        rough_ecc_ctrl_lev = evolution_lev
+    elif rough_ecc_ctrl_lev > evolution_lev:
+        raise click.BadParameter(
+            "--rough-ecc_ctrl_lev has to be smaller than --lev /"
+            " --evolution-lev"
+        )
     _rich_traceback_guard = True  # Hide traceback until here
     target_params = {
         "MassRatio": mass_ratio,
@@ -588,12 +635,14 @@ def generate_id_command(
         "DimensionlessSpinB": dimensionless_spin_b,
         "Eccentricity": eccentricity,
         "EccentricityAbsoluteTolerance": eccentricity_abs_tol,
+        "RoughEccentricityAbsoluteTolerance": rough_eccentricity_abs_tol,
         "MeanAnomalyFraction": mean_anomaly_fraction,
         "NumOrbits": num_orbits,
         "TimeToMerger": time_to_merger,
         "CenterOfMass": [0.0, 0.0, 0.0],
         "AdmLinearMomentum": [0.0, 0.0, 0.0],
         "EvolutionLev": evolution_lev,
+        "RoughEccCtrlLev": rough_ecc_ctrl_lev,
     }
     if kwargs["eccentricity_control"]:
         # Only circular orbits are currently supported for eccentricity control,
@@ -605,6 +654,7 @@ def generate_id_command(
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
+        evolution_lev=rough_ecc_ctrl_lev,
         **kwargs,
     )
 

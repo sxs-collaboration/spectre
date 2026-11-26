@@ -164,11 +164,13 @@ class TestInitialData(unittest.TestCase):
                 "CenterOfMass": [0.0, 0.0, 0.0],
                 "AdmLinearMomentum": [0.0, 0.0, 0.0],
                 "Eccentricity": 0.0,
-                "EccentricityAbsoluteTolerance": 1e-3,
+                "EccentricityAbsoluteTolerance": 7e-4,
+                "RoughEccentricityAbsoluteTolerance": 1e-3,
                 "MeanAnomalyFraction": None,
                 "NumOrbits": None,
                 "TimeToMerger": None,
                 "EvolutionLev": 1,
+                "RoughEccCtrlLev": 1,
             },
         )
         self.assertEqual(
@@ -192,6 +194,7 @@ class TestInitialData(unittest.TestCase):
                         "AdmLinearMomentum",
                     ],
                     "evolve": True,
+                    "evolution_lev": 1,
                     "eccentricity_control": True,
                     "negative_expansion_bc": True,
                     "scheduler": "None",
