@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/TaggedTuple.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -85,6 +86,7 @@ struct ObserveVolumeData {
     const auto& observation_id =
         db::get<LinearSolver::Tags::ObservationId<OptionsGroup>>(box);
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
     const auto& inertial_coords =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     // Collect tensor components to observe
@@ -117,11 +119,11 @@ struct ObserveVolumeData {
     const VolumeDataVars zero_vars{mesh.number_of_grid_points(), 0.};
     tmpl::for_each<typename VolumeDataVars::tags_list>(
         [&volume_data, &record_tensor_components, &mesh, &all_intruding_extents,
-         &zero_vars, &element_id](auto tag_v) {
+         &zero_vars, &element, &element_id](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           record_tensor_components(tag{}, get<tag>(volume_data.element_data),
                                    "_Center");
-          for (const auto direction : Direction<Dim>::all_directions()) {
+          for (const auto& direction : element.all_boundaries()) {
             const auto direction_predicate =
                 [&direction](const auto& overlap_data) {
                   return overlap_data.first.direction() == direction;

@@ -22,8 +22,10 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
@@ -363,6 +365,107 @@ void test() {
     }
   }
 }
+
+// For a spherical-harmonic (Spherepack) angular basis, the logical weak
+// divergence applies the transpose of the strong logical derivative. We check
+// the exact (Euclidean) transpose identity
+//   <u, logical_weak_divergence(F)> == <logical_partial_derivative(u), F>
+// which holds to roundoff for any fields u and F.
+void test_spherical_harmonic_weak_divergence() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  for (size_t l_max = 6; l_max <= 8; ++l_max) {
+    for (size_t num_radial_points = 3; num_radial_points <= 5;
+         ++num_radial_points) {
+      CAPTURE(l_max);
+      CAPTURE(num_radial_points);
+      const Mesh<3> mesh{
+          {num_radial_points, l_max + 1, 2 * l_max + 1},
+          {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+           Spectral::Basis::SphericalHarmonic},
+          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+           Spectral::Quadrature::Equiangular}};
+      const size_t num_points = mesh.number_of_grid_points();
+      const auto scalar = make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&gen), make_not_null(&dist), DataVector(num_points));
+      const auto flux = make_with_random_values<
+          tnsr::I<DataVector, 3, Frame::ElementLogical>>(
+          make_not_null(&gen), make_not_null(&dist), DataVector(num_points));
+      const auto logical_deriv_scalar =
+          logical_partial_derivative(scalar, mesh);
+      // The single-tensor `logical_weak_divergence` accumulates into its
+      // output, so the buffer must be zero-initialized.
+      Scalar<DataVector> weak_div{num_points, 0.0};
+      logical_weak_divergence(make_not_null(&weak_div), flux, mesh);
+      double lhs = 0.0;
+      for (size_t p = 0; p < num_points; ++p) {
+        lhs += get(scalar)[p] * get(weak_div)[p];
+      }
+      double rhs = 0.0;
+      for (size_t d = 0; d < 3; ++d) {
+        for (size_t p = 0; p < num_points; ++p) {
+          rhs += logical_deriv_scalar.get(d)[p] * flux.get(d)[p];
+        }
+      }
+      const Approx custom_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
+      CHECK(lhs == custom_approx(rhs));
+    }
+  }
+}
+
+// For a spherical-harmonic angular basis, the full `weak_divergence` (with the
+// Jacobian factor) satisfies the integration-by-parts adjoint identity
+//   <phi, weak_div(F)>_M == <grad(phi), F>_M
+// with an identity Jacobian, where <.,.>_M is the mass-matrix inner product
+// computed by `definite_integral`. This holds to roundoff for any phi and F.
+void test_spherical_harmonic_weak_divergence_full() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1.0, 1.0);
+  using flux_tag =
+      Tags::Flux<Var1<DataVector>, tmpl::size_t<3>, Frame::Inertial>;
+  using div_tag = Tags::div<flux_tag>;
+  for (size_t l_max = 6; l_max <= 8; ++l_max) {
+    for (size_t num_radial_points = 3; num_radial_points <= 5;
+         ++num_radial_points) {
+      CAPTURE(l_max);
+      CAPTURE(num_radial_points);
+      const Mesh<3> mesh{
+          {num_radial_points, l_max + 1, 2 * l_max + 1},
+          {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+           Spectral::Basis::SphericalHarmonic},
+          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+           Spectral::Quadrature::Equiangular}};
+      const size_t num_points = mesh.number_of_grid_points();
+      const auto scalar = make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&gen), make_not_null(&dist), DataVector(num_points));
+      Variables<tmpl::list<flux_tag>> fluxes{num_points};
+      get<flux_tag>(fluxes) =
+          make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
+              make_not_null(&gen), make_not_null(&dist),
+              DataVector(num_points));
+      // Identity Jacobian (det(J) J^{-1} = delta)
+      InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+          identity_jacobian{num_points, 0.0};
+      for (size_t d = 0; d < 3; ++d) {
+        identity_jacobian.get(d, d) = 1.0;
+      }
+      Variables<tmpl::list<div_tag>> div_vars{num_points};
+      weak_divergence(make_not_null(&div_vars), fluxes, mesh,
+                      identity_jacobian);
+      const auto grad_scalar = logical_partial_derivative(scalar, mesh);
+      const auto& flux = get<flux_tag>(fluxes);
+      const double lhs =
+          definite_integral(get(scalar) * get(get<div_tag>(div_vars)), mesh);
+      DataVector integrand(num_points, 0.0);
+      for (size_t d = 0; d < 3; ++d) {
+        integrand += grad_scalar.get(d) * flux.get(d);
+      }
+      const double rhs = definite_integral(integrand, mesh);
+      const Approx custom_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
+      CHECK(lhs == custom_approx(rhs));
+    }
+  }
+}
 }  // namespace
 
 // [[Timeout, 10]]
@@ -404,4 +507,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.WeakDivergence",
   test<ComplexDataVector, 2>();
   test<DataVector, 3>();
   test<ComplexDataVector, 3>();
+  test_spherical_harmonic_weak_divergence();
+  test_spherical_harmonic_weak_divergence_full();
 }

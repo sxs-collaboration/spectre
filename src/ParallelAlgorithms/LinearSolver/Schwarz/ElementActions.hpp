@@ -21,7 +21,9 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/FaceType.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/Faces.hpp"
 #include "IO/Logging/Tags.hpp"
@@ -257,8 +259,27 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
     const size_t num_points = mesh.number_of_grid_points();
 
     // Intruding overlaps
+    // Directions without a neighbor have no overlap, so they are excluded from
+    // the overlap weighting. These are the external boundaries plus any closed
+    // (topological) directions, such as the angular directions of spherical
+    // shells, which also have no well-defined 1D collocation points.
+    auto directions_without_overlap = element.external_boundaries();
+    for (const auto& [face_direction, face_type] : element.face_types()) {
+      if (face_type == domain::FaceType::Topological) {
+        directions_without_overlap.insert(face_direction);
+      }
+    }
     std::array<double, Dim> intruding_overlap_widths{};
     for (size_t d = 0; d < Dim; ++d) {
+      // Closed (e.g. angular) directions have no overlap and no 1D collocation
+      // points (unused because the weighting is skipped in these directions).
+      if (element.face_types().at(Direction<Dim>{d, Side::Upper}) ==
+          domain::FaceType::Topological) {
+        gsl::at(*intruding_extents, d) = 0;
+        gsl::at(intruding_overlap_widths, d) =
+            std::numeric_limits<double>::signaling_NaN();
+        continue;
+      }
       gsl::at(*intruding_extents, d) =
           LinearSolver::Schwarz::overlap_extent(mesh.extents(d), max_overlap);
       const auto& collocation_points =
@@ -275,7 +296,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
     if (LIKELY(max_overlap != 0)) {
       LinearSolver::Schwarz::element_weight(element_weight, logical_coords,
                                             intruding_overlap_widths,
-                                            element.external_boundaries());
+                                            directions_without_overlap);
     } else {
       set_number_of_grid_points(element_weight, num_points);
       get(*element_weight) = 1.;
@@ -294,7 +315,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
             LinearSolver::Schwarz::intruding_weight(
                 intruding_logical_coords, direction, intruding_overlap_widths,
                 element.neighbors().at(direction).size(),
-                element.external_boundaries());
+                directions_without_overlap);
       }
     }
 
