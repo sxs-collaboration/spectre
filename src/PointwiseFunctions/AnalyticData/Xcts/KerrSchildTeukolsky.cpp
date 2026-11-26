@@ -4,6 +4,7 @@
 #include "PointwiseFunctions/AnalyticData/Xcts/KerrSchildTeukolsky.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -118,7 +120,9 @@ void KerrSchildTeukolskyVariables<DataType>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
     const {
-  std::fill(shift_background->begin(), shift_background->end(), 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    shift_background->get(i) = gsl::at(constant_velocity, i);
+  }
 }
 
 template <typename DataType>
@@ -146,6 +150,26 @@ void KerrSchildTeukolskyVariables<DataType>::operator()(
       *this,
       Xcts::Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
 
+  if (constant_velocity == std::array<double, 3>{{0., 0., 0.}}) {
+    std::fill(longitudinal_shift_background_minus_dt_conformal_metric->begin(),
+              longitudinal_shift_background_minus_dt_conformal_metric->end(),
+              0.);
+  } else {
+    const auto& shift_background = cache->get_var(
+        *this, Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
+    const auto& deriv_shift_background = cache->get_var(
+        *this, ::Tags::deriv<
+                   Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+                   tmpl::size_t<Dim>, Frame::Inertial>{});
+    const auto& conformal_christoffel_second_kind = cache->get_var(
+        *this, Xcts::Tags::ConformalChristoffelSecondKind<DataType, Dim,
+                                                          Frame::Inertial>{});
+    Xcts::longitudinal_operator(
+        longitudinal_shift_background_minus_dt_conformal_metric,
+        shift_background, deriv_shift_background, inv_conformal_metric,
+        conformal_christoffel_second_kind);
+  }
+
   const auto trace_dt_metric = trace(dt_teukolsky_metric, inv_conformal_metric);
 
   tnsr::ii<DataType, Dim, Frame::Inertial> trace_free_dt_metric{
@@ -160,7 +184,6 @@ void KerrSchildTeukolskyVariables<DataType>::operator()(
 
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      longitudinal_shift_background_minus_dt_conformal_metric->get(i, j) = 0.;
       for (size_t k = 0; k < Dim; ++k) {
         for (size_t l = 0; l < Dim; ++l) {
           longitudinal_shift_background_minus_dt_conformal_metric->get(i, j) -=
@@ -214,24 +237,28 @@ namespace Xcts::AnalyticData {
 
 KerrSchildTeukolsky::KerrSchildTeukolsky(
     gr::Solutions::KerrSchild kerr_schild,
-    const gr::Solutions::TeukolskyWave& teukolsky_wave)
+    const gr::Solutions::TeukolskyWave& teukolsky_wave,
+    std::array<double, 3> linear_velocity)
     : kerr_schild_(std::move(kerr_schild)),
       teukolsky_wave_(teukolsky_wave.amplitude(), teukolsky_wave.mode(),
                       teukolsky_wave.parity(), teukolsky_wave.direction(),
                       teukolsky_wave.center(), teukolsky_wave.radius(),
-                      teukolsky_wave.width(), false) {}
+                      teukolsky_wave.width(), false),
+      linear_velocity_(linear_velocity) {}
 
 void KerrSchildTeukolsky::pup(PUP::er& p) {
   elliptic::analytic_data::Background::pup(p);
   elliptic::analytic_data::InitialGuess::pup(p);
   p | kerr_schild_;
   p | teukolsky_wave_;
+  p | linear_velocity_;
 }
 
 bool operator==(const KerrSchildTeukolsky& lhs,
                 const KerrSchildTeukolsky& rhs) {
   return lhs.kerr_schild_ == rhs.kerr_schild_ and
-         lhs.teukolsky_wave_ == rhs.teukolsky_wave_;
+         lhs.teukolsky_wave_ == rhs.teukolsky_wave_ and
+         lhs.linear_velocity_ == rhs.linear_velocity_;
 }
 
 bool operator!=(const KerrSchildTeukolsky& lhs,

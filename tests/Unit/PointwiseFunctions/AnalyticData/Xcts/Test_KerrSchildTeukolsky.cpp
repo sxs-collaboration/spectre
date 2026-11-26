@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -11,14 +12,24 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/KerrSchildTeukolsky.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/TeukolskyWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -61,7 +72,8 @@ void test_factory_and_semantics() {
       "    Direction: outgoing\n"
       "    Center: [0.1, -0.2, 0.3]\n"
       "    Radius: 20.\n"
-      "    Width: 4.\n";
+      "    Width: 4.\n"
+      "  LinearVelocity: [-0.11, 0.1, 0.3]\n";
   const auto created =
       TestHelpers::test_factory_creation<elliptic::analytic_data::InitialGuess,
                                          KerrSchildTeukolsky>(options);
@@ -78,6 +90,7 @@ void test_factory_and_semantics() {
   CHECK(solution.teukolsky_wave().center() ==
         std::array<double, 3>{{0.1, -0.2, 0.3}});
   CHECK_FALSE(solution.teukolsky_wave().include_minkowski_background());
+  CHECK(solution.linear_velocity() == std::array<double, 3>{{-0.11, 0.1, 0.3}});
 
   test_serialization(solution);
   test_copy_semantics(solution);
@@ -91,7 +104,8 @@ void test_zero_amplitude_matches_wrapped_kerr_schild() {
   const KerrSchildTeukolsky solution{
       kerr_schild,
       gr::Solutions::TeukolskyWave{
-          0., 0, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false}};
+          0., 0, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false},
+      std::array<double, 3>{{0., 0., 0.}}};
   const Xcts::Solutions::WrappedGr<gr::Solutions::KerrSchild> wrapped_kerr{
       kerr_schild};
   const auto x = test_coords();
@@ -110,7 +124,8 @@ void test_nonzero_teukolsky_perturbation() {
       1.0, {{0., 0., 0.999}}, {{0., 0., 0.}}, {{0., 0., 0.}}};
   const gr::Solutions::TeukolskyWave teukolsky_wave{
       0.02, -1, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false};
-  const KerrSchildTeukolsky solution{kerr_schild, teukolsky_wave};
+  const KerrSchildTeukolsky solution{kerr_schild, teukolsky_wave,
+                                     std::array<double, 3>{{0., 0., 0.}}};
   const auto x = test_coords();
 
   using tags =
@@ -201,12 +216,109 @@ void test_nonzero_teukolsky_perturbation() {
   }
 }
 
+// The constant linear velocity v0 is the background shift and doesn't change
+// the shift excess. These don't need numeric derivatives, so no mesh.
+void test_linear_velocity_background_shift() {
+  const gr::Solutions::KerrSchild kerr_schild{
+      1.0, {{0., 0., 0.9}}, {{0., 0., 0.}}, {{0., 0., 0.}}};
+  const gr::Solutions::TeukolskyWave teukolsky_wave{
+      0.02, -1, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false};
+  const std::array<double, 3> velocity{{-0.11, 0.1, 0.3}};
+  const KerrSchildTeukolsky solution{kerr_schild, teukolsky_wave, velocity};
+  const KerrSchildTeukolsky solution_at_rest{
+      kerr_schild, teukolsky_wave, std::array<double, 3>{{0., 0., 0.}}};
+  const auto x = test_coords();
+  const size_t num_points = get_size(get<0>(x));
+
+  using shift_background_tag =
+      Tags::ShiftBackground<DataVector, 3, Frame::Inertial>;
+  using deriv_shift_background_tag =
+      ::Tags::deriv<shift_background_tag, tmpl::size_t<3>, Frame::Inertial>;
+  using shift_excess_tag = Tags::ShiftExcess<DataVector, 3, Frame::Inertial>;
+  using tags = tmpl::list<shift_background_tag, deriv_shift_background_tag,
+                          shift_excess_tag>;
+  const auto vars = solution.variables(x, tags{});
+  const auto vars_at_rest = solution_at_rest.variables(x, tags{});
+
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK_ITERABLE_APPROX(get<shift_background_tag>(vars).get(i),
+                          DataVector(num_points, gsl::at(velocity, i)));
+  }
+  CHECK_ITERABLE_APPROX(get<deriv_shift_background_tag>(vars),
+                        (tnsr::iJ<DataVector, 3>{num_points, 0.}));
+  CHECK_ITERABLE_APPROX(get<shift_excess_tag>(vars),
+                        get<shift_excess_tag>(vars_at_rest));
+}
+
+// Checks the contribution of the background velocity v0 to
+// `LongitudinalShiftBackgroundMinusDtConformalMetric`, i.e. its longitudinal
+// operator (L v0)^ij. For a constant v0 it consists only of Christoffel terms,
+// which need the numeric derivative of the conformal metric. Subtracting the
+// solution at rest isolates (L v0)^ij by removing the time derivative of the
+// conformal metric, which is tested in `test_nonzero_teukolsky_perturbation`.
+void test_linear_velocity_longitudinal_shift() {
+  const gr::Solutions::KerrSchild kerr_schild{
+      1.0, {{0., 0., 0.9}}, {{0., 0., 0.}}, {{0., 0., 0.}}};
+  // Center the pulse on the cube below so the time derivative of the conformal
+  // metric is non-negligible there
+  const gr::Solutions::TeukolskyWave teukolsky_wave{
+      0.02, -1, "even", "ingoing", {{0., 0., 0.}}, 3., 1., false};
+  const std::array<double, 3> velocity{{-0.11, 0.1, 0.3}};
+  const KerrSchildTeukolsky solution{kerr_schild, teukolsky_wave, velocity};
+  const KerrSchildTeukolsky solution_at_rest{
+      kerr_schild, teukolsky_wave, std::array<double, 3>{{0., 0., 0.}}};
+
+  // A cube outside the horizon
+  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
+  using AffineMap = domain::CoordinateMaps::Affine;
+  using AffineMap3D =
+      domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                              AffineMap3D>
+      coord_map{{{-1., 1., 2., 3.}, {-1., 1., 1., 2.}, {-1., 1., -0.5, 0.5}}};
+  const auto x = coord_map(logical_coords);
+  const auto inv_jacobian = coord_map.inv_jacobian(logical_coords);
+  const size_t num_points = mesh.number_of_grid_points();
+
+  using shift_background_tag =
+      Tags::ShiftBackground<DataVector, 3, Frame::Inertial>;
+  using inv_conformal_metric_tag =
+      Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>;
+  using christoffel_tag =
+      Tags::ConformalChristoffelSecondKind<DataVector, 3, Frame::Inertial>;
+  using longitudinal_tag =
+      Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
+                                                              Frame::Inertial>;
+  const auto vars = solution.variables(
+      x, mesh, inv_jacobian,
+      tmpl::list<shift_background_tag, inv_conformal_metric_tag,
+                 christoffel_tag, longitudinal_tag>{});
+  const auto vars_at_rest = solution_at_rest.variables(
+      x, mesh, inv_jacobian, tmpl::list<longitudinal_tag>{});
+
+  tnsr::II<DataVector, 3> expected{num_points};
+  Xcts::longitudinal_operator(
+      make_not_null(&expected), get<shift_background_tag>(vars),
+      tnsr::iJ<DataVector, 3>{num_points, 0.},
+      get<inv_conformal_metric_tag>(vars), get<christoffel_tag>(vars));
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      CHECK_ITERABLE_APPROX(get<longitudinal_tag>(vars).get(i, j) -
+                                get<longitudinal_tag>(vars_at_rest).get(i, j),
+                            expected.get(i, j));
+    }
+  }
+}
+
 void test_numeric_derivative_requires_mesh() {
   const KerrSchildTeukolsky solution{
       gr::Solutions::KerrSchild{
           1.0, {{0., 0., 0.999}}, {{0., 0., 0.}}, {{0., 0., 0.}}},
       gr::Solutions::TeukolskyWave{
-          0.02, -1, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false}};
+          0.02, -1, "even", "ingoing", {{0., 0., 0.}}, 20., 4., false},
+      std::array<double, 3>{{0., 0., 0.}}};
   using deriv_conformal_metric_tag =
       ::Tags::deriv<Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
                     tmpl::size_t<3>, Frame::Inertial>;
@@ -225,6 +337,8 @@ SPECTRE_TEST_CASE(
   test_factory_and_semantics();
   test_zero_amplitude_matches_wrapped_kerr_schild();
   test_nonzero_teukolsky_perturbation();
+  test_linear_velocity_background_shift();
+  test_linear_velocity_longitudinal_shift();
   test_numeric_derivative_requires_mesh();
 }
 

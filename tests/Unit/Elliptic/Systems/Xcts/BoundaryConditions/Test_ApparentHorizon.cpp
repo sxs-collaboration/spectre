@@ -41,6 +41,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -227,6 +228,9 @@ void apply_boundary_condition_linearized(
   make_metric_riemannian(make_not_null(&inv_conformal_metric));
   auto [face_normal, deriv_unnormalized_face_normal, face_normal_magnitude] =
       make_spherical_face_normal(x, center, inv_conformal_metric);
+  // The background shift only enters the linearized boundary conditions
+  // through the negative-expansion correction, which isn't used here
+  tnsr::I<DataVector, 3> shift_background{get<0>(x).size(), 0.};
   apply_boundary_condition_impl<Xcts::Geometry::Curved, true>(
       n_dot_conformal_factor_gradient_correction,
       n_dot_lapse_times_conformal_factor_gradient_correction,
@@ -235,7 +239,8 @@ void apply_boundary_condition_linearized(
       n_dot_longitudinal_shift_excess_correction, center, rotation,
       std::move(face_normal), std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
-      longitudinal_shift_background, conformal_factor_minus_one,
+      std::move(shift_background), longitudinal_shift_background,
+      conformal_factor_minus_one,
       lapse_times_conformal_factor_minus_one, n_dot_longitudinal_shift_excess,
       std::move(inv_conformal_metric), conformal_christoffel_second_kind);
 }
@@ -258,6 +263,9 @@ void apply_boundary_condition_linearized_flat_cartesian(
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) {
   auto [face_normal, deriv_unnormalized_face_normal, face_normal_magnitude] =
       make_spherical_face_normal_flat_cartesian(x, center);
+  // The background shift only enters the linearized boundary conditions
+  // through the negative-expansion correction, which isn't used here
+  tnsr::I<DataVector, 3> shift_background{get<0>(x).size(), 0.};
   apply_boundary_condition_impl<Xcts::Geometry::FlatCartesian, true>(
       n_dot_conformal_factor_gradient_correction,
       n_dot_lapse_times_conformal_factor_gradient_correction,
@@ -266,8 +274,9 @@ void apply_boundary_condition_linearized_flat_cartesian(
       n_dot_longitudinal_shift_excess_correction, center, rotation,
       std::move(face_normal), std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
-      longitudinal_shift_background, conformal_factor_minus_one,
-      lapse_times_conformal_factor_minus_one, n_dot_longitudinal_shift_excess);
+      std::move(shift_background), longitudinal_shift_background,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      n_dot_longitudinal_shift_excess);
 }
 
 struct FactoryMetavars {
@@ -285,6 +294,7 @@ void test_creation(
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
     const std::optional<KerrSchild>& solution_for_lapse,
     const std::optional<KerrSchild>& solution_for_negative_expansion,
+    const NegativeExpansionShift negative_expansion_shift,
     const std::string& option_string) {
   INFO("Test factory-creation");
   register_factory_classes_with_charm<FactoryMetavars>();
@@ -316,6 +326,8 @@ void test_creation(
       REQUIRE(kerrschild != nullptr);
       CHECK(*kerrschild == *solution_for_negative_expansion);
     }
+    CHECK(boundary_condition.negative_expansion_shift() ==
+          negative_expansion_shift);
     CHECK(boundary_condition.boundary_condition_types() ==
           std::vector<elliptic::BoundaryConditionType>{
               elliptic::BoundaryConditionType::Neumann,
@@ -401,20 +413,27 @@ void test_with_random_values() {
       DataVector{3});
 }
 
-void test_consistency_with_kerr(const bool compute_expansion,
-                                const bool superposed_lapse_bc_condition) {
+void test_consistency_with_kerr(
+    const bool compute_expansion, const bool superposed_lapse_bc_condition,
+    const NegativeExpansionShift negative_expansion_shift) {
   INFO("Consistency with Kerr solution");
   CAPTURE(compute_expansion);
   CAPTURE(superposed_lapse_bc_condition);
+  CAPTURE(negative_expansion_shift);
+  const bool tangential_shift =
+      negative_expansion_shift == NegativeExpansionShift::AnalyticGuess;
   const double mass = 0.45;
   const std::array<double, 3> center{{8., 0., 0.}};
   const std::array<double, 3> dimensionless_spin{{0., 0., 0.8}};
   const double horizon_kerrschild_radius =
       mass * (1. + sqrt(1. - dot(dimensionless_spin, dimensionless_spin)));
   CAPTURE(horizon_kerrschild_radius);
-  // Eq. (8) in https://arxiv.org/abs/1506.01689
+  // Eq. (8) in https://arxiv.org/abs/1506.01689. With the tangential shift, the
+  // frame dragging of the Kerr solution is imposed through the comoving shift
+  // of the solution, so the rotation must be zero to avoid counting it twice.
   std::array<double, 3> rotation =
-      -0.5 * dimensionless_spin / horizon_kerrschild_radius;
+      tangential_shift ? std::array<double, 3>{{0., 0., 0.}}
+                       : -0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
   const KerrSchild solution{mass, dimensionless_spin,
                             std::array<double, 3>{{0., 0., 0.}}};
@@ -442,7 +461,11 @@ void test_consistency_with_kerr(const bool compute_expansion,
       // expansion is _computed_ to be zero from the Kerr solution at the
       // horizon, or it is just set to zero.
       compute_expansion
-          ? std::make_optional(std::make_unique<KerrSchild>(solution))
+          ? std::make_optional(
+                ApparentHorizon<
+                    Xcts::Geometry::Curved>::NegativeExpansionOptions{
+                    std::make_unique<KerrSchild>(solution),
+                    negative_expansion_shift})
           : std::nullopt};
 
   // Set up a wedge with a Kerr-horizon-conforming inner surface
@@ -498,6 +521,22 @@ void test_consistency_with_kerr(const bool compute_expansion,
   const auto& inv_conformal_metric =
       get<Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
           background_fields);
+  // With the comoving and tangential shift, add a constant background shift u.
+  // The comoving shift of the solution is then beta_co = beta_sol + u, and the
+  // shift condition gives
+  //   s (s.beta_co) - u + (beta_co - s (s.beta_co)) = beta_sol,
+  // so the expected shift excess is still the one of the Kerr solution. This
+  // holds for both the normal and the tangential parts. A constant shift has no
+  // longitudinal part, so the other conditions are unaffected.
+  auto shift_background =
+      get<Tags::ShiftBackground<DataVector, 3, Frame::Inertial>>(
+          background_fields);
+  if (tangential_shift) {
+    const std::array<double, 3> shift_background_offset{{0.1, -0.2, 0.05}};
+    for (size_t i = 0; i < 3; ++i) {
+      shift_background.get(i) += gsl::at(shift_background_offset, i);
+    }
+  }
   // Set up the face normal on the horizon surface. It points _into_ the
   // horizon because the computational domain fills the space outside of it
   // and the normal always points away from the computational domain.
@@ -562,35 +601,39 @@ void test_consistency_with_kerr(const bool compute_expansion,
       std::numeric_limits<double>::signaling_NaN();
   get<2>(get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(surface_vars)) =
       std::numeric_limits<double>::signaling_NaN();
-  kerr_horizon.apply(
-      make_not_null(
-          &get<Tags::ConformalFactorMinusOne<DataVector>>(surface_vars)),
-      make_not_null(&get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
-          surface_vars)),
-      make_not_null(&get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
-          surface_vars)),
-      make_not_null(
-          &get<
-              ::Tags::NormalDotFlux<Tags::ConformalFactorMinusOne<DataVector>>>(
-              n_dot_surface_fluxes)),
-      make_not_null(&get<::Tags::NormalDotFlux<
-                        Tags::LapseTimesConformalFactorMinusOne<DataVector>>>(
-          n_dot_surface_fluxes)),
-      make_not_null(&get<::Tags::NormalDotFlux<
-                        Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>>(
-          n_dot_surface_fluxes)),
-      deriv_conformal_factor, deriv_lapse_times_conformal_factor,
-      deriv_shift_excess, face_normal, deriv_unnormalized_face_normal,
-      face_normal_magnitude, x,
-      get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(background_fields),
-      get<Tags::ShiftBackground<DataVector, 3, Frame::Inertial>>(
-          background_fields),
-      get<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-          DataVector, 3, Frame::Inertial>>(background_fields),
-      get<Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
-          background_fields),
-      get<Tags::ConformalChristoffelSecondKind<DataVector, 3, Frame::Inertial>>(
-          background_fields));
+  const auto apply_kerr_horizon = [&](const auto local_surface_vars,
+                                      const auto local_n_dot_surface_fluxes) {
+    kerr_horizon.apply(
+        make_not_null(&get<Tags::ConformalFactorMinusOne<DataVector>>(
+            *local_surface_vars)),
+        make_not_null(&get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+            *local_surface_vars)),
+        make_not_null(&get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
+            *local_surface_vars)),
+        make_not_null(&get<::Tags::NormalDotFlux<
+                          Tags::ConformalFactorMinusOne<DataVector>>>(
+            *local_n_dot_surface_fluxes)),
+        make_not_null(&get<::Tags::NormalDotFlux<
+                          Tags::LapseTimesConformalFactorMinusOne<DataVector>>>(
+            *local_n_dot_surface_fluxes)),
+        make_not_null(&get<::Tags::NormalDotFlux<
+                          Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>>(
+            *local_n_dot_surface_fluxes)),
+        deriv_conformal_factor, deriv_lapse_times_conformal_factor,
+        deriv_shift_excess, face_normal, deriv_unnormalized_face_normal,
+        face_normal_magnitude, x,
+        get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(background_fields),
+        shift_background,
+        get<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+            DataVector, 3, Frame::Inertial>>(background_fields),
+        get<Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
+            background_fields),
+        get<Tags::ConformalChristoffelSecondKind<DataVector, 3,
+                                                 Frame::Inertial>>(
+            background_fields));
+  };
+  apply_kerr_horizon(make_not_null(&surface_vars),
+                     make_not_null(&n_dot_surface_fluxes));
   // Check the result.
   if (superposed_lapse_bc_condition) {
     const auto& binary =
@@ -604,6 +647,36 @@ void test_consistency_with_kerr(const bool compute_expansion,
   }
   CHECK_VARIABLES_APPROX(surface_vars, surface_vars_expected);
   CHECK_VARIABLES_APPROX(n_dot_surface_fluxes, n_dot_surface_fluxes_expected);
+
+  if (tangential_shift) {
+    INFO("Shift with a conformal factor different from Kerr");
+    // With `AnalyticGuess`, the orthogonal and tangential parts of the
+    // shift of the solution are projected with the same normal of the current
+    // spatial metric, so the imposed shift is the comoving shift of the
+    // solution whenever the lapse matches the lapse of the solution, even if
+    // the spatial metric differs from the solution (here psi != 1).
+    const double conformal_factor = 1.3;
+    const auto kerr_lapse = get<gr::Tags::Lapse<DataVector>>(solution.variables(
+        x_centered, tmpl::list<gr::Tags::Lapse<DataVector>>{}));
+    auto rescaled_surface_vars = surface_vars_expected;
+    get(get<Tags::ConformalFactorMinusOne<DataVector>>(rescaled_surface_vars)) =
+        conformal_factor - 1.;
+    get(get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+        rescaled_surface_vars)) = get(kerr_lapse) * conformal_factor - 1.;
+    for (size_t i = 0; i < 3; ++i) {
+      get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
+          rescaled_surface_vars)
+          .get(i) = std::numeric_limits<double>::signaling_NaN();
+    }
+    auto rescaled_n_dot_surface_fluxes = n_dot_surface_fluxes_expected;
+    apply_kerr_horizon(make_not_null(&rescaled_surface_vars),
+                       make_not_null(&rescaled_n_dot_surface_fluxes));
+    CHECK_ITERABLE_APPROX(
+        (get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
+            rescaled_surface_vars)),
+        (get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
+            surface_vars_expected)));
+  }
 }
 
 }  // namespace
@@ -611,6 +684,7 @@ void test_consistency_with_kerr(const bool compute_expansion,
 SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                   "[Unit][Elliptic]") {
   test_creation({{1., 2., 3.}}, {{0.1, 0.2, 0.3}}, std::nullopt, std::nullopt,
+                NegativeExpansionShift::None,
                 "ApparentHorizon:\n"
                 "  Center: [1., 2., 3.]\n"
                 "  Rotation: [0.1, 0.2, 0.3]\n"
@@ -625,6 +699,7 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                     3.4, std::array<double, 3>{{0.3, 0.2, 0.1}},
                     std::array<double, 3>{{0., 0., 0.}},
                     std::array<double, 3>{{0., 0., 0.}}}},
+                NegativeExpansionShift::None,
                 "ApparentHorizon:\n"
                 "  Center: [1., 2., 3.]\n"
                 "  Rotation: [0.1, 0.2, 0.3]\n"
@@ -635,16 +710,46 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                 "      Center: [0., 0., 0.]\n"
                 "      Velocity: [0., 0., 0.]\n"
                 "  NegativeExpansion:\n"
-                "    KerrSchild:\n"
-                "      Mass: 3.4\n"
-                "      Spin: [0.3, 0.2, 0.1]\n"
-                "      Center: [0., 0., 0.]\n"
-                "      Velocity: [0., 0., 0.]\n");
+                "    Solution:\n"
+                "      KerrSchild:\n"
+                "        Mass: 3.4\n"
+                "        Spin: [0.3, 0.2, 0.1]\n"
+                "        Center: [0., 0., 0.]\n"
+                "        Velocity: [0., 0., 0.]\n"
+                "    ComovingShift: None\n");
+  test_creation({{1., 2., 3.}}, {{0., 0., 0.}}, std::nullopt,
+                {Xcts::Solutions::WrappedGr<gr::Solutions::KerrSchild>{
+                    3.4, std::array<double, 3>{{0.3, 0.2, 0.1}},
+                    std::array<double, 3>{{0., 0., 0.}},
+                    std::array<double, 3>{{0., 0., 0.}}}},
+                NegativeExpansionShift::AnalyticGuess,
+                "ApparentHorizon:\n"
+                "  Center: [1., 2., 3.]\n"
+                "  Rotation: [0., 0., 0.]\n"
+                "  Lapse: Auto\n"
+                "  NegativeExpansion:\n"
+                "    Solution:\n"
+                "      KerrSchild:\n"
+                "        Mass: 3.4\n"
+                "        Spin: [0.3, 0.2, 0.1]\n"
+                "        Center: [0., 0., 0.]\n"
+                "        Velocity: [0., 0., 0.]\n"
+                "    ComovingShift: AnalyticGuess\n");
+  CHECK(get_output(NegativeExpansionShift::None) == "None");
+  CHECK(get_output(NegativeExpansionShift::Orthogonal) == "Orthogonal");
+  CHECK(get_output(NegativeExpansionShift::AnalyticGuess) == "AnalyticGuess");
+  CHECK(TestHelpers::test_creation<NegativeExpansionShift>("Orthogonal") ==
+        NegativeExpansionShift::Orthogonal);
   test_with_random_values();
-  test_consistency_with_kerr(false, false);
-  test_consistency_with_kerr(true, false);
-  test_consistency_with_kerr(false, true);
-  test_consistency_with_kerr(true, true);
+  using enum NegativeExpansionShift;
+  test_consistency_with_kerr(false, false, None);
+  test_consistency_with_kerr(true, false, None);
+  test_consistency_with_kerr(false, true, None);
+  test_consistency_with_kerr(true, true, None);
+  test_consistency_with_kerr(true, false, Orthogonal);
+  test_consistency_with_kerr(true, true, Orthogonal);
+  test_consistency_with_kerr(true, false, AnalyticGuess);
+  test_consistency_with_kerr(true, true, AnalyticGuess);
 }
 
 }  // namespace Xcts::BoundaryConditions

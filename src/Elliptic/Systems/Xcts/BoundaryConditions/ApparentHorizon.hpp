@@ -3,11 +3,15 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <pup.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
@@ -31,19 +35,39 @@
 
 /// \cond
 class DataVector;
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
 /// \endcond
 
 namespace Xcts::BoundaryConditions {
 
+/// How the shift of the negative-expansion solution enters the
+/// `Xcts::BoundaryConditions::ApparentHorizon` boundary conditions
+enum class NegativeExpansionShift : uint8_t {
+  /// Impose the orthogonal part of the shift of the solution, as given
+  None,
+  /// Impose the orthogonal part of the shift of the solution, transformed to
+  /// the comoving frame
+  Orthogonal,
+  /// Impose the full shift of the solution, transformed to the comoving frame
+  AnalyticGuess
+};
+
+std::ostream& operator<<(std::ostream& os,
+                         NegativeExpansionShift negative_expansion_shift);
+
 /*!
  * \brief Impose the surface is a quasi-equilibrium apparent horizon.
  *
- * These boundary conditions on the conformal factor \f$\psi\f$, the lapse
- * \f$\alpha\f$ and the shift \f$\beta^i\f$ impose the surface is an apparent
- * horizon, i.e. that the expansion on the surface vanishes: \f$\Theta=0\f$.
+ * These boundary conditions on the conformal factor $\psi$, the lapse
+ * $\alpha$ and the shift $\beta^i$ impose the surface is an apparent
+ * horizon, i.e. that the expansion on the surface vanishes: $\Theta=0$.
  * Specifically, we impose:
  *
- * \f{align}
+ * \begin{align}
  * \label{eq:ah_psi}
  * \bar{s}^k\bar{D}_k\psi &= -\frac{\psi^3}{8\alpha}\bar{s}_i\bar{s}_j\left(
  * (\bar{L}\beta)^{ij} - \bar{u}^{ij}\right)
@@ -52,33 +76,50 @@ namespace Xcts::BoundaryConditions {
  * \label{eq:ah_beta}
  * \beta_\mathrm{excess}^i &= \frac{\alpha}{\psi^2}\bar{s}^i
  * + \epsilon_{ijk}\Omega^j x^k - \beta_\mathrm{background}^i
- * \f}
+ * \end{align}
  *
  * following section 7.2 of \cite Pfeiffer2005zm, section 12.3.2 of
  * \cite BaumgarteShapiro or section II.B.1 of \cite Varma2018sqd. In these
- * equations \f$\bar{s}_i\f$ is the conformal surface normal to the apparent
- * horizon, \f$\bar{m}^{ij}=\bar{\gamma}^{ij}-\bar{s}^i\bar{s}^j\f$ is the
- * induced conformal surface metric (denoted \f$\tilde{h}^{ij}\f$ in
- * \cite Pfeiffer2005zm and \cite Varma2018sqd) and \f$\bar{D}\f$ is the
- * covariant derivative w.r.t. to the conformal metric \f$\bar{\gamma}_{ij}\f$.
+ * equations $\bar{s}_i$ is the conformal surface normal to the apparent
+ * horizon, $\bar{m}^{ij}=\bar{\gamma}^{ij}-\bar{s}^i\bar{s}^j$ is the
+ * induced conformal surface metric (denoted $\tilde{h}^{ij}$ in
+ * \cite Pfeiffer2005zm and \cite Varma2018sqd) and $\bar{D}$ is the
+ * covariant derivative w.r.t. to the conformal metric $\bar{\gamma}_{ij}$.
  * Note that e.g. in \cite Varma2018sqd Eq. (16) appears the surface-normal
- * \f$s^i\f$, not the _conformal_ surface normal \f$\bar{s}^i = \psi^2 s^i\f$.
+ * $s^i$, not the _conformal_ surface normal $\bar{s}^i = \psi^2 s^i$.
  * To incur a spin on the apparent horizon we can freely choose the rotational
- * parameters \f$\boldsymbol{\Omega}\f$. Note that for a Kerr solution with
- * dimensionless spin \f$\boldsymbol{\chi}\f$ the rotational parameters at the
- * outer horizon are \f$\boldsymbol{\Omega} =
- * -\frac{\boldsymbol{\chi}}{2r_+}\f$, where \f$r_+ / M = 1 + \sqrt{1 -
- * \chi^2}\f$ (see e.g. Eq. (8) in \cite Ossokine2015yla). \f$\epsilon_{ijk}\f$
+ * parameters $\boldsymbol{\Omega}$. Note that for a Kerr solution with
+ * dimensionless spin $\boldsymbol{\chi}$ the rotational parameters at the
+ * outer horizon are $\boldsymbol{\Omega} =
+ * -\frac{\boldsymbol{\chi}}{2r_+}$, where $r_+ / M = 1 + \sqrt{1 -
+ * \chi^2}$ (see e.g. Eq. (8) in \cite Ossokine2015yla). $\epsilon_{ijk}$
  * is the flat-space Levi-Civita symbol.
  *
  * Note that the quasi-equilibrium conditions don't restrict the boundary
  * condition for the lapse. The choice for the lapse boundary condition is made
  * by the `Lapse` input-file options. Currently implemented choices are:
  * - A zero von-Neumann boundary condition:
- *   \f$\bar{s}^k\bar{D}_k(\alpha\psi) = 0\f$
+ *   $\bar{s}^k\bar{D}_k(\alpha\psi) = 0$
  * - A Dirichlet boundary condition imposing the lapse of an analytic solution.
  *
- * \par Negative-expansion boundary conditions:
+ * The `NegativeExpansion` option supports the following variants, explained
+ * in the "Details" section below:
+ * - Negative-expansion boundary conditions: place the excision surface inside
+ *   the apparent horizon of a given Kerr solution.
+ * - `ComovingShift: Orthogonal`: evaluate the Kerr shift in the comoving
+ *   frame, for boosted black holes.
+ * - `ComovingShift: AnalyticGuess`: impose the full comoving Kerr shift,
+ *   including its tangential part.
+ *
+ * \note When negative-expansion boundary conditions are selected, the Kerr
+ * solution gets evaluated at every boundary-condition application. This may
+ * turn out to incur a significant computational cost, in which case a future
+ * optimization might be to pre-compute the negative-expansion quantities at
+ * initialization time and store them in the DataBox.
+ *
+ * ## Details
+ *
+ * ### Negative-expansion boundary conditions
  * This class also supports negative-expansion boundary conditions following
  * section II.B.2 of \cite Varma2018sqd by taking a Kerr solution as additional
  * parameter and computing its expansion at the excision surface. Choosing an
@@ -86,17 +127,92 @@ namespace Xcts::BoundaryConditions {
  * result in a negative expansion that is added to the boundary condition for
  * the conformal factor. Therefore, the excision surface will lie within an
  * apparent horizon. Specifically, we add the quantity
- * \f$\frac{\psi^3}{4}\Theta_\mathrm{Kerr}\f$ to (\f$\ref{eq:ah_psi}\f$), where
- * \f$\Theta_\mathrm{Kerr}\f$ is the expansion of the specified Kerr solution at
- * the excision surface, and we add the quantity \f$\epsilon = s_i
- * \beta_\mathrm{Kerr}^i - \alpha_\mathrm{Kerr}\f$ to the orthogonal part
- * \f$s_i\beta_\mathrm{excess}^i\f$ of (\f$\ref{eq:ah_beta}\f$).
  *
- * \note When negative-expansion boundary conditions are selected, the Kerr
- * solution gets evaluated at every boundary-condition application. This may
- * turn out to incur a significant computational cost, in which case a future
- * optimization might be to pre-compute the negative-expansion quantities at
- * initialization time and store them in the DataBox.
+ * \begin{equation}
+ * \frac{\psi^3}{4}\Theta_\mathrm{Kerr}
+ * \end{equation}
+ *
+ * to ($\ref{eq:ah_psi}$), where $\Theta_\mathrm{Kerr}$ is the expansion
+ * of the specified Kerr solution at the excision surface, and we add the
+ * quantity
+ *
+ * \begin{equation}
+ * \label{eq:ah_epsilon}
+ * \epsilon = s_i \beta_\mathrm{Kerr}^i - \alpha_\mathrm{Kerr}
+ * \end{equation}
+ *
+ * to the orthogonal part $s_i\beta_\mathrm{excess}^i$ of
+ * ($\ref{eq:ah_beta}$).
+ *
+ * ### Comoving shift of the negative-expansion solution
+ * A boosted Kerr solution is not stationary in the inertial frame: its
+ * spatial metric moves with the black hole, so $\partial_t\gamma_{ij} \neq 0$
+ * there. Its spatial metric is time independent only in the comoving frame,
+ * i.e. after adding the background shift. The quasi-equilibrium conditions
+ * assume exactly this, so the shift of the Kerr solution must be expressed in
+ * the comoving frame for the negative-expansion corrections to be consistent.
+ *
+ * With `ComovingShift: Orthogonal` in the `NegativeExpansion` options, the
+ * shift of the Kerr solution is transformed from the inertial frame to the
+ * comoving frame in which the XCTS problem is posed,
+ *
+ * \begin{equation}
+ * \beta_\mathrm{co}^i = \beta_\mathrm{Kerr}^i + \beta_\mathrm{background}^i,
+ * \end{equation}
+ *
+ * evaluated at each point of the excision surface, and
+ * $\beta_\mathrm{co}^i$ replaces $\beta_\mathrm{Kerr}^i$ in
+ * ($\ref{eq:ah_epsilon}$). The Kerr solution must then be given in the
+ * inertial frame, boosted with the background shift at its center so that it
+ * is at rest in the comoving frame. For a single black hole this is its linear
+ * velocity, and for a black hole centered at $c$ in a binary it is
+ *
+ * \begin{equation}
+ * \Omega_0\times c + \dot{a}\,c + v_0.
+ * \end{equation}
+ *
+ * The time derivatives of the background are assumed to vanish in the
+ * comoving frame.
+ *
+ * ### Tangential correction from the analytic guess
+ * With `ComovingShift: AnalyticGuess`, the shift of the Kerr solution is
+ * transformed to the comoving frame as above, and also its tangential part,
+ *
+ * \begin{equation}
+ * \tau^i = \beta_\mathrm{co}^i - \bar{s}^i\bar{s}_j\beta_\mathrm{co}^j,
+ * \end{equation}
+ *
+ * is added to ($\ref{eq:ah_beta}$). Note that in this case $\epsilon$ uses
+ * a _different normalization of the surface normal_: the unit normal of the
+ * current spatial metric, $s_i = \psi^2\bar{s}_i$, instead of the unit normal
+ * of the Kerr metric. Only with this normalization is the orthogonal part
+ * $\bar{s}^i\bar{s}_j\beta_\mathrm{co}^j$ that $\epsilon$ contributes exactly
+ * the part that $\tau^i$ removes, so that the orthogonal and tangential parts
+ * recombine to the full comoving shift:
+ *
+ * \begin{equation}
+ * \beta^i = \beta_\mathrm{co}^i
+ * + \frac{\alpha - \alpha_\mathrm{Kerr}}{\psi^2}\bar{s}^i
+ * + \epsilon_{ijk}\Omega^j x^k.
+ * \end{equation}
+ *
+ * Then the boosted Kerr solution satisfies these boundary conditions on any
+ * excision surface, not only on its apparent horizon, and for any conformal
+ * background. The reason is that ($\ref{eq:ah_beta}$) fixes all components of
+ * the shift on the surface. Without $\tau^i$ its tangential part is only the
+ * rigid rotation $\epsilon_{ijk}\Omega^j x^k$, which in general differs from
+ * the tangential part of the Kerr shift. With $\boldsymbol{\Omega}=0$ and
+ * $\alpha=\alpha_\mathrm{Kerr}$, the imposed shift is $\beta_\mathrm{co}^i$ on
+ * the whole surface, while the condition on $\psi$ is satisfied by the Kerr
+ * data through the $\Theta_\mathrm{Kerr}$ term. Note that $\tau^i$ includes the
+ * rotation of a spinning Kerr solution and the frame rotation of the background
+ * shift around the black hole, so the `Rotation` parameters should typically be
+ * set to zero in this case (in particular, without adding the orbital angular
+ * velocity). The tangential correction may be useful for highly boosted,
+ * spinning black holes: the frame dragging of a boosted Kerr solution, seen in
+ * the comoving frame, is not a rigid rotation with the rest-frame value
+ * $-\boldsymbol{\chi}/(2r_+)$, but it is imposed exactly through
+ * $\tau^i$.
  */
 template <Xcts::Geometry ConformalGeometry>
 class ApparentHorizon
@@ -134,10 +250,51 @@ class ApparentHorizon
         "that the latter will not result in the standard Kerr-Schild slicing "
         "for a single black hole.";
   };
+  /// Options for negative-expansion boundary conditions
+  struct NegativeExpansionOptions {
+    struct Solution {
+      using type = std::unique_ptr<elliptic::analytic_data::InitialGuess>;
+      static constexpr Options::String help =
+          "Analytic solution whose expansion is imposed at the excision "
+          "surface. It is evaluated at coordinates centered at the apparent "
+          "horizon.";
+    };
+    struct ComovingShift {
+      using type = NegativeExpansionShift;
+      static constexpr Options::String help =
+          "How the shift of the solution is imposed at the excision surface. "
+          "'None': impose the orthogonal part of the shift of the solution as "
+          "given. 'Orthogonal': transform the shift of the solution from the "
+          "inertial frame to the comoving frame, i.e. add the background shift "
+          "to it, before imposing its orthogonal part. The solution must be "
+          "boosted with the background shift at its center (e.g. the linear "
+          "velocity of a single black hole), so that it is at rest in the "
+          "comoving frame. 'AnalyticGuess': like 'Orthogonal', but "
+          "impose the full comoving shift of the solution, including its "
+          "tangential part. The tangential part includes the rotation of a "
+          "spinning solution and the frame rotation of the background shift, "
+          "so set 'Rotation' to zero (without the orbital angular velocity) "
+          "unless an additional rotation is intended. May be useful for highly "
+          "boosted, spinning black holes.";
+    };
+    using options = tmpl::list<Solution, ComovingShift>;
+    static constexpr Options::String help =
+        "Impose the expansion and shift of an analytic solution at the "
+        "excision surface.";
+
+    NegativeExpansionOptions() = default;
+    NegativeExpansionOptions(
+        std::unique_ptr<elliptic::analytic_data::InitialGuess> local_solution,
+        NegativeExpansionShift local_shift)
+        : solution(std::move(local_solution)), shift(local_shift) {}
+
+    std::unique_ptr<elliptic::analytic_data::InitialGuess> solution{};
+    NegativeExpansionShift shift{NegativeExpansionShift::None};
+  };
+
   struct NegativeExpansion {
     using type =
-        Options::Auto<std::unique_ptr<elliptic::analytic_data::InitialGuess>,
-                      Options::AutoLabel::None>;
+        Options::Auto<NegativeExpansionOptions, Options::AutoLabel::None>;
     static constexpr Options::String help =
         "Specify an analytic solution to impose its expansion at the excision "
         "surface. The analytic solution will be evaluated at coordinates "
@@ -176,10 +333,11 @@ class ApparentHorizon
                       solution_for_lapse_.value()))
             : std::nullopt,
         solution_for_negative_expansion_.has_value()
-            ? std::make_optional(
+            ? std::make_optional(NegativeExpansionOptions{
                   serialize_and_deserialize<
                       std::unique_ptr<elliptic::analytic_data::InitialGuess>>(
-                      solution_for_negative_expansion_.value()))
+                      solution_for_negative_expansion_.value()),
+                  negative_expansion_shift_})
             : std::nullopt);
   }
 
@@ -187,8 +345,7 @@ class ApparentHorizon
       std::array<double, 3> center, std::array<double, 3> rotation,
       std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>
           solution_for_lapse,
-      std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>
-          solution_for_negative_expansion,
+      std::optional<NegativeExpansionOptions> negative_expansion,
       const Options::Context& context = {});
 
   const std::array<double, 3>& center() const { return center_; }
@@ -200,6 +357,9 @@ class ApparentHorizon
   const std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>&
   solution_for_negative_expansion() const {
     return solution_for_negative_expansion_;
+  }
+  NegativeExpansionShift negative_expansion_shift() const {
+    return negative_expansion_shift_;
   }
 
   std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
@@ -283,6 +443,7 @@ class ApparentHorizon
           domain::Tags::UnnormalizedFaceNormal<3, Frame::Inertial>>,
       domain::Tags::Coordinates<3, Frame::Inertial>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
       Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                               Frame::Inertial>,
       Tags::ConformalFactorMinusOne<DataVector>,
@@ -316,6 +477,7 @@ class ApparentHorizon
       const Scalar<DataVector>& face_normal_magnitude,
       const tnsr::I<DataVector, 3>& x,
       const Scalar<DataVector>& extrinsic_curvature_trace,
+      const tnsr::I<DataVector, 3>& shift_background,
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
@@ -341,6 +503,7 @@ class ApparentHorizon
       const Scalar<DataVector>& face_normal_magnitude,
       const tnsr::I<DataVector, 3>& x,
       const Scalar<DataVector>& extrinsic_curvature_trace,
+      const tnsr::I<DataVector, 3>& shift_background,
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
       const Scalar<DataVector>& conformal_factor_minus_one,
       const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
@@ -360,6 +523,25 @@ class ApparentHorizon
       solution_for_lapse_{};
   std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>
       solution_for_negative_expansion_{};
+  NegativeExpansionShift negative_expansion_shift_{
+      NegativeExpansionShift::None};
 };
 
 }  // namespace Xcts::BoundaryConditions
+
+/// \cond
+template <>
+struct Options::create_from_yaml<
+    Xcts::BoundaryConditions::NegativeExpansionShift> {
+  template <typename Metavariables>
+  static Xcts::BoundaryConditions::NegativeExpansionShift create(
+      const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+Xcts::BoundaryConditions::NegativeExpansionShift
+Options::create_from_yaml<Xcts::BoundaryConditions::NegativeExpansionShift>::
+    create<void>(const Options::Option& options);
+/// \endcond

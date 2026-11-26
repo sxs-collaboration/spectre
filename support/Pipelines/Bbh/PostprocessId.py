@@ -22,6 +22,7 @@ from spectre.Pipelines.Bbh.FindHorizon import (
     use_excision_as_horizon,
     vec_to_string,
 )
+from spectre.Pipelines.Bbh.InitialData import ComovingShift
 from spectre.Strahlkorper import Frame, Strahlkorper
 from spectre.support.Schedule import schedule, scheduler_options
 from spectre.Visualization.ReadInputFile import find_event
@@ -44,6 +45,7 @@ def postprocess_id(
     evolve: bool = False,
     eccentricity_control: bool = False,
     negative_expansion_bc: bool = True,
+    comoving_shift: ComovingShift = "Orthogonal",
     pipeline_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
 ):
@@ -88,10 +90,13 @@ def postprocess_id(
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
       negative_expansion_bc: Place the excisions inside of apparent horizons.
+      comoving_shift: How the shift of the negative-expansion solutions is
+        imposed at the excisions, 'Orthogonal' or 'AnalyticGuess'.
       pipeline_dir: Directory of the simulation, in which the pipeline
         creates its runs.
         Required if 'evolve' is set to True.
     """
+
     # Read input file
     with open(id_input_file_path, "r") as open_input_file:
         id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
@@ -169,6 +174,7 @@ def postprocess_id(
             refinement_level=control_refinement_level,
             polynomial_order=control_polynomial_order,
             negative_expansion_bc=negative_expansion_bc,
+            comoving_shift=comoving_shift,
         )
         id_run_dir = last_control_run_dir
         id_input_file_path = f"{last_control_run_dir}/InitialData.yaml"
